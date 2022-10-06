@@ -1,0 +1,14 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+yarn pretty-quick --staged
+
+git submodule sync
+git submodule update --init --recursive --remote
+
+for SUB_MODULE in `cat .gitmodules | grep path | cut -d= -f2`
+do
+    echo "updating git submodule $SUB_MODULE"
+    git add $SUB_MODULE
+done;
+

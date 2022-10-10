@@ -1,11 +1,13 @@
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
 import { QueryError } from "../../src/wire-protocol";
+import { env } from "process";
 
 describe("query", () => {
   const client = new Client({
-    endpoint: endpoints.local,
-    secret: "secret",
+    endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+    maxConns: 5,
+    secret: env["secret"] || "secret",
     queryTimeoutMillis: 60,
   });
 

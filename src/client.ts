@@ -1,4 +1,5 @@
 import axios, { type Axios } from "axios";
+import Agent, { HttpsAgent } from "agentkeepalive";
 import type { ClientConfiguration } from "./client-configuration";
 import {
   QueryError,
@@ -31,9 +32,28 @@ export class Client {
    */
   constructor(clientConfiguration: ClientConfiguration) {
     this.clientConfiguration = clientConfiguration;
+    const agentSettings = {
+      maxSockets: this.clientConfiguration.maxConns,
+      maxFreeSockets: this.clientConfiguration.maxConns,
+      // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
+      // terminate connections on active queries.
+      timeout: this.clientConfiguration.queryTimeoutMillis + 10_000,
+      // release socket for usage after 4s of inactivity. Must be less than Fauna's server
+      // side idle timeout of 5 seconds.
+      freeSocketTimeout: 4000,
+    };
+    let httpAgents;
+    if (this.clientConfiguration.endpoint.protocol === "http") {
+      httpAgents = { httpAgent: new Agent(agentSettings) };
+    } else {
+      httpAgents = { httpsAgent: new HttpsAgent(agentSettings) };
+    }
     this.client = axios.create({
       baseURL: this.clientConfiguration.endpoint.toString(),
-      timeout: this.clientConfiguration.queryTimeoutMillis + 1000,
+      // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
+      // terminate connections on active queries.
+      timeout: this.clientConfiguration.queryTimeoutMillis + 10_000,
+      ...httpAgents,
     });
     this.client.defaults.headers.common[
       "Authorization"

@@ -32,12 +32,13 @@ export class Client {
    */
   constructor(clientConfiguration: ClientConfiguration) {
     this.clientConfiguration = clientConfiguration;
+    // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
+    // terminate connections on active queries.
+    const timeout = this.clientConfiguration.queryTimeoutMillis + 10_000;
     const agentSettings = {
       maxSockets: this.clientConfiguration.maxConns,
       maxFreeSockets: this.clientConfiguration.maxConns,
-      // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
-      // terminate connections on active queries.
-      timeout: this.clientConfiguration.queryTimeoutMillis + 10_000,
+      timeout,
       // release socket for usage after 4s of inactivity. Must be less than Fauna's server
       // side idle timeout of 5 seconds.
       freeSocketTimeout: 4000,
@@ -50,9 +51,7 @@ export class Client {
     }
     this.client = axios.create({
       baseURL: this.clientConfiguration.endpoint.toString(),
-      // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
-      // terminate connections on active queries.
-      timeout: this.clientConfiguration.queryTimeoutMillis + 10_000,
+      timeout,
       ...httpAgents,
     });
     this.client.defaults.headers.common[

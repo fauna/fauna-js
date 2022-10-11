@@ -2,6 +2,7 @@ import axios, { type Axios } from "axios";
 import Agent, { HttpsAgent } from "agentkeepalive";
 import type { ClientConfiguration } from "./client-configuration";
 import {
+  InternalClientError,
   QueryError,
   type QueryRequest,
   type QueryResponse,
@@ -63,7 +64,9 @@ export class Client {
    * Queries Fauna.
    * @param queryRequest - the {@link QueryRequest}
    * @returns A {@link QueryResponse}.
-   * @throws A {@link QueryError} if the request cannnot be completed.
+   * @throws A {@link QueryError} if an error is returned by Fauna.
+   * @throws A {@link InternalClientError} the client fails to submit the request
+   * due to an internal error.
    */
   async query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
     try {
@@ -72,8 +75,16 @@ export class Client {
         queryRequest
       );
       return result.data;
-    } catch (e) {
-      throw new QueryError("Query failed.");
+    } catch (e: any) {
+      if (e.response?.data?.error) {
+        throw new QueryError({
+          ...e.response.data.error,
+          statusCode: e.response.status,
+        });
+      }
+      throw new InternalClientError("Unknown InternalClientError", {
+        cause: e,
+      });
     }
   }
 }

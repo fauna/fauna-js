@@ -23,12 +23,8 @@ export interface ClientConfiguration {
  * @remarks Leverage the `[key: string]: URL;` field to extend to other endpoints.
  */
 export interface Endpoints {
-  /** The classic Region Group endpoint. */
-  classic: URL;
-  /** The eu-std Region Group endpoint. */
-  "eu-std": URL;
-  /** The us-std Region Group endpoint. */
-  "us-std": URL;
+  /** Fauna's cloud endpoint. */
+  cloud: URL;
   /**
    * An endpoint for interacting with local instance of Fauna (e.g. one running in a local docker container).
    */
@@ -51,8 +47,6 @@ export interface Endpoints {
  * ```
  */
 export const endpoints: Endpoints = {
-  classic: new URL("https://db.fauna.com"),
-  "eu-std": new URL("https://db.eu.fauna.com"),
-  "us-std": new URL("https://db.us.fauna.com"),
+  cloud: new URL("https://db.fauna.com"),
   local: new URL("http://localhost:8443"),
 };

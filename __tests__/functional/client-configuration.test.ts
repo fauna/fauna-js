@@ -3,14 +3,12 @@ import { endpoints } from "../../src/client-configuration";
 
 describe("endpoints", () => {
   it("is extensible", async () => {
-    (endpoints["my-alternative-port"] = new URL("http://localhost:7443")),
-      expect(endpoints).toEqual({
-        classic: new URL("https://db.fauna.com"),
-        "eu-std": new URL("https://db.eu.fauna.com"),
-        "us-std": new URL("https://db.us.fauna.com"),
-        local: new URL("http://localhost:8443"),
-        "my-alternative-port": new URL("http://localhost:7443"),
-      });
+    endpoints["my-alternative-port"] = new URL("http://localhost:7443");
+    expect(endpoints).toEqual({
+      cloud: new URL("https://db.fauna.com"),
+      local: new URL("http://localhost:8443"),
+      "my-alternative-port": new URL("http://localhost:7443"),
+    });
     const client = new Client({
       endpoint: endpoints["my-alternative-port"],
       secret: "secret",

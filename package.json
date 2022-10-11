@@ -1,9 +1,9 @@
 {
-  "name": "fql-x-javascript",
-  "version": "1.0.0",
+  "name": "fauna",
+  "version": "10.0.0",
   "description": "TODO",
   "main": "index.js",
-  "repository": "TODO",
+  "repository": "https://github.com/fauna/fauna-js.git",
   "author": "Fauna",
   "private": true,
   "dependencies": {

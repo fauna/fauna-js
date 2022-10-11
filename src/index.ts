@@ -7,16 +7,12 @@ export interface ClientConfiguration {
 }
 
 export interface Endpoints {
-  classic: URL;
-  "eu-std": URL;
-  "us-std": URL;
+  cloud: URL;
   local: URL;
 }
 
 export const endpoints: Endpoints = {
-  classic: new URL("https://db.fauna.com"),
-  "eu-std": new URL("https://db.eu.fauna.com"),
-  "us-std": new URL("https://db.us.fauna.com"),
+  cloud: new URL("https://db.fauna.com"),
   local: new URL("http://localhost:8443"),
 };
 

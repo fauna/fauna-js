@@ -7,6 +7,10 @@ export interface ClientConfiguration {
    */
   endpoint: URL;
   /**
+   * The maximum number of connections to a make to Fauna.
+   */
+  maxConns: number;
+  /**
    * A secret for your Fauna DB, used to authorize your queries.
    * @see https://docs.fauna.com/fauna/current/security/keys
    */

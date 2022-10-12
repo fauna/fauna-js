@@ -11,9 +11,11 @@ describe("endpoints", () => {
     });
     const client = new Client({
       endpoint: endpoints["my-alternative-port"],
+      maxConns: 5,
       secret: "secret",
       queryTimeoutMillis: 60,
     });
+    expect(client.client.defaults.baseURL).toEqual("http://localhost:7443/");
     const result = await client.query<number>({ query: '"taco".length' });
     expect(result.txn_time).not.toBeUndefined();
     expect(result).toEqual({ data: 4, txn_time: result.txn_time });

@@ -18,9 +18,9 @@
     "@babel/highlight" "^7.18.6"
 
 "@babel/compat-data@^7.19.3":
-  version "7.19.3"
-  resolved "https://registry.yarnpkg.com/@babel/compat-data/-/compat-data-7.19.3.tgz#707b939793f867f5a73b2666e6d9a3396eb03151"
-  integrity sha512-prBHMK4JYYK+wDjJF1q99KK4JLL+egWS4nmNqdlMUgCExMZ+iZW0hGhyC3VEbsPjvaN0TBhW//VIFwBrk8sEiw==
+  version "7.19.4"
+  resolved "https://registry.yarnpkg.com/@babel/compat-data/-/compat-data-7.19.4.tgz#95c86de137bf0317f3a570e1b6e996b427299747"
+  integrity sha512-CHIGpJcUQ5lU9KrPHTjBMhVwQG6CQjxfg36fGXl3qk/Gik1WwWachaXFuo0uCWJT/mStOKtcbFJCaVLihC1CMw==
 
 "@babel/core@^7.11.6", "@babel/core@^7.12.3":
   version "7.19.3"
@@ -43,12 +43,12 @@
     json5 "^2.2.1"
     semver "^6.3.0"
 
-"@babel/generator@^7.19.3", "@babel/generator@^7.7.2":
-  version "7.19.3"
-  resolved "https://registry.yarnpkg.com/@babel/generator/-/generator-7.19.3.tgz#d7f4d1300485b4547cb6f94b27d10d237b42bf59"
-  integrity sha512-fqVZnmp1ncvZU757UzDheKZpfPgatqY59XtW2/j/18H7u76akb8xqvjw82f+i2UKd/ksYsSick/BCLQUUtJ/qQ==
+"@babel/generator@^7.19.3", "@babel/generator@^7.19.4", "@babel/generator@^7.7.2":
+  version "7.19.5"
+  resolved "https://registry.yarnpkg.com/@babel/generator/-/generator-7.19.5.tgz#da3f4b301c8086717eee9cab14da91b1fa5dcca7"
+  integrity sha512-DxbNz9Lz4aMZ99qPpO1raTbcrI1ZeYh+9NR9qhfkQIbFtVEqotHojEBxHzmxhVONkGt6VyrqVQcgpefMy9pqcg==
   dependencies:
-    "@babel/types" "^7.19.3"
+    "@babel/types" "^7.19.4"
     "@jridgewell/gen-mapping" "^0.3.2"
     jsesc "^2.5.1"
 
@@ -109,11 +109,11 @@
   integrity sha512-40Ryx7I8mT+0gaNxm8JGTZFUITNqdLAgdg0hXzeVZxVD6nFsdhQvip6v8dqkRHzsz1VFpFAaOCHNn0vKBL7Czw==
 
 "@babel/helper-simple-access@^7.18.6":
-  version "7.18.6"
-  resolved "https://registry.yarnpkg.com/@babel/helper-simple-access/-/helper-simple-access-7.18.6.tgz#d6d8f51f4ac2978068df934b569f08f29788c7ea"
-  integrity sha512-iNpIgTgyAvDQpDj76POqg+YEt8fPxx3yaNBg3S30dxNKm2SWfYhD0TGrK/Eu9wHpUW63VQU894TsTg+GLbUa1g==
+  version "7.19.4"
+  resolved "https://registry.yarnpkg.com/@babel/helper-simple-access/-/helper-simple-access-7.19.4.tgz#be553f4951ac6352df2567f7daa19a0ee15668e7"
+  integrity sha512-f9Xq6WqBFqaDfbCzn2w85hwklswz5qsKlh7f08w4Y9yhJHpnNC0QemtSkK5YyOY8kPGvyiwdzZksGUhnGdaUIg==
   dependencies:
-    "@babel/types" "^7.18.6"
+    "@babel/types" "^7.19.4"
 
 "@babel/helper-split-export-declaration@^7.18.6":
   version "7.18.6"
@@ -122,10 +122,10 @@
   dependencies:
     "@babel/types" "^7.18.6"
 
-"@babel/helper-string-parser@^7.18.10":
-  version "7.18.10"
-  resolved "https://registry.yarnpkg.com/@babel/helper-string-parser/-/helper-string-parser-7.18.10.tgz#181f22d28ebe1b3857fa575f5c290b1aaf659b56"
-  integrity sha512-XtIfWmeNY3i4t7t4D2t02q50HvqHybPqW2ki1kosnvWCwuCMeo81Jf0gwr85jy/neUdg5XDdeFE/80DXiO+njw==
+"@babel/helper-string-parser@^7.19.4":
+  version "7.19.4"
+  resolved "https://registry.yarnpkg.com/@babel/helper-string-parser/-/helper-string-parser-7.19.4.tgz#38d3acb654b4701a9b77fb0615a96f775c3a9e63"
+  integrity sha512-nHtDoQcuqFmwYNYPz3Rah5ph2p8PFeFCsZk9A/48dPc/rGocJ5J3hAAZ7pb76VWX3fZKu+uEr/FhH5jLx7umrw==
 
 "@babel/helper-validator-identifier@^7.18.6", "@babel/helper-validator-identifier@^7.19.1":
   version "7.19.1"
@@ -138,13 +138,13 @@
   integrity sha512-XO7gESt5ouv/LRJdrVjkShckw6STTaB7l9BrpBaAHDeF5YZT+01PCwmR0SJHnkW6i8OwW/EVWRShfi4j2x+KQw==
 
 "@babel/helpers@^7.19.0":
-  version "7.19.0"
-  resolved "https://registry.yarnpkg.com/@babel/helpers/-/helpers-7.19.0.tgz#f30534657faf246ae96551d88dd31e9d1fa1fc18"
-  integrity sha512-DRBCKGwIEdqY3+rPJgG/dKfQy9+08rHIAJx8q2p+HSWP87s2HCrQmaAMMyMll2kIXKCW0cO1RdQskx15Xakftg==
+  version "7.19.4"
+  resolved "https://registry.yarnpkg.com/@babel/helpers/-/helpers-7.19.4.tgz#42154945f87b8148df7203a25c31ba9a73be46c5"
+  integrity sha512-G+z3aOx2nfDHwX/kyVii5fJq+bgscg89/dJNWpYeKeBv3v9xX8EIabmx1k6u9LS04H7nROFVRVK+e3k0VHp+sw==
   dependencies:
     "@babel/template" "^7.18.10"
-    "@babel/traverse" "^7.19.0"
-    "@babel/types" "^7.19.0"
+    "@babel/traverse" "^7.19.4"
+    "@babel/types" "^7.19.4"
 
 "@babel/highlight@^7.18.6":
   version "7.18.6"
@@ -155,10 +155,10 @@
     chalk "^2.0.0"
     js-tokens "^4.0.0"
 
-"@babel/parser@^7.1.0", "@babel/parser@^7.14.7", "@babel/parser@^7.18.10", "@babel/parser@^7.19.3":
-  version "7.19.3"
-  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.19.3.tgz#8dd36d17c53ff347f9e55c328710321b49479a9a"
-  integrity sha512-pJ9xOlNWHiy9+FuFP09DEAFbAn4JskgRsVcc169w2xRBC3FRGuQEwjeIMMND9L2zc0iEhO/tGv4Zq+km+hxNpQ==
+"@babel/parser@^7.1.0", "@babel/parser@^7.14.7", "@babel/parser@^7.18.10", "@babel/parser@^7.19.3", "@babel/parser@^7.19.4":
+  version "7.19.4"
+  resolved "https://registry.yarnpkg.com/@babel/parser/-/parser-7.19.4.tgz#03c4339d2b8971eb3beca5252bafd9b9f79db3dc"
+  integrity sha512-qpVT7gtuOLjWeDTKLkJ6sryqLliBaFpAtGeqw5cs5giLldvh+Ch0plqnUMKoVAUS6ZEueQQiZV+p5pxtPitEsA==
 
 "@babel/plugin-syntax-async-generators@^7.8.4":
   version "7.8.4"
@@ -267,28 +267,28 @@
     "@babel/parser" "^7.18.10"
     "@babel/types" "^7.18.10"
 
-"@babel/traverse@^7.19.0", "@babel/traverse@^7.19.3", "@babel/traverse@^7.7.2":
-  version "7.19.3"
-  resolved "https://registry.yarnpkg.com/@babel/traverse/-/traverse-7.19.3.tgz#3a3c5348d4988ba60884e8494b0592b2f15a04b4"
-  integrity sha512-qh5yf6149zhq2sgIXmwjnsvmnNQC2iw70UFjp4olxucKrWd/dvlUsBI88VSLUsnMNF7/vnOiA+nk1+yLoCqROQ==
+"@babel/traverse@^7.19.0", "@babel/traverse@^7.19.3", "@babel/traverse@^7.19.4", "@babel/traverse@^7.7.2":
+  version "7.19.4"
+  resolved "https://registry.yarnpkg.com/@babel/traverse/-/traverse-7.19.4.tgz#f117820e18b1e59448a6c1fa9d0ff08f7ac459a8"
+  integrity sha512-w3K1i+V5u2aJUOXBFFC5pveFLmtq1s3qcdDNC2qRI6WPBQIDaKFqXxDEqDO/h1dQ3HjsZoZMyIy6jGLq0xtw+g==
   dependencies:
     "@babel/code-frame" "^7.18.6"
-    "@babel/generator" "^7.19.3"
+    "@babel/generator" "^7.19.4"
     "@babel/helper-environment-visitor" "^7.18.9"
     "@babel/helper-function-name" "^7.19.0"
     "@babel/helper-hoist-variables" "^7.18.6"
     "@babel/helper-split-export-declaration" "^7.18.6"
-    "@babel/parser" "^7.19.3"
-    "@babel/types" "^7.19.3"
+    "@babel/parser" "^7.19.4"
+    "@babel/types" "^7.19.4"
     debug "^4.1.0"
     globals "^11.1.0"
 
-"@babel/types@^7.0.0", "@babel/types@^7.18.10", "@babel/types@^7.18.6", "@babel/types@^7.19.0", "@babel/types@^7.19.3", "@babel/types@^7.3.0", "@babel/types@^7.3.3":
-  version "7.19.3"
-  resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.19.3.tgz#fc420e6bbe54880bce6779ffaf315f5e43ec9624"
-  integrity sha512-hGCaQzIY22DJlDh9CH7NOxgKkFjBk0Cw9xDO1Xmh2151ti7wiGfQ3LauXzL4HP1fmFlTX6XjpRETTpUcv7wQLw==
+"@babel/types@^7.0.0", "@babel/types@^7.18.10", "@babel/types@^7.18.6", "@babel/types@^7.19.0", "@babel/types@^7.19.3", "@babel/types@^7.19.4", "@babel/types@^7.3.0", "@babel/types@^7.3.3":
+  version "7.19.4"
+  resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.19.4.tgz#0dd5c91c573a202d600490a35b33246fed8a41c7"
+  integrity sha512-M5LK7nAeS6+9j7hAq+b3fQs+pNfUtTGq+yFFfHnauFA8zQtLRfmuipmsKDKKLuyG+wC8ABW43A153YNawNTEtw==
   dependencies:
-    "@babel/helper-string-parser" "^7.18.10"
+    "@babel/helper-string-parser" "^7.19.4"
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
@@ -297,10 +297,6 @@
   resolved "https://registry.yarnpkg.com/@bcoe/v8-coverage/-/v8-coverage-0.2.3.tgz#75a2e8b51cb758a7553d6804a5932d7aace75c39"
   integrity sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 "@eslint/eslintrc@^1.3.3":
   version "1.3.3"
   resolved "https://registry.yarnpkg.com/@eslint/eslintrc/-/eslintrc-1.3.3.tgz#2b044ab39fdfa75b4688184f9e573ce3c5b0ff95"
@@ -335,11 +331,6 @@
   resolved "https://registry.yarnpkg.com/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz#b520529ec21d8e5945a1851dfd1c32e94e39ff45"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 "@istanbuljs/load-nyc-config@^1.0.0":
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@istanbuljs/load-nyc-config/-/load-nyc-config-1.1.0.tgz#fd3db1d59ecf7cf121e80650bb86712f9b55eced"
@@ -566,7 +557,7 @@
     "@jridgewell/sourcemap-codec" "^1.4.10"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@jridgewell/resolve-uri@^3.0.3":
+"@jridgewell/resolve-uri@3.1.0":
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/@jridgewell/resolve-uri/-/resolve-uri-3.1.0.tgz#2203b118c157721addfe69d47b70465463066d78"
   integrity sha512-F2msla3tad+Mfht5cJq7LSXcdudKTWCVYUgw6pLFOOHSTtZlj6SWNYAp+AhuqLmWdBO2X5hPrLcu8cVP8fy28w==
@@ -576,23 +567,19 @@
   resolved "https://registry.yarnpkg.com/@jridgewell/set-array/-/set-array-1.1.2.tgz#7c6cf998d6d20b914c0a55a91ae928ff25965e72"
   integrity sha512-xnkseuNADM0gt2bs+BvhO0p78Mk762YnZdsuzFV018NoG1Sj1SCQvpSqa7XUaTam5vAGasABV9qXASMKnFMwMw==
 
-"@jridgewell/sourcemap-codec@^1.4.10":
+"@jridgewell/sourcemap-codec@1.4.14", "@jridgewell/sourcemap-codec@^1.4.10":
   version "1.4.14"
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.4.14.tgz#add4c98d341472a289190b424efbdb096991bb24"
   integrity sha512-XPSJHWmi394fuUuzDnGz1wiKqWfo1yXecHQMRf2l6hztTO+nPru658AyDngaBe7isIxEkRsPR3FZh+s7iVa4Uw==
 
 "@jridgewell/trace-mapping@^0.3.12", "@jridgewell/trace-mapping@^0.3.15", "@jridgewell/trace-mapping@^0.3.9":
-  version "0.3.15"
-  resolved "https://registry.yarnpkg.com/@jridgewell/trace-mapping/-/trace-mapping-0.3.15.tgz#aba35c48a38d3fd84b37e66c9c0423f9744f9774"
-  integrity sha512-oWZNOULl+UbhsgB51uuZzglikfIKSUBO/M9W2OfEjn7cmqoAiCgmv9lyACTUacZwBz0ITnJ2NqjU8Tx0DHL88g==
+  version "0.3.16"
+  resolved "https://registry.yarnpkg.com/@jridgewell/trace-mapping/-/trace-mapping-0.3.16.tgz#a7982f16c18cae02be36274365433e5b49d7b23f"
+  integrity sha512-LCQ+NeThyJ4k1W2d+vIKdxuSt9R3pQSZ4P92m7EakaYuXcVWbHuT5bjNcqLd4Rdgi6xYWYDvBJZJLZSLanjDcA==
   dependencies:
-    "@jridgewell/resolve-uri" "^3.0.3"
-    "@jridgewell/sourcemap-codec" "^1.4.10"
+    "@jridgewell/resolve-uri" "3.1.0"
+    "@jridgewell/sourcemap-codec" "1.4.14"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 "@microsoft/tsdoc-config@0.16.2":
   version "0.16.2"
   resolved "https://registry.yarnpkg.com/@microsoft/tsdoc-config/-/tsdoc-config-0.16.2.tgz#b786bb4ead00d54f53839a458ce626c8548d3adf"
@@ -629,15 +616,10 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 "@sinclair/typebox@^0.24.1":
-  version "0.24.44"
-  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.24.44.tgz#0a0aa3bf4a155a678418527342a3ee84bd8caa5c"
-  integrity sha512-ka0W0KN5i6LfrSocduwliMMpqVgohtPFidKdMEOUjoOFCHcOOYkKsPRxfs5f15oPNHTm6ERAm0GV/+/LTKeiWg==
+  version "0.24.46"
+  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.24.46.tgz#57501b58023776dbbae9e25619146286440be34c"
+  integrity sha512-ng4ut1z2MCBhK/NwDVwIQp3pAUOCs/KNaW3cBxdFB2xTDrOuo1xuNmpr/9HHFhxqIvHrs1NTH3KJg6q+JSy1Kw==
 
 "@sinonjs/commons@^1.7.0":
   version "1.8.3"
@@ -725,29 +707,20 @@
     expect "^29.0.0"
     pretty-format "^29.0.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 "@types/json-schema@^7.0.9":
   version "7.0.11"
   resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.11.tgz#d421b6c527a3037f7c84433fd2c4229e016863d3"
   integrity sha512-wOuvG1SN4Us4rez+tylwwwCV1psiNVOkJeM3AUWUNWg/jDQY2+HE/444y5gc+jBmRqASOm2Oeh5c1axHobwRKQ==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 "@types/minimatch@^3.0.3":
   version "3.0.5"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.5.tgz#1001cc5e6a3704b83c236027e77f2f58ea010f40"
   integrity sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==
 
 "@types/node@*", "@types/node@^18.8.3":
-  version "18.8.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.8.3.tgz#ce750ab4017effa51aed6a7230651778d54e327c"
-  integrity sha512-0os9vz6BpGwxGe9LOhgP/ncvYN5Tx1fNcd2TM3rD/aCGBkysb+ZWpXEocG24h6ZzOi13+VB8HndAQFezsSOw1w==
+  version "18.8.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.8.5.tgz#6a31f820c1077c3f8ce44f9e203e68a176e8f59e"
+  integrity sha512-Bq7G3AErwe5A/Zki5fdD3O6+0zDChhg671NfPjtIcbtzDNZTv4NPKMRFr7gtYPG7y+B8uTiNK4Ngd9T0FTar6Q==
 
 "@types/prettier@^2.1.5":
   version "2.7.1"
@@ -771,10 +744,6 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 "@typescript-eslint/eslint-plugin@^5.40.0":
   version "5.40.0"
   resolved "https://registry.yarnpkg.com/@typescript-eslint/eslint-plugin/-/eslint-plugin-5.40.0.tgz#0159bb71410eec563968288a17bd4478cdb685bd"
@@ -866,10 +835,6 @@ acorn@^8.8.0:
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-8.8.0.tgz#88c0187620435c7f6015803f5539dae05a9dbea8"
   integrity sha512-QOxyigPVrpZ2GXT+PFyZTl6TtOFc5egxHIP9IlQ+RbupQuX4RkT/Bee4/kQuC02Xkzg84JcT7oLYtDIQxp+v7w==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 1dcfbd6 ([FE-2750][FE-2754] Support connection pool and network level timeouts and maxConns in ClientConfiguration)
 agentkeepalive@^4.2.1:
   version "4.2.1"
   resolved "https://registry.yarnpkg.com/agentkeepalive/-/agentkeepalive-4.2.1.tgz#a7975cbb9f83b367f06c90cc51ff28fe7d499717"
@@ -879,11 +844,6 @@ agentkeepalive@^4.2.1:
     depd "^1.1.2"
     humanize-ms "^1.2.1"
 
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
-=======
->>>>>>> 1dcfbd6 ([FE-2750][FE-2754] Support connection pool and network level timeouts and maxConns in ClientConfiguration)
 ajv@^6.10.0, ajv@^6.12.4, ajv@~6.12.6:
   version "6.12.6"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.12.6.tgz#baf5a62e802b07d977034586f8c3baf5adf26df4"
@@ -894,11 +854,6 @@ ajv@^6.10.0, ajv@^6.12.4, ajv@~6.12.6:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 ansi-escapes@^4.2.1:
   version "4.3.2"
   resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-4.3.2.tgz#6b2291d1db7d98b6521d5f1efa42d0f3a9feb65e"
@@ -945,20 +900,11 @@ argparse@^1.0.7:
   dependencies:
     sprintf-js "~1.0.2"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 argparse@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/argparse/-/argparse-2.0.1.tgz#246f50f3ca78a3240f6c997e8a9bd1eac49e4b38"
   integrity sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 array-differ@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/array-differ/-/array-differ-3.0.0.tgz#3cbb3d0f316810eafcc47624734237d6aee4ae6b"
@@ -1148,9 +1094,9 @@ char-regex@^1.0.2:
   integrity sha512-kWWXztvZ5SBQV+eRgKFeh8q5sLuZY2+8WUIzlxWVTg+oGwY14qylx1KbKzHd8P6ZYkAg0xyIDU9JMHhyJMZ1jw==
 
 ci-info@^3.2.0:
-  version "3.4.0"
-  resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.4.0.tgz#b28484fd436cbc267900364f096c9dc185efb251"
-  integrity sha512-t5QdPT5jq3o262DOQ8zA6E1tlH2upmUc4Hlvrbx1pGYJuiiHl7O7rvVNI+l8HTVhd/q3Qc9vqimkNk5yiXsAug==
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/ci-info/-/ci-info-3.5.0.tgz#bfac2a29263de4c829d806b1ab478e35091e171f"
+  integrity sha512-yH4RezKOGlOhxkmhbeNuC4eYZKAUsEaGtBuBzDDP1eFUKiccDWzBABxBfOx31IDwDIXMTxWuwAxUGModvkbuVw==
 
 cjs-module-lexer@^1.0.0:
   version "1.2.2"
@@ -1213,21 +1159,11 @@ concat-map@0.0.1:
   integrity sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==
 
 convert-source-map@^1.4.0, convert-source-map@^1.6.0, convert-source-map@^1.7.0:
-  version "1.8.0"
-  resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-1.8.0.tgz#f3373c32d21b4d780dd8004514684fb791ca4369"
-  integrity sha512-+OQdjP49zViI/6i7nIJpA8rAl4sV/JdPfU9nZs3VqOwGIgizICvuN2ru6fMd+4llL0tar18UYJXfZ/TWtmhUjA==
-  dependencies:
-    safe-buffer "~5.1.1"
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/convert-source-map/-/convert-source-map-1.9.0.tgz#7faae62353fb4213366d0ca98358d22e8368b05f"
+  integrity sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 cross-spawn@^7.0.0, cross-spawn@^7.0.2, cross-spawn@^7.0.3:
-=======
-cross-spawn@^7.0.0, cross-spawn@^7.0.3:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
-cross-spawn@^7.0.0, cross-spawn@^7.0.2, cross-spawn@^7.0.3:
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "7.0.3"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-7.0.3.tgz#f73a85b9d5d41d045551c177e2882d4ac85728a6"
   integrity sha512-iRDPJKUPVEND7dHPO8rkbOnPpyDygcDFtWjpeWNCgy8WP2rXcxXL8TskReQl6OrB2G7+UJrags1q15Fudc7G6w==
@@ -1236,15 +1172,7 @@ cross-spawn@^7.0.0, cross-spawn@^7.0.2, cross-spawn@^7.0.3:
     shebang-command "^2.0.0"
     which "^2.0.1"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 debug@^4.1.0, debug@^4.1.1, debug@^4.3.2, debug@^4.3.4:
-=======
-debug@^4.1.0, debug@^4.1.1:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
-debug@^4.1.0, debug@^4.1.1, debug@^4.3.2, debug@^4.3.4:
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "4.3.4"
   resolved "https://registry.yarnpkg.com/debug/-/debug-4.3.4.tgz#1319f6579357f2338d3337d2cdd4914bb5dcc865"
   integrity sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==
@@ -1256,20 +1184,11 @@ dedent@^0.7.0:
   resolved "https://registry.yarnpkg.com/dedent/-/dedent-0.7.0.tgz#2495ddbaf6eb874abb0e1be9df22d2e5a544326c"
   integrity sha512-Q6fKUPqnAHAyhiUgFU7BUzLiv0kd8saH9al7tnu5Q/okj6dnupxyTgFIBjVzJATdfIAm9NAsvXNzjaKa+bxVyA==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 deep-is@^0.1.3:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/deep-is/-/deep-is-0.1.4.tgz#a6f2dce612fadd2ef1f519b73551f17e85199831"
   integrity sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 deepmerge@^4.2.2:
   version "4.2.2"
   resolved "https://registry.yarnpkg.com/deepmerge/-/deepmerge-4.2.2.tgz#44d2ea3679b8f4d4ffba33f03d865fc1e7bf4955"
@@ -1280,20 +1199,11 @@ delayed-stream@~1.0.0:
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
   integrity sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 1dcfbd6 ([FE-2750][FE-2754] Support connection pool and network level timeouts and maxConns in ClientConfiguration)
 depd@^1.1.2:
   version "1.1.2"
   resolved "https://registry.yarnpkg.com/depd/-/depd-1.1.2.tgz#9bcd52e14c097763e749b274c4346ed2e560b5a9"
   integrity sha512-7emPTl6Dpo6JRXOXjLRxck+FlLRX5847cLKEn00PLAgc3g2hTZZgr+e4c2v6QpSmLeFP3n5yUo7ft6avBK/5jQ==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> 1dcfbd6 ([FE-2750][FE-2754] Support connection pool and network level timeouts and maxConns in ClientConfiguration)
 detect-newline@^3.0.0:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/detect-newline/-/detect-newline-3.1.0.tgz#576f5dfc63ae1a192ff192d8ad3af6308991b651"
@@ -1304,10 +1214,6 @@ diff-sequences@^29.0.0:
   resolved "https://registry.yarnpkg.com/diff-sequences/-/diff-sequences-29.0.0.tgz#bae49972ef3933556bcb0800b72e8579d19d9e4f"
   integrity sha512-7Qe/zd1wxSDL4D/X/FPjOMB+ZMDt71W94KYaq05I2l0oQqgXgs7s4ftYYmV38gBSrPz2vcygxfs1xn0FT+rKNA==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 dir-glob@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/dir-glob/-/dir-glob-3.0.1.tgz#56dbf73d992a4a93ba1584f4534063fd2e41717f"
@@ -1322,15 +1228,10 @@ doctrine@^3.0.0:
   dependencies:
     esutils "^2.0.2"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 electron-to-chromium@^1.4.251:
-  version "1.4.275"
-  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.275.tgz#db25c8e39c9cc910a996d1ec9b73eee834cb0ac1"
-  integrity sha512-aJeQQ+Hl9Jyyzv4chBqYJwmVRY46N5i2BEX5Cuyk/5gFCUZ5F3i7Hnba6snZftWla7Gglwc5pIgcd+E7cW+rPg==
+  version "1.4.280"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.4.280.tgz#1a0d29bf39ffd2719dbacc3cd8d2415a72457490"
+  integrity sha512-EP8OKK3oXdQs9SURLaEtZUKiLwldZjDfFzFIvrbcqk2otKncds2AYU5fLACbsmvnU2vtn0yU/6ewpxhcMis9gQ==
 
 emittery@^0.10.2:
   version "0.10.2"
@@ -1371,10 +1272,6 @@ escape-string-regexp@^2.0.0:
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-2.0.0.tgz#a30304e99daa32e23b2fd20f51babd07cffca344"
   integrity sha512-UpzcLCXolUWcNu5HtVMHYdXJjArjsF9C0aNnquZYY4uW/Vu0miy5YoWvbV345HauVvcAUnpRuhMMcqTcGOY2+w==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 escape-string-regexp@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-4.0.0.tgz#14ba83a5d373e3d311e5afca29cf5bfad965bf34"
@@ -1474,20 +1371,11 @@ espree@^9.4.0:
     acorn-jsx "^5.3.2"
     eslint-visitor-keys "^3.3.0"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 esprima@^4.0.0:
   version "4.0.1"
   resolved "https://registry.yarnpkg.com/esprima/-/esprima-4.0.1.tgz#13b04cdb3e6c5d19df91ab6987a8695619b0aa71"
   integrity sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 esquery@^1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/esquery/-/esquery-1.4.0.tgz#2148ffc38b82e8c7057dfed48425b3e61f0f24a5"
@@ -1517,11 +1405,6 @@ esutils@^2.0.2:
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.3.tgz#74d2eb4de0b8da1293711910d50775b9b710ef64"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 execa@^4.0.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/execa/-/execa-4.1.0.tgz#4e5491ad1572f2f17a77d388c6c857135b22847a"
@@ -1568,10 +1451,6 @@ expect@^29.0.0, expect@^29.1.2:
     jest-message-util "^29.1.2"
     jest-util "^29.1.2"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 fast-deep-equal@^3.1.1, fast-deep-equal@^3.1.3:
   version "3.1.3"
   resolved "https://registry.yarnpkg.com/fast-deep-equal/-/fast-deep-equal-3.1.3.tgz#3a7d56b559d6cbc3eb512325244e619a65c6c525"
@@ -1589,20 +1468,10 @@ fast-glob@^3.2.9:
     micromatch "^4.0.4"
 
 fast-json-stable-stringify@2.x, fast-json-stable-stringify@^2.0.0, fast-json-stable-stringify@^2.1.0:
-<<<<<<< HEAD
-=======
-fast-json-stable-stringify@2.x, fast-json-stable-stringify@^2.1.0:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/fast-json-stable-stringify/-/fast-json-stable-stringify-2.1.0.tgz#874bf69c6f404c2b5d99c481341399fd55892633"
   integrity sha512-lhd/wF+Lk98HZoTCtlVraHtfh5XYijIjalXck7saUtuanSDyLMxnHhSXEDJqHxD7msR8D0uCmqlkwjCV8xvwHw==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 fast-levenshtein@^2.0.6:
   version "2.0.6"
   resolved "https://registry.yarnpkg.com/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz#3d8a5c66883a16a30ca8643e851f19baa7797917"
@@ -1615,11 +1484,6 @@ fastq@^1.6.0:
   dependencies:
     reusify "^1.0.4"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 fb-watchman@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/fb-watchman/-/fb-watchman-2.0.2.tgz#e9524ee6b5c77e9e5001af0f85f3adbb8623255c"
@@ -1627,10 +1491,6 @@ fb-watchman@^2.0.0:
   dependencies:
     bser "2.1.1"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 file-entry-cache@^6.0.1:
   version "6.0.1"
   resolved "https://registry.yarnpkg.com/file-entry-cache/-/file-entry-cache-6.0.1.tgz#211b2dd9659cb0394b073e7323ac3c933d522027"
@@ -1638,11 +1498,6 @@ file-entry-cache@^6.0.1:
   dependencies:
     flat-cache "^3.0.4"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 fill-range@^7.0.1:
   version "7.0.1"
   resolved "https://registry.yarnpkg.com/fill-range/-/fill-range-7.0.1.tgz#1919a6a7c75fe38b2c7c77e5198535da9acdda40"
@@ -1658,10 +1513,6 @@ find-up@^4.0.0, find-up@^4.1.0:
     locate-path "^5.0.0"
     path-exists "^4.0.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 find-up@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/find-up/-/find-up-5.0.0.tgz#4c92819ecb7083561e4f4a240a86be5198f536fc"
@@ -1683,11 +1534,6 @@ flatted@^3.1.0:
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.2.7.tgz#609f39207cb614b89d0765b477cb2d437fbf9787"
   integrity sha512-5nqDSxl8nn5BSNxyR3n4I6eDmbolI6WT+QqR547RwxQapgjQBmtktdP+HTBb/a/zLsbzERTONyUB5pefh5TtjQ==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 follow-redirects@^1.15.0:
   version "1.15.2"
   resolved "https://registry.yarnpkg.com/follow-redirects/-/follow-redirects-1.15.2.tgz#b460864144ba63f2681096f274c4e57026da2c13"
@@ -1744,10 +1590,6 @@ get-stream@^6.0.0:
   resolved "https://registry.yarnpkg.com/get-stream/-/get-stream-6.0.1.tgz#a262d8eef67aced57c2852ad6167526a43cbf7b7"
   integrity sha512-ts6Wi+2j3jQjqi70w5AlN8DFnkSwC+MqmxEzdEALB2qXZYV3X/b1CTfgPLGJNMeAWxdPfU8FO1ms3NUfaHCPYg==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 glob-parent@^5.1.2:
   version "5.1.2"
   resolved "https://registry.yarnpkg.com/glob-parent/-/glob-parent-5.1.2.tgz#869832c58034fe68a4093c17dc15e8340d8401c4"
@@ -1762,11 +1604,6 @@ glob-parent@^6.0.1:
   dependencies:
     is-glob "^4.0.3"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 glob@^7.1.3, glob@^7.1.4:
   version "7.2.3"
   resolved "https://registry.yarnpkg.com/glob/-/glob-7.2.3.tgz#b8df0fb802bbfa8e89bd1d938b4e16578ed44f2b"
@@ -1784,10 +1621,6 @@ globals@^11.1.0:
   resolved "https://registry.yarnpkg.com/globals/-/globals-11.12.0.tgz#ab8795338868a0babd8525758018c2a7eb95c42e"
   integrity sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 globals@^13.15.0:
   version "13.17.0"
   resolved "https://registry.yarnpkg.com/globals/-/globals-13.17.0.tgz#902eb1e680a41da93945adbdcb5a9f361ba69bd4"
@@ -1807,30 +1640,16 @@ globby@^11.1.0:
     merge2 "^1.4.1"
     slash "^3.0.0"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 graceful-fs@^4.2.9:
   version "4.2.10"
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.10.tgz#147d3a006da4ca3ce14728c7aefc287c367d7a6c"
   integrity sha512-9ByhssR2fPVsNZj478qUUbKfmL0+t5BDVyjShtyZZLiK7ZDAArFFfopyOTj0M05wE2tJPisA4iTnnXl2YoPvOA==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 grapheme-splitter@^1.0.4:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/grapheme-splitter/-/grapheme-splitter-1.0.4.tgz#9cf3a665c6247479896834af35cf1dbb4400767e"
   integrity sha512-bzh50DW9kTPM00T8y4o8vQg89Di9oLJVLW/KaOGIXJWP/iqCN6WKYkbNOF04vFLJhwcpYUh9ydh/+5vpOqV4YQ==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 has-flag@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-3.0.0.tgz#b5d454dc2199ae225699f3467e5a07f3b955bafd"
@@ -1863,10 +1682,6 @@ human-signals@^2.1.0:
   resolved "https://registry.yarnpkg.com/human-signals/-/human-signals-2.1.0.tgz#dc91fcba42e4d06e4abaed33b3e7a3c02f514ea0"
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 1dcfbd6 ([FE-2750][FE-2754] Support connection pool and network level timeouts and maxConns in ClientConfiguration)
 humanize-ms@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/humanize-ms/-/humanize-ms-1.2.1.tgz#c46e3159a293f6b896da29316d8b6fe8bb79bbed"
@@ -1874,33 +1689,16 @@ humanize-ms@^1.2.1:
   dependencies:
     ms "^2.0.0"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> 1dcfbd6 ([FE-2750][FE-2754] Support connection pool and network level timeouts and maxConns in ClientConfiguration)
 husky@^8.0.1:
   version "8.0.1"
   resolved "https://registry.yarnpkg.com/husky/-/husky-8.0.1.tgz#511cb3e57de3e3190514ae49ed50f6bc3f50b3e9"
   integrity sha512-xs7/chUH/CKdOCs7Zy0Aev9e/dKOMZf3K1Az1nar3tzlv0jfqnYtu235bstsWTmXOR0EfINrPa97yy4Lz6RiKw==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 ignore@^5.1.4, ignore@^5.2.0:
-=======
-ignore@^5.1.4:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
-ignore@^5.1.4, ignore@^5.2.0:
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.2.0.tgz#6d3bac8fa7fe0d45d9f9be7bac2fc279577e345a"
   integrity sha512-CmxgYGiEPCLhfLnpPp1MoRmifwEIOgjcHXxOBjv7mY96c+eWScsOP9c112ZyLdWHi0FxHjI+4uVhKYp/gcdRmQ==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 import-fresh@^3.0.0, import-fresh@^3.2.1:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/import-fresh/-/import-fresh-3.3.0.tgz#37162c25fcb9ebaa2e6e53d5b4d88ce17d9e0c2b"
@@ -1909,11 +1707,6 @@ import-fresh@^3.0.0, import-fresh@^3.2.1:
     parent-module "^1.0.0"
     resolve-from "^4.0.0"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 import-local@^3.0.2:
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/import-local/-/import-local-3.1.0.tgz#b4479df8a5fd44f6cdce24070675676063c95cb4"
@@ -1945,35 +1738,18 @@ is-arrayish@^0.2.1:
   resolved "https://registry.yarnpkg.com/is-arrayish/-/is-arrayish-0.2.1.tgz#77c99840527aa8ecb1a8ba697b80645a7a926a9d"
   integrity sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 is-core-module@^2.1.0, is-core-module@^2.9.0:
-=======
-is-core-module@^2.9.0:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
-is-core-module@^2.1.0, is-core-module@^2.9.0:
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "2.10.0"
   resolved "https://registry.yarnpkg.com/is-core-module/-/is-core-module-2.10.0.tgz#9012ede0a91c69587e647514e1d5277019e728ed"
   integrity sha512-Erxj2n/LDAZ7H8WNJXd9tw38GYM3dv8rk8Zcs+jJuxYTW7sozH+SS8NtrSjVL1/vpLvWi1hxy96IzjJ3EHTJJg==
   dependencies:
     has "^1.0.3"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 is-extglob@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/is-extglob/-/is-extglob-2.1.1.tgz#a88c02535791f02ed37c76a1b9ea9773c833f8c2"
   integrity sha512-SbKbANkN603Vi4jEZv49LeVJMn4yGwsbzZworEoyEiutsN3nJYdbO36zfhGJ6QEDpOZIFkDtnq5JRxmvl3jsoQ==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 is-fullwidth-code-point@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/is-fullwidth-code-point/-/is-fullwidth-code-point-3.0.0.tgz#f116f8064fe90b3f7844a38997c0b75051269f1d"
@@ -1984,10 +1760,6 @@ is-generator-fn@^2.0.0:
   resolved "https://registry.yarnpkg.com/is-generator-fn/-/is-generator-fn-2.1.0.tgz#7d140adc389aaf3011a8f2a2a4cfa6faadffb118"
   integrity sha512-cTIB4yPYL/Grw0EaSzASzg6bBy9gqCofvWN8okThAYIxKJZC+udlRAmGbM0XLeniEJSs8uEgHPGuHSe1XsOLSQ==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 is-glob@^4.0.0, is-glob@^4.0.1, is-glob@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/is-glob/-/is-glob-4.0.3.tgz#64f61e42cbbb2eec2071a9dac0b28ba1e65d5084"
@@ -1995,11 +1767,6 @@ is-glob@^4.0.0, is-glob@^4.0.1, is-glob@^4.0.3:
   dependencies:
     is-extglob "^2.1.1"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 is-number@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-7.0.0.tgz#7535345b896734d5f80c4d06c50955527a14f12b"
@@ -2418,10 +2185,6 @@ jest@^29.1.2:
     import-local "^3.0.2"
     jest-cli "^29.1.2"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 jju@~1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/jju/-/jju-1.4.0.tgz#a3abe2718af241a2b2904f84a625970f389ae32a"
@@ -2432,11 +2195,6 @@ js-sdsl@^4.1.4:
   resolved "https://registry.yarnpkg.com/js-sdsl/-/js-sdsl-4.1.5.tgz#1ff1645e6b4d1b028cd3f862db88c9d887f26e2a"
   integrity sha512-08bOAKweV2NUC1wqTtf3qZlnpOX/R2DU9ikpjOHs0H+ibQv3zpncVQg6um4uYtRtrwIX8M4Nh3ytK4HGlYAq7Q==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -2450,10 +2208,6 @@ js-yaml@^3.13.1:
     argparse "^1.0.7"
     esprima "^4.0.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 js-yaml@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/js-yaml/-/js-yaml-4.1.0.tgz#c1fb65f8f5017901cdd2c951864ba18458a10602"
@@ -2461,11 +2215,6 @@ js-yaml@^4.1.0:
   dependencies:
     argparse "^2.0.1"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 jsesc@^2.5.1:
   version "2.5.2"
   resolved "https://registry.yarnpkg.com/jsesc/-/jsesc-2.5.2.tgz#80564d2e483dacf6e8ef209650a67df3f0c283a4"
@@ -2476,10 +2225,6 @@ json-parse-even-better-errors@^2.3.0:
   resolved "https://registry.yarnpkg.com/json-parse-even-better-errors/-/json-parse-even-better-errors-2.3.1.tgz#7c47805a94319928e05777405dc12e1f7a4ee02d"
   integrity sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 json-schema-traverse@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/json-schema-traverse/-/json-schema-traverse-0.4.1.tgz#69f6a87d9513ab8bb8fe63bdb0979c448e684660"
@@ -2490,11 +2235,6 @@ json-stable-stringify-without-jsonify@^1.0.1:
   resolved "https://registry.yarnpkg.com/json-stable-stringify-without-jsonify/-/json-stable-stringify-without-jsonify-1.0.1.tgz#9db7b59496ad3f3cfef30a75142d2d930ad72651"
   integrity sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 json5@^2.2.1:
   version "2.2.1"
   resolved "https://registry.yarnpkg.com/json5/-/json5-2.2.1.tgz#655d50ed1e6f95ad1a3caababd2b0efda10b395c"
@@ -2510,10 +2250,6 @@ leven@^3.1.0:
   resolved "https://registry.yarnpkg.com/leven/-/leven-3.1.0.tgz#77891de834064cccba82ae7842bb6b14a13ed7f2"
   integrity sha512-qsda+H8jTaUaN/x5vzW2rzc+8Rw4TAQ/4KjB46IwK5VH+IlVeeeje/EoZRpiXvIqjFgK84QffqPztGI3VBLG1A==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 levn@^0.4.1:
   version "0.4.1"
   resolved "https://registry.yarnpkg.com/levn/-/levn-0.4.1.tgz#ae4562c007473b932a6200d403268dd2fffc6ade"
@@ -2522,11 +2258,6 @@ levn@^0.4.1:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 lines-and-columns@^1.1.6:
   version "1.2.4"
   resolved "https://registry.yarnpkg.com/lines-and-columns/-/lines-and-columns-1.2.4.tgz#eca284f75d2965079309dc0ad9255abb2ebc1632"
@@ -2539,10 +2270,6 @@ locate-path@^5.0.0:
   dependencies:
     p-locate "^4.1.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 locate-path@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/locate-path/-/locate-path-6.0.0.tgz#55321eb309febbc59c4801d931a72452a681d286"
@@ -2550,30 +2277,16 @@ locate-path@^6.0.0:
   dependencies:
     p-locate "^5.0.0"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 lodash.memoize@4.x:
   version "4.1.2"
   resolved "https://registry.yarnpkg.com/lodash.memoize/-/lodash.memoize-4.1.2.tgz#bcc6c49a42a2840ed997f323eada5ecd182e0bfe"
   integrity sha512-t7j+NzmgnQzTAYXcsHYLgimltOV1MXHtlOWf6GjL9Kj8GK5FInw5JotxvbOs+IvV1/Dzo04/fCGfLVs7aXb4Ag==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 lodash.merge@^4.6.2:
   version "4.6.2"
   resolved "https://registry.yarnpkg.com/lodash.merge/-/lodash.merge-4.6.2.tgz#558aa53b43b661e1925a0afdfa36a9a1085fe57a"
   integrity sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 lru-cache@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/lru-cache/-/lru-cache-6.0.0.tgz#6d6fe6570ebd96aaf90fcad1dafa3b2566db3a94"
@@ -2605,20 +2318,11 @@ merge-stream@^2.0.0:
   resolved "https://registry.yarnpkg.com/merge-stream/-/merge-stream-2.0.0.tgz#52823629a14dd00c9770fb6ad47dc6310f2c1f60"
   integrity sha512-abv/qOcuPfk3URPfDzmZU1LKmuw8kT+0nIHvKrKgFrwifol/doWcdA4ZqsWQ8ENrFKkd67Mfpo/LovbIUsbt3w==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 merge2@^1.3.0, merge2@^1.4.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/merge2/-/merge2-1.4.1.tgz#4368892f885e907455a6fd7dc55c0c9d404990ae"
   integrity sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 micromatch@^4.0.4:
   version "4.0.5"
   resolved "https://registry.yarnpkg.com/micromatch/-/micromatch-4.0.5.tgz#bc8999a7cbbf77cdc89f132f6e467051b49090c6"
@@ -2644,15 +2348,7 @@ mimic-fn@^2.1.0:
   resolved "https://registry.yarnpkg.com/mimic-fn/-/mimic-fn-2.1.0.tgz#7ed2c2ccccaf84d3ffcb7a69b57711fc2083401b"
   integrity sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 minimatch@^3.0.4, minimatch@^3.1.1, minimatch@^3.1.2:
-=======
-minimatch@^3.0.4, minimatch@^3.1.1:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
-minimatch@^3.0.4, minimatch@^3.1.1, minimatch@^3.1.2:
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/minimatch/-/minimatch-3.1.2.tgz#19cd194bfd3e428f049a70817c038d89ab4be35b"
   integrity sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==
@@ -2669,20 +2365,11 @@ ms@2.1.2:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 1dcfbd6 ([FE-2750][FE-2754] Support connection pool and network level timeouts and maxConns in ClientConfiguration)
 ms@^2.0.0:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> 1dcfbd6 ([FE-2750][FE-2754] Support connection pool and network level timeouts and maxConns in ClientConfiguration)
 multimatch@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/multimatch/-/multimatch-4.0.0.tgz#8c3c0f6e3e8449ada0af3dd29efb491a375191b3"
@@ -2735,10 +2422,6 @@ onetime@^5.1.0, onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 optionator@^0.9.1:
   version "0.9.1"
   resolved "https://registry.yarnpkg.com/optionator/-/optionator-0.9.1.tgz#4f236a6373dae0566a6d43e1326674f50c291499"
@@ -2751,11 +2434,6 @@ optionator@^0.9.1:
     type-check "^0.4.0"
     word-wrap "^1.2.3"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 p-limit@^2.2.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/p-limit/-/p-limit-2.3.0.tgz#3dd33c647a214fdfffd835933eb086da0dc21db1"
@@ -2763,15 +2441,7 @@ p-limit@^2.2.0:
   dependencies:
     p-try "^2.0.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 p-limit@^3.0.2, p-limit@^3.1.0:
-=======
-p-limit@^3.1.0:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
-p-limit@^3.0.2, p-limit@^3.1.0:
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "3.1.0"
   resolved "https://registry.yarnpkg.com/p-limit/-/p-limit-3.1.0.tgz#e1daccbe78d0d1388ca18c64fea38e3e57e3706b"
   integrity sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==
@@ -2785,10 +2455,6 @@ p-locate@^4.1.0:
   dependencies:
     p-limit "^2.2.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 p-locate@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/p-locate/-/p-locate-5.0.0.tgz#83c8315c6785005e3bd021839411c9e110e6d834"
@@ -2796,20 +2462,11 @@ p-locate@^5.0.0:
   dependencies:
     p-limit "^3.0.2"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 p-try@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/p-try/-/p-try-2.2.0.tgz#cb2868540e313d61de58fafbe35ce9004d5540e6"
   integrity sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 parent-module@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/parent-module/-/parent-module-1.0.1.tgz#691d2709e78c79fae3a156622452d00762caaaa2"
@@ -2817,11 +2474,6 @@ parent-module@^1.0.0:
   dependencies:
     callsites "^3.0.0"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 parse-json@^5.2.0:
   version "5.2.0"
   resolved "https://registry.yarnpkg.com/parse-json/-/parse-json-5.2.0.tgz#c76fc66dee54231c962b22bcc8a72cf2f99753cd"
@@ -2847,33 +2499,16 @@ path-key@^3.0.0, path-key@^3.1.0:
   resolved "https://registry.yarnpkg.com/path-key/-/path-key-3.1.1.tgz#581f6ade658cbba65a0d3380de7753295054f375"
   integrity sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 path-parse@^1.0.6, path-parse@^1.0.7:
-=======
-path-parse@^1.0.7:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
-path-parse@^1.0.6, path-parse@^1.0.7:
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/path-parse/-/path-parse-1.0.7.tgz#fbc114b60ca42b30d9daf5858e4bd68bbedb6735"
   integrity sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 path-type@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/path-type/-/path-type-4.0.0.tgz#84ed01c0a7ba380afe09d90a8c180dcd9d03043b"
   integrity sha512-gDKb8aZMDeD/tZWs9P6+q0J9Mwkdl6xMV8TjnGP3qJVJ06bdMgkbBlLU8IdfOsIsFz2BW1rNVT3XuNEl8zPAvw==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 picocolors@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/picocolors/-/picocolors-1.0.0.tgz#cb5bdc74ff3f51892236eaf79d68bc44564ab81c"
@@ -2896,20 +2531,11 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 prelude-ls@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/prelude-ls/-/prelude-ls-1.2.1.tgz#debc6489d7a6e6b0e7611888cec880337d316396"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 prettier@^2.7.1:
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/prettier/-/prettier-2.7.1.tgz#e235806850d057f97bb08368a4f7d899f7760c64"
@@ -2957,10 +2583,6 @@ pump@^3.0.0:
     end-of-stream "^1.1.0"
     once "^1.3.1"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 punycode@^2.1.0:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
@@ -2971,30 +2593,16 @@ queue-microtask@^1.2.2:
   resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.2.3.tgz#4929228bbc724dfac43e0efb058caf7b6cfb6243"
   integrity sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 react-is@^18.0.0:
   version "18.2.0"
   resolved "https://registry.yarnpkg.com/react-is/-/react-is-18.2.0.tgz#199431eeaaa2e09f86427efbb4f1473edb47609b"
   integrity sha512-xWGDIW6x921xtzPkhiULtthJHoJvBbF3q26fzloPCK0hsvxtPVelvftw3zjbHWSkR2km9Z+4uxbDDK/6Zw9B8w==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 regexpp@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/regexpp/-/regexpp-3.2.0.tgz#0425a2768d8f23bad70ca4b90461fa2f1213e1b2"
   integrity sha512-pq2bWo9mVD43nbts2wGv17XLiNLya+GklZ8kaDLV2Z08gDCsGpnKn9BFMepvWuHCbyVvY7J5o5+BVvoQbmlJLg==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 require-directory@^2.1.1:
   version "2.1.1"
   resolved "https://registry.yarnpkg.com/require-directory/-/require-directory-2.1.1.tgz#8c64ad5fd30dab1c976e2344ffe7f792a6a6df42"
@@ -3007,20 +2615,11 @@ resolve-cwd@^3.0.0:
   dependencies:
     resolve-from "^5.0.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 resolve-from@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-4.0.0.tgz#4abcd852ad32dd7baabfe9b40e00a36db5f392e6"
   integrity sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 resolve-from@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/resolve-from/-/resolve-from-5.0.0.tgz#c35225843df8f776df21c57557bc087e9dfdfc69"
@@ -3040,10 +2639,6 @@ resolve@^1.20.0:
     path-parse "^1.0.7"
     supports-preserve-symlinks-flag "^1.0.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 resolve@~1.19.0:
   version "1.19.0"
   resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.19.0.tgz#1af5bf630409734a067cae29318aac7fa29a267c"
@@ -3071,25 +2666,7 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
-safe-buffer@~5.1.1:
-  version "5.1.2"
-  resolved "https://registry.yarnpkg.com/safe-buffer/-/safe-buffer-5.1.2.tgz#991ec69d296e0313747d59bdfd2b745c35f8828d"
-  integrity sha512-Gd2UZBJDkXlY7GbJxfsE8/nvKkUEU1G38c1siN6QP6a9PT9MmHB8GnpscSmMJSoF8LOIrt8ud/wPtojys4G6+g==
-
-<<<<<<< HEAD
-<<<<<<< HEAD
 semver@7.x, semver@^7.3.5, semver@^7.3.7:
-=======
-semver@7.x, semver@^7.3.5:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
-semver@7.x, semver@^7.3.5, semver@^7.3.7:
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "7.3.8"
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.3.8.tgz#07a78feafb3f7b32347d725e33de7e2a2df67798"
   integrity sha512-NB1ctGL5rlHrPJtFDVIVzTyQylMLu9N9VICA6HSFJo8MCGVTMW6gfpicwKmmK/dAjTOrqu5l63JJOpDSrAis3A==
@@ -3187,15 +2764,7 @@ strip-final-newline@^2.0.0:
   resolved "https://registry.yarnpkg.com/strip-final-newline/-/strip-final-newline-2.0.0.tgz#89b852fb2fcbe936f6f4b3187afb0a12c1ab58ad"
   integrity sha512-BrpvfNAE3dcvq7ll3xVumzjKjZQ5tI1sEUIKr3Uoks0XUl45St3FlatVqef9prk4jRDzhW6WZg+3bk93y6pLjA==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 strip-json-comments@^3.1.0, strip-json-comments@^3.1.1:
-=======
-strip-json-comments@^3.1.1:
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
-strip-json-comments@^3.1.0, strip-json-comments@^3.1.1:
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
   version "3.1.1"
   resolved "https://registry.yarnpkg.com/strip-json-comments/-/strip-json-comments-3.1.1.tgz#31f1281b3832630434831c310c01cccda8cbe006"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
@@ -3251,20 +2820,11 @@ test-exclude@^6.0.0:
     glob "^7.1.4"
     minimatch "^3.0.4"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 text-table@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 tmpl@1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/tmpl/-/tmpl-1.0.5.tgz#8683e0b902bb9c20c4f726e3c0b69f36518c07cc"
@@ -3296,10 +2856,6 @@ ts-jest@^29.0.3:
     semver "7.x"
     yargs-parser "^21.0.1"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 tslib@^1.8.1:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.14.1.tgz#cf2d38bdc34a134bcaf1091c41f6619e2f672d00"
@@ -3319,30 +2875,16 @@ type-check@^0.4.0, type-check@~0.4.0:
   dependencies:
     prelude-ls "^1.2.1"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 type-detect@4.0.8:
   version "4.0.8"
   resolved "https://registry.yarnpkg.com/type-detect/-/type-detect-4.0.8.tgz#7646fb5f18871cfbb7749e69bd39a6388eb7450c"
   integrity sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 type-fest@^0.20.2:
   version "0.20.2"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.20.2.tgz#1bf207f4b28f91583666cb5fbd327887301cd5f4"
   integrity sha512-Ne+eE4r0/iWnpAxD852z3A+N0Bt5RN//NjJwRd2VFHEmrywxf5vsZlh4R6lixl6B+wz/8d+maTSAkN1FIkI3LQ==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 type-fest@^0.21.3:
   version "0.21.3"
   resolved "https://registry.yarnpkg.com/type-fest/-/type-fest-0.21.3.tgz#d260a24b0198436e133fa26a524a6d65fa3b2e37"
@@ -3361,10 +2903,6 @@ update-browserslist-db@^1.0.9:
     escalade "^3.1.1"
     picocolors "^1.0.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 uri-js@^4.2.2:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/uri-js/-/uri-js-4.4.1.tgz#9b1a52595225859e55f669d928f88c6c57f2a77e"
@@ -3372,11 +2910,6 @@ uri-js@^4.2.2:
   dependencies:
     punycode "^2.1.0"
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 v8-to-istanbul@^9.0.1:
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/v8-to-istanbul/-/v8-to-istanbul-9.0.1.tgz#b6f994b0b5d4ef255e17a0d17dc444a9f5132fa4"
@@ -3400,20 +2933,11 @@ which@^2.0.1:
   dependencies:
     isexe "^2.0.0"
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 word-wrap@^1.2.3:
   version "1.2.3"
   resolved "https://registry.yarnpkg.com/word-wrap/-/word-wrap-1.2.3.tgz#610636f6b1f703891bd34771ccb17fb93b47079c"
   integrity sha512-Hz/mrNwitNRh/HUAtM/VT/5VH+ygD6DV7mYKZAtHOrbs8U7lvPS6xf7EJKMF0uW1KJCl0H701g3ZGus+muE5vQ==
 
-<<<<<<< HEAD
-=======
->>>>>>> 4d5a1b7 ([FE-2750][FE-2763] Dead simple steel thread and test setup.)
-=======
->>>>>>> f4a7b19 ([FE-2751][FE-2752] Basic documentation support via TSDoc, linting, and intial modularlization of the code. Basic types for the wire protocol.)
 wrap-ansi@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"

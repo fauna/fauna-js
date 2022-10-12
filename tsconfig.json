@@ -1,3 +1,7 @@
 {
-  "extends": "@tsconfig/node16-strictest/tsconfig.json"
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "extends": "@tsconfig/node16-strictest/tsconfig.json",
+  "compilerOptions": {
+    "lib": ["es2022"]
+  }
 }

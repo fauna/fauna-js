@@ -31,17 +31,17 @@ export interface QueryResponse<T> {
  */
 export class QueryError extends Error {
   /**
-   * A code for the error. Codes indicate the cause of the error.
-   * It is safe to write programmatic logic against the code. They are
-   * part of the API contract.
-   */
-  readonly code: string;
-  /**
    * The HTTP Status Code of the error.
    * A 400 \>= statusCode \<= 499 indicate a client-side problem with the request.
    * A statusCode \>= 500 indicate a server side error.
    */
   readonly statusCode: number;
+  /**
+   * A code for the error. Codes indicate the cause of the error.
+   * It is safe to write programmatic logic against the code. They are
+   * part of the API contract.
+   */
+  readonly code?: string;
   /**
    * An array of {@link QueryFailure} conveying the root cause of an _invalid query_.
    * QueryFailure are detected _before runtime_ - when your query is analyzed for correctness
@@ -77,8 +77,8 @@ export class QueryError extends Error {
   readonly trace?: Array<Span>;
 
   constructor(error: {
-    code: string;
-    message: string;
+    code?: string;
+    message?: string;
     statusCode: number;
     failures?: Array<QueryFailure>;
     txn_time?: string;
@@ -93,7 +93,9 @@ export class QueryError extends Error {
     }
 
     this.name = "QueryError";
-    this.code = error.code;
+    if (error.code) {
+      this.code = error.code;
+    }
     this.statusCode = error.statusCode;
     if (error.failures) {
       this.failures = error.failures;
@@ -111,24 +113,18 @@ export class QueryError extends Error {
 }
 
 /**
- * An error representing a failure internal to the client.
+ * An error representing a failure internal to the client, itself.
+ * This indicates Fauna was never called - the client failed internally
+ * prior to sending the qreuest.
  */
-export class InternalClientError extends Error {
-  /**
-   * The HTTP Status Code of the error, if applicable.
-   */
-  readonly statusCode?: number;
-  //readonly cause: any;
-
+export class ClientError extends Error {
   constructor(message: string, options: { cause: any }) {
-    // @ts-ignore TODO figure out why this won't compile properly. Seems
-    // to be using ES5's error constructor rather than ES6's.
     super(message, options);
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, InternalClientError);
+      Error.captureStackTrace(this, ClientError);
     }
-    this.name = "InternalClientError";
+    this.name = "ClientError";
   }
 }
 

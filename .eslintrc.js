@@ -16,9 +16,6 @@ module.exports = {
   plugins: ["@typescript-eslint", "eslint-plugin-tsdoc"],
   rules: {
     "@typescript-eslint/no-explicit-any": ["off"],
-    // TODO take this out when the compilation of the new
-    // ES6 error constructor is fixed.
-    "@typescript-eslint/ban-ts-comment": ["off"],
     "tsdoc/syntax": "error",
   },
 };

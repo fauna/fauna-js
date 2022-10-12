@@ -1,6 +1,6 @@
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
-import { InternalClientError, QueryError } from "../../src/wire-protocol";
+import { ClientError, QueryError } from "../../src/wire-protocol";
 import { env } from "process";
 
 const client = new Client({
@@ -41,7 +41,7 @@ describe("query", () => {
     }
   });
 
-  it("throws a InternalClientError if the client fails.", async () => {
+  it("throws a ClientError if the client fails.", async () => {
     expect.assertions(3);
     const myBadClient = new Client({
       endpoint: new URL("http://localhost:1"),
@@ -52,10 +52,11 @@ describe("query", () => {
     try {
       await myBadClient.query<number>({ query: '"taco".length;' });
     } catch (e) {
-      expect(e instanceof InternalClientError).toBe(true);
-      if (e instanceof InternalClientError) {
-        expect(e.message).toEqual("Unknown InternalClientError");
-        // @ts-ignore
+      expect(e instanceof ClientError).toBe(true);
+      if (e instanceof ClientError) {
+        expect(e.message).toEqual(
+          "A client level error occurred. Fauna was not called."
+        );
         expect(e.cause).not.toBeUndefined();
       }
     }

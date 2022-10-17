@@ -372,7 +372,7 @@ export interface QueryFailure {
 }
 
 /**
- * A source span indicating a segemnt of FQL.
+ * A source span indicating a segment of FQL.
  */
 export interface Span {
   /**

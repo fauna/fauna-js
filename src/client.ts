@@ -7,7 +7,6 @@ import {
   type QueryRequest,
   type QueryResponse,
 } from "./wire-protocol";
-//const Agent = require("agentkeepalive");
 
 /**
  * Client for calling Fauna.

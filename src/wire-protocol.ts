@@ -21,7 +21,7 @@ export interface QueryResponse<T> {
    */
   data: T;
   /** Stats on query performance and cost */
-  stats: any;
+  stats: { [key: string]: number };
   /** The last transaction time of the query. An ISO-8601 date string. */
   txn_time: string;
 }
@@ -29,40 +29,60 @@ export interface QueryResponse<T> {
 /**
  * An error representing a query failure returned by Fauna.
  */
-export class QueryError extends Error {
+export class ServiceError extends Error {
   /**
    * The HTTP Status Code of the error.
-   * A 400 \>= statusCode \<= 499 indicate a client-side problem with the request.
-   * A statusCode \>= 500 indicate a server side error.
    */
-  readonly statusCode: number;
+  readonly httpStatus: number;
   /**
    * A code for the error. Codes indicate the cause of the error.
    * It is safe to write programmatic logic against the code. They are
    * part of the API contract.
    */
-  readonly code?: string;
+  readonly code: string;
   /**
-   * An array of {@link QueryFailure} conveying the root cause of an _invalid query_.
-   * QueryFailure are detected _before runtime_ - when your query is analyzed for correctness
-   * prior to execution.
-   * Present only for client-side problems caused by submitting malformed queries.
-   * See {@link TODO} for a list of statsuCode and code associated with failures.
-   * @example
-   * ### This query is invalid as semicolons are not valid syntax.
-   * ```
-   * "taco".length;
-   * ```
+   * A summary of the error in a human readable form. Only present
+   * where message does not suffice.
    */
-  readonly failures?: Array<QueryFailure>;
+  readonly summary?: string;
+
+  constructor(error: {
+    code: string;
+    message: string;
+    httpStatus: number;
+    summary?: string;
+  }) {
+    super(error.message);
+
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ServiceError);
+    }
+
+    this.name = "ServiceError";
+    this.code = error.code;
+    this.httpStatus = error.httpStatus;
+    if (error.summary) {
+      this.summary = error.summary;
+    }
+  }
+}
+
+/**
+ * An error response that is the result of the query failing during execution.
+ * QueryRuntimeError's occur when a bug in your query causes an invalid execution
+ * to be requested.
+ * The 'code' field will vary based on the specific error cause.
+ */
+export class QueryRuntimeError extends ServiceError {
   /**
    * The transaction time of the failed query.
    */
-  readonly txn_time?: string;
+  readonly txn_time: string;
   /**
-   * Further statistics regarding the query.
+   * Statistics regarding the query.
    */
-  readonly stats?: any;
+  readonly stats: { [key: string]: number };
   /**
    * An array of {@link Span} conveying the root cause of a _runtime_ problem with a query.
    * Present only for client-side problems caused by submitting queries that encounter
@@ -74,41 +94,198 @@ export class QueryError extends Error {
    * User.all.take("bad")
    * ```
    */
-  readonly trace?: Array<Span>;
+  readonly trace: Array<Span>;
 
   constructor(error: {
-    code?: string;
-    message?: string;
-    statusCode: number;
-    failures?: Array<QueryFailure>;
-    txn_time?: string;
-    stats?: any;
-    trace?: Array<Span>;
+    code: string;
+    message: string;
+    httpStatus: 400;
+    summary?: string;
+    trace: Span[];
+    stats: { [key: string]: number };
+    txn_time: string;
   }) {
-    super(error.message);
-
-    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    const { trace, stats, txn_time, ...props } = error;
+    super(props);
     if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, QueryError);
+      Error.captureStackTrace(this, QueryRuntimeError);
     }
+    this.name = "QueryRuntimeError";
+    this.trace = trace;
+    this.stats = stats;
+    this.txn_time = txn_time;
+  }
+}
 
-    this.name = "QueryError";
-    if (error.code) {
-      this.code = error.code;
+/**
+ * An error due to a "compile-time" check of the query
+ * failing.
+ */
+export class QueryCheckError extends ServiceError {
+  /**
+   * The transaction time of the failed query.
+   */
+  readonly txn_time: string;
+  /**
+   * Statistics regarding the query.
+   */
+  readonly stats: { [key: string]: number };
+  /**
+   * An array of {@link QueryFailure} conveying the root cause of an _invalid query_.
+   * QueryFailure are detected _before runtime_ - when your query is analyzed for correctness
+   * prior to execution.
+   * Present only for client-side problems caused by submitting malformed queries.
+   * See {@link TODO} for a list of statsuCode and code associated with failures.
+   * @example
+   * ### This query is invalid as semicolons are not valid syntax.
+   * ```
+p   * "taco".length;
+   * ```
+   */
+  readonly failures: Array<QueryFailure>;
+
+  constructor(error: {
+    code: string;
+    message: string;
+    httpStatus: 400;
+    summary?: string;
+    failures: QueryFailure[];
+    stats: { [key: string]: number };
+    txn_time: string;
+  }) {
+    const { failures, stats, txn_time, ...props } = error;
+    super(props);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, QueryCheckError);
     }
-    this.statusCode = error.statusCode;
-    if (error.failures) {
-      this.failures = error.failures;
+    this.name = "QueryCheckError";
+    this.failures = failures;
+    this.stats = stats;
+    this.txn_time = txn_time;
+  }
+}
+
+/**
+ * A failure due to the timeout being exceeded, but the timeout
+ * was set lower than the query's expected processing time.
+ * This response is distinguished from a ServiceTimeoutException
+ * in that a QueryTimeoutError shows Fauna behaving in an expected
+ * manner.
+ */
+export class QueryTimeoutError extends ServiceError {
+  /**
+   * Statistics regarding the query.
+   */
+  readonly stats: { [key: string]: number };
+
+  constructor(error: {
+    code: string;
+    message: string;
+    httpStatus: 440;
+    summary?: string;
+    stats: { [key: string]: number };
+  }) {
+    const { stats, ...props } = error;
+    super(props);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, QueryTimeoutError);
     }
-    if (error.txn_time) {
-      this.txn_time = error.txn_time;
+    this.name = "QueryTimeoutError";
+    this.stats = stats;
+  }
+}
+
+/**
+ * AuthenticationError indicates invalid credentials were
+ * used.
+ */
+export class AuthenticationError extends ServiceError {
+  constructor(error: {
+    code: string;
+    message: string;
+    httpStatus: 401;
+    summary?: string;
+  }) {
+    super(error);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, AuthenticationError);
     }
-    if (error.stats) {
-      this.stats = error.stats;
+    this.name = "AuthenticationError";
+  }
+}
+
+/**
+ * AuthorizationError indicates the credentials used do not have
+ * permission to perform the requested action.
+ */
+export class AuthorizationError extends ServiceError {
+  constructor(error: {
+    code: string;
+    message: string;
+    httpStatus: 403;
+    summary?: string;
+  }) {
+    super(error);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, AuthorizationError);
     }
-    if (error.trace) {
-      this.trace = error.trace;
+    this.name = "AuthorizationError";
+  }
+}
+
+/**
+ * ThrottlingError indicates some capacity limit was exceeded
+ * and thus the request could not be served.
+ */
+export class ThrottlingError extends ServiceError {
+  constructor(error: {
+    code: string;
+    message: string;
+    httpStatus: 429;
+    summary?: string;
+  }) {
+    super(error);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ThrottlingError);
     }
+    this.name = "ThrottlingError";
+  }
+}
+
+/**
+ * ServiceInternalError indicates Fauna failed unexpectedly.
+ */
+export class ServiceInternalError extends ServiceError {
+  constructor(error: {
+    code: string;
+    message: string;
+    httpStatus: 500;
+    summary?: string;
+  }) {
+    super(error);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ServiceInternalError);
+    }
+    this.name = "ServiceInternalError";
+  }
+}
+
+/**
+ * ServiceTimeoutError indicates Fauna was not available to servce
+ * the request before the timeout was reached.
+ */
+export class ServiceTimeoutError extends ServiceError {
+  constructor(error: {
+    code: string;
+    message: string;
+    httpStatus: 503;
+    summary?: string;
+  }) {
+    super(error);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ServiceTimeoutError);
+    }
+    this.name = "ServiceTimeoutError";
   }
 }
 
@@ -125,6 +302,44 @@ export class ClientError extends Error {
       Error.captureStackTrace(this, ClientError);
     }
     this.name = "ClientError";
+  }
+}
+
+/**
+ * An error representing a failure due to the network.
+ * This indicates Fauna was never reached.
+ */
+export class NetworkError extends Error {
+  constructor(message: string, options: { cause: any }) {
+    super(message, options);
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, NetworkError);
+    }
+    this.name = "NetworkError";
+  }
+}
+
+/**
+ * An error representing a HTTP failure - but one not directly
+ * emitted by Fauna.
+ */
+export class ProtocolError extends Error {
+  /**
+   * The HTTP Status Code of the error.
+   */
+  readonly httpStatus: number;
+
+  constructor(error: { message: string; httpStatus: number }) {
+    super(error.message);
+
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ProtocolError);
+    }
+
+    this.name = "ProtocolError";
+    this.httpStatus = error.httpStatus;
   }
 }
 

@@ -3,7 +3,7 @@ import type { ClientConfiguration } from "./client-configuration";
 import Agent, { HttpsAgent } from "agentkeepalive";
 import {
   ClientError,
-  QueryError,
+  ServiceError,
   type QueryRequest,
   type QueryResponse,
 } from "./wire-protocol";
@@ -79,9 +79,9 @@ export class Client {
     } catch (e: any) {
       // see: https://axios-http.com/docs/handling_errors
       if (e.response) {
-        throw new QueryError({
+        throw new ServiceError({
           ...(e.response?.data?.error || { message: e.message }),
-          statusCode: e.response.status,
+          httpStatus: e.response.status,
         });
       }
       throw new ClientError(

@@ -1,6 +1,6 @@
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
-import { ClientError, QueryError } from "../../src/wire-protocol";
+import { ClientError, ServiceError } from "../../src/wire-protocol";
 import { env } from "process";
 
 const client = new Client({
@@ -18,25 +18,22 @@ describe("query", () => {
   });
 
   it("throws a QueryError if the query is invalid", async () => {
-    expect.assertions(8);
+    expect.assertions(5);
     try {
       await client.query<number>({ query: '"taco".length;' });
     } catch (e) {
-      expect(e instanceof QueryError).toBe(true);
-      if (e instanceof QueryError) {
+      expect(e instanceof ServiceError).toBe(true);
+      if (e instanceof ServiceError) {
         expect(e.message).toEqual("The query failed 1 validation check");
         expect(e.code).toEqual("invalid_query");
-        expect(e.statusCode).toEqual(400);
-        expect(e.failures).toEqual([
-          {
-            code: "invalid_syntax",
-            message:
-              'Expected ([ \\t\\n\\r] | lineComment | blockComment | end-of-input):1:14, found ";"',
-          },
-        ]);
-        expect(e.txn_time).toBeUndefined();
-        expect(e.stats).toBeUndefined();
-        expect(e.trace).toBeUndefined();
+        expect(e.httpStatus).toEqual(400);
+        expect(e.summary).toEqual(
+          'invalid_syntax: Expected ([ \\t\\n\\r] | lineComment | blockComment | end-of-input):1:14, found ";"\n' +
+            "  |\n" +
+            '1 | "taco".length;\n' +
+            '  |              ^ Expected ([ \\t\\n\\r] | lineComment | blockComment | end-of-input):1:14, found ";"\n' +
+            "  |"
+        );
       }
     }
   });

@@ -1,8 +1,9 @@
 import axios, { type Axios } from "axios";
-import Agent, { HttpsAgent } from "agentkeepalive";
 import type { ClientConfiguration } from "./client-configuration";
+import Agent, { HttpsAgent } from "agentkeepalive";
 import {
-  QueryError,
+  ClientError,
+  ServiceError,
   type QueryRequest,
   type QueryResponse,
 } from "./wire-protocol";
@@ -43,7 +44,7 @@ export class Client {
       // side idle timeout of 5 seconds.
       freeSocketTimeout: 4000,
     };
-    let httpAgents;
+    let httpAgents: { httpAgent: Agent } | { httpsAgent: HttpsAgent };
     if (this.clientConfiguration.endpoint.protocol === "http") {
       httpAgents = { httpAgent: new Agent(agentSettings) };
     } else {
@@ -63,7 +64,9 @@ export class Client {
    * Queries Fauna.
    * @param queryRequest - the {@link QueryRequest}
    * @returns A {@link QueryResponse}.
-   * @throws A {@link QueryError} if the request cannnot be completed.
+   * @throws A {@link QueryError} if an error is returned by Fauna.
+   * @throws A {@link ClientError} the client fails to submit the request
+   * due to an internal error.
    */
   async query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
     try {
@@ -72,8 +75,20 @@ export class Client {
         queryRequest
       );
       return result.data;
-    } catch (e) {
-      throw new QueryError("Query failed.");
+    } catch (e: any) {
+      // see: https://axios-http.com/docs/handling_errors
+      if (e.response) {
+        throw new ServiceError({
+          ...(e.response?.data?.error || { message: e.message }),
+          httpStatus: e.response.status,
+        });
+      }
+      throw new ClientError(
+        "A client level error occurred. Fauna was not called.",
+        {
+          cause: e,
+        }
+      );
     }
   }
 }

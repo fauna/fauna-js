@@ -75,45 +75,19 @@ export class ServiceError extends Error {
  * The 'code' field will vary based on the specific error cause.
  */
 export class QueryRuntimeError extends ServiceError {
-  /**
-   * The transaction time of the failed query.
-   */
-  readonly txn_time: string;
-  /**
-   * Statistics regarding the query.
-   */
-  readonly stats: { [key: string]: number };
-  /**
-   * An array of {@link Span} conveying the root cause of a _runtime_ problem with a query.
-   * Present only for client-side problems caused by submitting queries that encounter
-   * runtime problems.
-   * See {@link TODO} for a list of statusCodes and codes associated with failures.
-   * @example
-   * ### A runtime problem is encountered by this query as "bad" is not an int.
-   * ```
-   * User.all.take("bad")
-   * ```
-   */
-  readonly trace: Array<Span>;
-
   constructor(error: {
     code: string;
     message: string;
     httpStatus: 400;
     summary?: string;
-    trace: Span[];
-    stats: { [key: string]: number };
-    txn_time: string;
   }) {
-    const { trace, stats, txn_time, ...props } = error;
-    super(props);
+    super(error);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryRuntimeError);
     }
     this.name = "QueryRuntimeError";
-    this.trace = trace;
-    this.stats = stats;
-    this.txn_time = txn_time;
+    // TODO trace, txn_time, and stats not yet returned for QueryRuntimeError
+    // flip to check for those rather than a specific code.
   }
 }
 
@@ -123,16 +97,8 @@ export class QueryRuntimeError extends ServiceError {
  */
 export class QueryCheckError extends ServiceError {
   /**
-   * The transaction time of the failed query.
-   */
-  readonly txn_time: string;
-  /**
-   * Statistics regarding the query.
-   */
-  readonly stats: { [key: string]: number };
-  /**
-   * An array of {@link QueryFailure} conveying the root cause of an _invalid query_.
-   * QueryFailure are detected _before runtime_ - when your query is analyzed for correctness
+   * An array of {@link QueryCheckFailure} conveying the root cause of an _invalid query_.
+   * QueryCheckFailure are detected _before runtime_ - when your query is analyzed for correctness
    * prior to execution.
    * Present only for client-side problems caused by submitting malformed queries.
    * See {@link TODO} for a list of statsuCode and code associated with failures.
@@ -142,26 +108,22 @@ export class QueryCheckError extends ServiceError {
 p   * "taco".length;
    * ```
    */
-  readonly failures: Array<QueryFailure>;
+  readonly failures: Array<QueryCheckFailure>;
 
   constructor(error: {
     code: string;
     message: string;
     httpStatus: 400;
     summary?: string;
-    failures: QueryFailure[];
-    stats: { [key: string]: number };
-    txn_time: string;
+    failures: QueryCheckFailure[];
   }) {
-    const { failures, stats, txn_time, ...props } = error;
+    const { failures, ...props } = error;
     super(props);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryCheckError);
     }
     this.name = "QueryCheckError";
     this.failures = failures;
-    this.stats = stats;
-    this.txn_time = txn_time;
   }
 }
 
@@ -344,31 +306,31 @@ export class ProtocolError extends Error {
 }
 
 /**
- * QueryFailure represents the cause of a pre-execution problem with the query.
+ * QueryCheckFailure represents the cause of a pre-execution problem with the query.
  * For example, if a query has malformed syntax the error thrown by the API will
- * include a QueryFailure indicating where this syntax error is.
+ * include a QueryCheckFailure indicating where this syntax error is.
  */
-export interface QueryFailure {
+export interface QueryCheckFailure {
   /**
-   * A predefined code indicating the type of QueryFailure.
+   * A predefined code indicating the type of QueryCheckFailure.
    * See the docs at {@link todo} for a list of codes.
    * Safe for programmatic use.
    */
   readonly code: string;
   /**
-   * A short, human readable description of the QueryFailure.
+   * A short, human readable description of the QueryCheckFailure.
    * Not intended for programmatic use.
    */
   readonly message: string;
   /**
-   * Further detail about the QueryFailure. Intended to be displayed as an
+   * Further detail about the QueryCheckFailure. Intended to be displayed as an
    * in-line annotation of the error location.
    */
-  readonly annotation: string;
+  readonly annotation?: string;
   /**
-   * A source span indicating a segment of FQL. Indicates where the QueryFailure occured.
+   * A source span indicating a segment of FQL. Indicates where the QueryCheckFailure occured.
    */
-  readonly location: Span;
+  readonly location?: Span;
 }
 
 /**

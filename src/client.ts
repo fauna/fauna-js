@@ -120,7 +120,7 @@ export class Client {
       // see: https://axios-http.com/docs/handling_errors
       if (e.response) {
         // we got an error from the fauna service
-        if (e.response.data.error) {
+        if (e.response.data?.error) {
           throw this.#getServiceError(e.response.data.error, e.response.status);
         }
         // we got a different error from the protocol layer

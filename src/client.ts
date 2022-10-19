@@ -1,4 +1,4 @@
-import axios, { type Axios } from "axios";
+import axios, { AxiosInstance } from "axios";
 import type { ClientConfiguration } from "./client-configuration";
 import Agent, { HttpsAgent } from "agentkeepalive";
 import {
@@ -20,9 +20,11 @@ import {
   type QueryResponse,
 } from "./wire-protocol";
 
-const nodeNetworkErrorCodes = [
+const nodeOrAxiosNetworkErrorCodes = [
+  "ECONNABORTED",
   "ECONNREFUSED",
   "ECONNRESET",
+  "ERR_NETWORK",
   "ETIMEDOUT",
   // axios does not yet support http2, but preparing
   // in case we move to a library that does or axios
@@ -43,8 +45,8 @@ const nodeNetworkErrorCodes = [
 export class Client {
   /** The {@link ClientConfiguration} */
   readonly clientConfiguration: ClientConfiguration;
-  /** The underlying {@link Axios} client. */
-  readonly client: Axios;
+  /** The underlying {@link AxiosInstance} client. */
+  readonly client: AxiosInstance;
 
   /**
    * Constructs a new {@link Client}.
@@ -129,12 +131,14 @@ export class Client {
       }
       // we're in the browser dealing with an XMLHttpRequest that was never sent
       // OR we're in node dealing with an HTTPClient.Request that never connected
-      // OR node hit a network connection problem at a lower level,
+      // OR node or axios hit a network connection problem at a lower level,
+      // OR axios threw a network error
       // see: https://nodejs.org/api/errors.html#nodejs-error-codes
       if (
         e.request?.status === 0 ||
         e.request?.socket?.connecting ||
-        nodeNetworkErrorCodes.includes(e.code)
+        nodeOrAxiosNetworkErrorCodes.includes(e.code) ||
+        "Network Error" === e.message
       ) {
         throw new NetworkError(
           "The network connection encountered a problem.",
@@ -178,13 +182,9 @@ export class Client {
     if (httpStatus === 429) {
       return new ThrottlingError({ httpStatus, ...error });
     }
-    if (httpStatus === 440 && error.stats !== undefined) {
-      // explicitly name stats appease the ts-compiler
-      return new QueryTimeoutError({
-        httpStatus,
-        ...error,
-        stats: error.stats,
-      });
+    if (httpStatus === 440) {
+      // TODO stats not yet returned. Include it when it is.
+      return new QueryTimeoutError({ httpStatus, ...error });
     }
     // TODO trace, txn_time, and stats not yet returned for QueryRuntimeError
     // flip to check for those rather than a specific code.
@@ -199,7 +199,6 @@ export class Client {
         failures: error.failures,
       });
     }
-    console.log(error);
     return new ServiceError({ httpStatus, ...error });
   }
 }

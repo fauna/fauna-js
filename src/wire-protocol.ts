@@ -138,14 +138,15 @@ export class QueryTimeoutError extends ServiceError {
   /**
    * Statistics regarding the query.
    */
-  readonly stats: { [key: string]: number };
+  readonly stats?: { [key: string]: number };
 
   constructor(error: {
     code: string;
     message: string;
     httpStatus: 440;
     summary?: string;
-    stats: { [key: string]: number };
+    // TODO stats not yet supported in API
+    stats?: { [key: string]: number };
   }) {
     const { stats, ...props } = error;
     super(props);
@@ -153,7 +154,9 @@ export class QueryTimeoutError extends ServiceError {
       Error.captureStackTrace(this, QueryTimeoutError);
     }
     this.name = "QueryTimeoutError";
-    this.stats = stats;
+    if (stats) {
+      this.stats = stats;
+    }
   }
 }
 

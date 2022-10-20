@@ -28,6 +28,8 @@ export class Client {
   readonly clientConfiguration: ClientConfiguration;
   /** The underlying {@link AxiosInstance} client. */
   readonly client: AxiosInstance;
+  /** last_txn this client has seen */
+  #lastTxn?: Date;
 
   /**
    * Constructs a new {@link Client}.
@@ -90,7 +92,7 @@ export class Client {
    */
   async query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
     const { query } = queryRequest;
-    const headers = {};
+    const headers: { [key: string]: string } = {};
     this.#setHeaders(queryRequest, headers);
     try {
       const result = await this.client.post<QueryResponse<T>>(
@@ -98,6 +100,10 @@ export class Client {
         { query },
         { headers }
       );
+      const txnDate = new Date(result.data.txn_time);
+      if (this.#lastTxn === undefined || this.#lastTxn < txnDate) {
+        this.#lastTxn = txnDate;
+      }
       return result.data;
     } catch (e: any) {
       throw this.#getError(e);
@@ -192,6 +198,7 @@ export class Client {
     for (const entry of Object.entries(fromObject)) {
       if (
         [
+          "last_txn",
           "timeout_ms",
           "linearized",
           "max_contention_retries",
@@ -219,6 +226,12 @@ export class Client {
         headerObject[headerKey] = headerValue;
       }
     }
+    if (
+      headerObject["x-last-txn"] === undefined &&
+      this.#lastTxn !== undefined
+    ) {
+      headerObject["x-last-txn"] = this.#lastTxn.toISOString();
+    }
   }
 }
 
@@ -242,6 +255,7 @@ const nodeOrAxiosNetworkErrorCodes = [
 ];
 
 interface RequestHeaders {
+  last_txn?: string;
   linearized?: boolean;
   timeout_ms?: number;
   max_contention_retries?: number;

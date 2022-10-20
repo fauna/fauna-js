@@ -19,9 +19,9 @@ describe("query", () => {
   beforeAll(() => {
     client = new Client({
       endpoint: endpoints.local,
-      maxConns: 5,
+      max_conns: 5,
       secret: "seekrit",
-      queryTimeoutMillis: 60,
+      timeout_ms: 60,
     });
     mockAxios = new MockAdapter(client.client);
   });

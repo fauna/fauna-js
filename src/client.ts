@@ -66,10 +66,10 @@ export class Client {
     this.clientConfiguration = clientConfiguration;
     // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
     // terminate connections on active queries.
-    const timeout = this.clientConfiguration.queryTimeoutMillis + 10_000;
+    const timeout = this.clientConfiguration.timeout_ms + 10_000;
     const agentSettings = {
-      maxSockets: this.clientConfiguration.maxConns,
-      maxFreeSockets: this.clientConfiguration.maxConns,
+      maxSockets: this.clientConfiguration.max_conns,
+      maxFreeSockets: this.clientConfiguration.max_conns,
       timeout,
       // release socket for usage after 4s of inactivity. Must be less than Fauna's server
       // side idle timeout of 5 seconds.
@@ -89,6 +89,8 @@ export class Client {
     this.client.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${this.clientConfiguration.secret}`;
+    this.client.defaults.headers.common["Content-Type"] = "application/json";
+    this.#setHeaders(clientConfiguration, this.client.defaults.headers.common);
   }
 
   /**
@@ -110,10 +112,13 @@ export class Client {
    * due to an internal error.
    */
   async query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
+    const headers = {};
+    this.#setHeaders(queryRequest, headers);
     try {
       const result = await this.client.post<QueryResponse<T>>(
         "/query/1",
-        queryRequest
+        queryRequest,
+        { headers }
       );
       return result.data;
     } catch (e: any) {
@@ -200,5 +205,31 @@ export class Client {
       });
     }
     return new ServiceError({ httpStatus, ...error });
+  }
+
+  #setHeaders(fromObject: { [key: string]: any }, headerObject: any): void {
+    for (const entry of Object.entries(fromObject)) {
+      if (
+        [
+          "timeout_ms",
+          "linearized",
+          "max_contention_retries",
+          "traceparent",
+          "tags",
+        ].includes(entry[0])
+      ) {
+        let headerKey = `x-${entry[0].replaceAll("_", "-")}`;
+        let headerValue = entry[1];
+        if ("tags" === entry[0]) {
+          headerKey = "x-fauna-tags";
+          headerValue = Object.entries(entry[1])
+            .map((tag) => tag.join("="))
+            .join(",");
+        } else if ("traceparent" === entry[0]) {
+          headerKey = entry[0];
+        }
+        headerObject[headerKey] = headerValue;
+      }
+    }
   }
 }

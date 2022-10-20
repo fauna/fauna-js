@@ -9,17 +9,37 @@ export interface ClientConfiguration {
   /**
    * The maximum number of connections to a make to Fauna.
    */
-  maxConns: number;
+  max_conns: number;
   /**
    * A secret for your Fauna DB, used to authorize your queries.
    * @see https://docs.fauna.com/fauna/current/security/keys
    */
   secret: string;
   /**
-   * The timeout of the query, in milliseconds. This controls the maximum amount of
+   * The timeout of each query, in milliseconds. This controls the maximum amount of
    * time Fauna will execute your query before marking it failed.
    */
-  queryTimeoutMillis: number;
+  timeout_ms: number;
+  /**
+   * If true, unconditionally run the query as strictly serialized.
+   * This affects read-only transactions. Transactions which write
+   * will always be strictly serialized.
+   */
+  linearized?: boolean;
+  /**
+   * The max number of times to retry the query if contention is encountered.
+   */
+  max_contention_retries?: number;
+
+  /**
+   * Tags provided back via logging and telemetry.
+   */
+  tags?: { [key: string]: string };
+  /**
+   * A traceparent provided back via logging and telemetry.
+   * Must match format: https://www.w3.org/TR/trace-context/#traceparent-header
+   */
+  traceparent?: string;
 }
 
 /**

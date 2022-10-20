@@ -12,9 +12,9 @@ import { env } from "process";
 
 const client = new Client({
   endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
-  maxConns: 5,
+  max_conns: 5,
   secret: env["secret"] || "secret",
-  queryTimeoutMillis: 60,
+  timeout_ms: 60,
 });
 
 describe("query", () => {
@@ -76,9 +76,9 @@ describe("query", () => {
     expect.assertions(4);
     const badClient = new Client({
       endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
-      maxConns: 5,
+      max_conns: 5,
       secret: "nah",
-      queryTimeoutMillis: 60,
+      timeout_ms: 60,
     });
     try {
       await badClient.query<number>({ query: '"taco".length' });
@@ -100,9 +100,9 @@ describe("query", () => {
     expect.assertions(2);
     const myBadClient = new Client({
       endpoint: new URL("http://localhost:1"),
-      maxConns: 1,
+      max_conns: 1,
       secret: "secret",
-      queryTimeoutMillis: 60,
+      timeout_ms: 60,
     });
     try {
       await myBadClient.query<number>({ query: '"taco".length;' });
@@ -120,9 +120,9 @@ describe("query", () => {
     expect.assertions(2);
     const myBadClient = new Client({
       endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
-      maxConns: 5,
+      max_conns: 5,
       secret: env["secret"] || "secret",
-      queryTimeoutMillis: 60,
+      timeout_ms: 60,
     });
     myBadClient.client.post = () => {
       throw new Error("boom!");
@@ -143,9 +143,9 @@ describe("query", () => {
     expect.assertions(2);
     const badClient = new Client({
       endpoint: new URL("https://frontdoor.fauna.com/"),
-      maxConns: 5,
+      max_conns: 5,
       secret: "nah",
-      queryTimeoutMillis: 60,
+      timeout_ms: 60,
     });
     try {
       await badClient.query({ query: "foo" });

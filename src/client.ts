@@ -20,25 +20,6 @@ import {
   type QueryResponse,
 } from "./wire-protocol";
 
-const nodeOrAxiosNetworkErrorCodes = [
-  "ECONNABORTED",
-  "ECONNREFUSED",
-  "ECONNRESET",
-  "ERR_NETWORK",
-  "ETIMEDOUT",
-  // axios does not yet support http2, but preparing
-  // in case we move to a library that does or axios
-  // adds in support.
-  "ERR_HTTP_REQUEST_TIMEOUT",
-  "ERR_HTTP2_GOAWAY_SESSION",
-  "ERR_HTTP2_INVALID_SESSION",
-  "ERR_HTTP2_INVALID_STREAM",
-  "ERR_HTTP2_OUT_OF_STREAMS",
-  "ERR_HTTP2_SESSION_ERROR",
-  "ERR_HTTP2_STREAM_CANCEL",
-  "ERR_HTTP2_STREAM_ERROR",
-];
-
 /**
  * Client for calling Fauna.
  */
@@ -112,52 +93,56 @@ export class Client {
    * due to an internal error.
    */
   async query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
+    const { query } = queryRequest;
     const headers = {};
     this.#setHeaders(queryRequest, headers);
     try {
       const result = await this.client.post<QueryResponse<T>>(
         "/query/1",
-        queryRequest,
+        { query },
         { headers }
       );
       return result.data;
     } catch (e: any) {
-      // see: https://axios-http.com/docs/handling_errors
-      if (e.response) {
-        // we got an error from the fauna service
-        if (e.response.data?.error) {
-          throw this.#getServiceError(e.response.data.error, e.response.status);
-        }
-        // we got a different error from the protocol layer
-        throw new ProtocolError({
-          message: e.message,
-          httpStatus: e.response.status,
-        });
-      }
-      // we're in the browser dealing with an XMLHttpRequest that was never sent
-      // OR we're in node dealing with an HTTPClient.Request that never connected
-      // OR node or axios hit a network connection problem at a lower level,
-      // OR axios threw a network error
-      // see: https://nodejs.org/api/errors.html#nodejs-error-codes
-      if (
-        e.request?.status === 0 ||
-        e.request?.socket?.connecting ||
-        nodeOrAxiosNetworkErrorCodes.includes(e.code) ||
-        "Network Error" === e.message
-      ) {
-        throw new NetworkError(
-          "The network connection encountered a problem.",
-          { cause: e }
-        );
-      }
-      // unknown error
-      throw new ClientError(
-        "A client level error occurred. Fauna was not called.",
-        {
-          cause: e,
-        }
-      );
+      throw this.#getError(e);
     }
+  }
+
+  #getError(e: any): ServiceError | ProtocolError | NetworkError | ClientError {
+    // see: https://axios-http.com/docs/handling_errors
+    if (e.response) {
+      // we got an error from the fauna service
+      if (e.response.data?.error) {
+        return this.#getServiceError(e.response.data.error, e.response.status);
+      }
+      // we got a different error from the protocol layer
+      return new ProtocolError({
+        message: e.message,
+        httpStatus: e.response.status,
+      });
+    }
+    // we're in the browser dealing with an XMLHttpRequest that was never sent
+    // OR we're in node dealing with an HTTPClient.Request that never connected
+    // OR node or axios hit a network connection problem at a lower level,
+    // OR axios threw a network error
+    // see: https://nodejs.org/api/errors.html#nodejs-error-codes
+    if (
+      e.request?.status === 0 ||
+      e.request?.socket?.connecting ||
+      nodeOrAxiosNetworkErrorCodes.includes(e.code) ||
+      "Network Error" === e.message
+    ) {
+      return new NetworkError("The network connection encountered a problem.", {
+        cause: e,
+      });
+    }
+    // unknown error
+    return new ClientError(
+      "A client level error occurred. Fauna was not called.",
+      {
+        cause: e,
+      }
+    );
   }
 
   #getServiceError(
@@ -207,7 +192,7 @@ export class Client {
     return new ServiceError({ httpStatus, ...error });
   }
 
-  #setHeaders(fromObject: { [key: string]: any }, headerObject: any): void {
+  #setHeaders(fromObject: RequestHeaders, headerObject: any): void {
     for (const entry of Object.entries(fromObject)) {
       if (
         [
@@ -218,18 +203,52 @@ export class Client {
           "tags",
         ].includes(entry[0])
       ) {
+        let headerValue;
         let headerKey = `x-${entry[0].replaceAll("_", "-")}`;
-        let headerValue = entry[1];
         if ("tags" === entry[0]) {
           headerKey = "x-fauna-tags";
           headerValue = Object.entries(entry[1])
             .map((tag) => tag.join("="))
             .join(",");
-        } else if ("traceparent" === entry[0]) {
+        } else {
+          if (typeof entry[1] === "string") {
+            headerValue = entry[1];
+          } else {
+            headerValue = String(entry[1]);
+          }
+        }
+        if ("traceparent" === entry[0]) {
           headerKey = entry[0];
         }
         headerObject[headerKey] = headerValue;
       }
     }
   }
+}
+
+const nodeOrAxiosNetworkErrorCodes = [
+  "ECONNABORTED",
+  "ECONNREFUSED",
+  "ECONNRESET",
+  "ERR_NETWORK",
+  "ETIMEDOUT",
+  // axios does not yet support http2, but preparing
+  // in case we move to a library that does or axios
+  // adds in support.
+  "ERR_HTTP_REQUEST_TIMEOUT",
+  "ERR_HTTP2_GOAWAY_SESSION",
+  "ERR_HTTP2_INVALID_SESSION",
+  "ERR_HTTP2_INVALID_STREAM",
+  "ERR_HTTP2_OUT_OF_STREAMS",
+  "ERR_HTTP2_SESSION_ERROR",
+  "ERR_HTTP2_STREAM_CANCEL",
+  "ERR_HTTP2_STREAM_ERROR",
+];
+
+interface RequestHeaders {
+  linearized?: boolean;
+  timeout_ms?: number;
+  max_contention_retries?: number;
+  tags?: { [key: string]: string };
+  traceparent?: string;
 }

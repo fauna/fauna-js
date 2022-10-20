@@ -1,11 +1,15 @@
 import { Client } from "../../src/client";
-import { endpoints } from "../../src/client-configuration";
+import {
+  type ClientConfiguration,
+  endpoints,
+} from "../../src/client-configuration";
 import {
   AuthenticationError,
   ClientError,
   NetworkError,
   ProtocolError,
   QueryCheckError,
+  type QueryRequest,
   QueryRuntimeError,
 } from "../../src/wire-protocol";
 import { env } from "process";
@@ -23,6 +27,61 @@ describe("query", () => {
     expect(result.txn_time).not.toBeUndefined();
     expect(result).toEqual({ data: 4, txn_time: result.txn_time });
   });
+
+  type HeaderTestInput = {
+    fieldName: "linearized" | "max_contention_retries" | "tags" | "traceparent";
+    fieldValue: any;
+    expectedHeader: string;
+  };
+
+  it.each`
+    fieldName                   | fieldValue                                                   | expectedHeader
+    ${"linearized"}             | ${false}                                                     | ${"x-linearized: false"}
+    ${"timeout_ms"}             | ${500}                                                       | ${"x-timeout-ms: 500"}
+    ${"max_contention_retries"} | ${3}                                                         | ${"x-max-contention-retries: 3"}
+    ${"tags"}                   | ${{ t1: "v1", t2: "v2" }}                                    | ${"x-fauna-tags: t1=v1,t2=v2"}
+    ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${"traceparent: 00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"}
+  `(
+    "respects QueryRequest field $fieldName over ClientConfiguration $fieldName",
+    async ({ fieldName, fieldValue, expectedHeader }: HeaderTestInput) => {
+      const clientConfiguration: ClientConfiguration = {
+        endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+        max_conns: 5,
+        secret: env["secret"] || "secret",
+        timeout_ms: 60,
+        linearized: true,
+        max_contention_retries: 7,
+        tags: { alpha: "beta", gamma: "delta" },
+        traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
+      };
+      const myClient = new Client(clientConfiguration);
+      const expectedHeaders: { [key: string]: string } = {
+        linearized: "x-linearized: true",
+        max_contention_retries: "x-max-contention-retries: 7",
+        tags: "x-fauna-tags: alpha=beta,gamma=delta",
+        traceparent:
+          "traceparent: 00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
+        timeout_ms: "x-timeout-ms: 60",
+      };
+      expectedHeaders[fieldName] = expectedHeader;
+      myClient.client.interceptors.response.use(function (response) {
+        expect(response.request?._header).not.toBeUndefined();
+        if (response.request?._header) {
+          Object.entries(expectedHeaders).forEach((entry) => {
+            expect(response.request?._header).toEqual(
+              expect.stringContaining(entry[1])
+            );
+          });
+        }
+        return response;
+      });
+      const queryRequest: QueryRequest = {
+        query: '"taco".length',
+        [fieldName]: fieldValue,
+      };
+      await myClient.query<number>(queryRequest);
+    }
+  );
 
   it("throws a QueryCheckError if the query is invalid", async () => {
     expect.assertions(5);

@@ -11,6 +11,7 @@ import {
   QueryCheckError,
   type QueryRequest,
   QueryRuntimeError,
+  QueryTimeoutError,
 } from "../../src/wire-protocol";
 import { env } from "process";
 
@@ -129,6 +130,32 @@ describe("query", () => {
         );
       }
     }
+  });
+
+  it("throws a QueryTimeoutError if the query times out", async () => {
+    expect.assertions(4);
+    const badClient = new Client({
+      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+      max_conns: 5,
+      secret: env["secret"] || "secret",
+      timeout_ms: 1,
+    });
+    try {
+      await badClient.query({ query: "Collection.create({ name: 'Wah' })" });
+    } catch (e) {
+      if (e instanceof QueryTimeoutError) {
+        expect(e.message).toEqual(
+          expect.stringContaining("aggressive deadline")
+        );
+        expect(e.httpStatus).toEqual(440);
+        expect(e.code).toEqual("time_out");
+      }
+    }
+    const actual = await client.query({
+      query: "Collection.byName('Wah')",
+      timeout_ms: 60_000,
+    });
+    expect(actual.data).toBeNull();
   });
 
   it("throws a AuthenticationError creds are invalid", async () => {

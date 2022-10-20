@@ -55,18 +55,14 @@ export class Client {
       // release socket for usage after 4s of inactivity. Must be less than Fauna's server
       // side idle timeout of 5 seconds.
       freeSocketTimeout: 4000,
+      keepAlive: true,
     };
-    let httpAgents: { httpAgent: Agent } | { httpsAgent: HttpsAgent };
-    if (this.clientConfiguration.endpoint.protocol === "http") {
-      httpAgents = { httpAgent: new Agent(agentSettings) };
-    } else {
-      httpAgents = { httpsAgent: new HttpsAgent(agentSettings) };
-    }
     this.client = axios.create({
       baseURL: this.clientConfiguration.endpoint.toString(),
       timeout,
-      ...httpAgents,
     });
+    this.client.defaults.httpAgent = new Agent(agentSettings);
+    this.client.defaults.httpsAgent = new HttpsAgent(agentSettings);
     this.client.defaults.headers.common[
       "Authorization"
     ] = `Bearer ${this.clientConfiguration.secret}`;

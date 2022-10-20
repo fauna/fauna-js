@@ -34,6 +34,29 @@ describe("query", () => {
     expectedHeader: string;
   };
 
+  it("Keeps alive the connection", async () => {
+    const clientConfiguration: ClientConfiguration = {
+      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+      max_conns: 5,
+      secret: env["secret"] || "secret",
+      timeout_ms: 60_000,
+    };
+    const myClient = new Client(clientConfiguration);
+    myClient.client.interceptors.response.use(function (response) {
+      expect(response.request?._header).not.toBeUndefined();
+      if (response.request?._header) {
+        expect(response.request?._header).toEqual(
+          expect.stringContaining("\nConnection: keep-alive")
+        );
+      }
+      return response;
+    });
+    const queryRequest: QueryRequest = {
+      query: '"taco".length',
+    };
+    await myClient.query<number>(queryRequest);
+  });
+
   it.each`
     fieldName                   | fieldValue                                                   | expectedHeader
     ${"linearized"}             | ${false}                                                     | ${"x-linearized: false"}

@@ -4,6 +4,35 @@
 export interface QueryRequest {
   /** The query. */
   query: string;
+  /**
+   * If true, unconditionally run the query as strictly serialized.
+   * This affects read-only transactions. Transactions which write
+   * will always be strictly serialized.
+   * Overrides the optional setting for the client.
+   */
+  linearized?: boolean;
+  /**
+   * The timeout to use in this query in milliseconds.
+   * Overrides the timeout for the client.
+   */
+  timeout_ms?: number;
+  /**
+   * The max number of times to retry the query if contention is encountered.
+   * Overrides the optional setting for the client.
+   */
+  max_contention_retries?: number;
+
+  /**
+   * Tags provided back via logging and telemetry.
+   * Overrides the optional setting on the client.
+   */
+  tags?: { [key: string]: string };
+  /**
+   * A traceparent provided back via logging and telemetry.
+   * Must match format: https://www.w3.org/TR/trace-context/#traceparent-header
+   * Overrides the optional setting for the client.
+   */
+  traceparent?: string;
 }
 
 /**

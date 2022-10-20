@@ -1,8 +1,8 @@
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
 
-describe("endpoints", () => {
-  it("is extensible", async () => {
+describe("ClientConfiguration", () => {
+  it("endpoints is extensible", async () => {
     endpoints["my-alternative-port"] = new URL("http://localhost:7443");
     expect(endpoints).toEqual({
       cloud: new URL("https://db.fauna.com"),
@@ -21,24 +21,30 @@ describe("endpoints", () => {
     expect(result).toEqual({ data: 4, txn_time: result.txn_time });
   });
 
+  type HeaderTestInput = {
+    fieldName: "linearized" | "max_contention_retries" | "tags" | "traceparent";
+    fieldValue: any;
+    expectedHeader: string;
+  };
+
   it.each`
-    configFieldName             | configFieldValue                                             | expectedHeader
+    fieldName                   | fieldValue                                                   | expectedHeader
     ${"linearized"}             | ${true}                                                      | ${"x-linearized: true"}
     ${"max_contention_retries"} | ${3}                                                         | ${"x-max-contention-retries: 3"}
     ${"tags"}                   | ${{ t1: "v1", t2: "v2" }}                                    | ${"x-fauna-tags: t1=v1,t2=v2"}
     ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${"traceparent: 00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"}
   `(
-    "Setting clientConfiguration $configFieldName leads to it being sent in headers",
-    async ({ configFieldName, configFieldValue, expectedHeader }) => {
-      // @ts-ignore
+    "Setting clientConfiguration $fieldName leads to it being sent in headers",
+    async ({ fieldName, fieldValue, expectedHeader }: HeaderTestInput) => {
       const client = new Client({
         endpoint: endpoints.local,
         max_conns: 5,
         secret: "secret",
         timeout_ms: 5000,
-        [configFieldName]: configFieldValue,
+        [fieldName]: fieldValue,
       });
       client.client.interceptors.response.use(function (response) {
+        expect(response.request?._header).not.toBeUndefined();
         if (response.request?._header) {
           expect(response.request._header).toEqual(
             expect.stringContaining("x-timeout-ms: 5000")

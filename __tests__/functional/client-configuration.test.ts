@@ -13,7 +13,7 @@ describe("ClientConfiguration", () => {
       endpoint: endpoints["my-alternative-port"],
       max_conns: 5,
       secret: "secret",
-      timeout_ms: 60,
+      timeout_ms: 60_000,
     });
     expect(client.client.defaults.baseURL).toEqual("http://localhost:7443/");
     const result = await client.query<number>({ query: '"taco".length' });

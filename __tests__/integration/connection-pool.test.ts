@@ -100,6 +100,70 @@ describe("Connection pool", () => {
     });
   });
 
+  it("Closes unused connections", async () => {
+    const client = new Client({
+      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+      max_conns: 5, // pool size 5
+      secret: env["secret"] || "secret",
+      timeout_ms: 60_000,
+    });
+    const host = client.clientConfiguration.endpoint.host;
+    const agentToTest =
+      client.clientConfiguration.endpoint.protocol === "http:"
+        ? client.client.defaults.httpAgent
+        : client.client.defaults.httpsAgent;
+
+    let requests = fireRequests(3, client);
+    // initially 3 sockets should be busy; no pending requests
+    // in the pool queue
+    expect(agentToTest.getCurrentStatus()).toMatchObject({
+      createSocketCount: 3,
+      closeSocketCount: 0,
+      timeoutSocketCount: 0,
+      requestCount: 0,
+      freeSockets: {},
+      sockets: { [`${host}:`]: 3 },
+      requests: {},
+    });
+    await Promise.all(requests);
+    // our socket timeout is 4 seconds So after 4.5 seconds
+    // we should have no more sockets open
+    await new Promise((resolve) => setTimeout(resolve, 4500));
+    expect(agentToTest.getCurrentStatus()).toMatchObject({
+      createSocketCount: 3,
+      closeSocketCount: 3,
+      timeoutSocketCount: 3,
+      requestCount: 3, // so far we've completed 3 requests
+      freeSockets: {},
+      sockets: {},
+      requests: {},
+    });
+    requests = fireRequests(3, client);
+    // firing 3 more requests will lead to 3 new sockets
+    // being opened.
+    expect(agentToTest.getCurrentStatus()).toMatchObject({
+      createSocketCount: 6,
+      closeSocketCount: 3,
+      timeoutSocketCount: 3,
+      requestCount: 3, // so far we've completed 3 requests
+      freeSockets: {},
+      sockets: { [`${host}:`]: 3 },
+      requests: {},
+    });
+    await Promise.all(requests);
+    // we're all done, but the sockets haven't timed out yet
+    // so 3 should still be open.
+    expect(agentToTest.getCurrentStatus()).toMatchObject({
+      createSocketCount: 6,
+      closeSocketCount: 3,
+      timeoutSocketCount: 3,
+      requestCount: 6, // now we've completed 3 requests
+      freeSockets: { [`${host}:`]: 3 },
+      sockets: {},
+      requests: {},
+    });
+  });
+
   function fireRequests(count: number, client: Client) {
     const requests: Array<Promise<QueryResponse<number>>> = [];
     for (let i = 0; i < count; i++) {

@@ -14,7 +14,7 @@ import {
   ServiceError,
   ServiceInternalError,
   ServiceTimeoutError,
-  Span,
+  type Span,
   ThrottlingError,
   type QueryRequest,
   type QueryResponse,
@@ -234,6 +234,8 @@ export class Client {
     }
   }
 }
+
+// Private types and constants for internal logic.
 
 const nodeOrAxiosNetworkErrorCodes = [
   "ECONNABORTED",

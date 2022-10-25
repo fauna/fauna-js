@@ -26,15 +26,7 @@ export type QueryInterpolation =
 export class QueryRequestBuilder {
   readonly #queryInterpolation: QueryInterpolation;
 
-  /**
-   * Constructs a new QueryRequestBuilder.
-   * @param queryInterpolation - either a \{json: JSONValue\} object or a
-   *   \{ queryFragments: TemplateStringsArray, queryArgs: QueryRequestBuilder[] \}
-   *   object. The latter is not recommended to be used directly in this constructor.
-   *   Instead you can use {@link QueryRequestBuilder.newBuilder} with a template literal.
-   * @throws Error - if you pass invalid construction parameters.
-   */
-  constructor(queryInterpolation: QueryInterpolation) {
+  private constructor(queryInterpolation: QueryInterpolation) {
     if ("queryFragments" in queryInterpolation) {
       if (
         queryInterpolation.queryFragments.length === 0 ||
@@ -45,7 +37,7 @@ export class QueryRequestBuilder {
       }
       this.#queryInterpolation = {
         ...queryInterpolation,
-        queryArgs: QueryRequestBuilder.#queryRequesteBuildersFromArgs(
+        queryArgs: QueryRequestBuilder.#queryRequestBuildersFromArgs(
           queryInterpolation.queryArgs
         ),
       };
@@ -76,7 +68,7 @@ export class QueryRequestBuilder {
   ) {
     return new QueryRequestBuilder({
       queryFragments,
-      queryArgs: QueryRequestBuilder.#queryRequesteBuildersFromArgs(queryArgs),
+      queryArgs: QueryRequestBuilder.#queryRequestBuildersFromArgs(queryArgs),
     });
   }
 
@@ -102,7 +94,7 @@ export class QueryRequestBuilder {
     return { ...this.#render(), ...requestHeaders };
   }
 
-  static #queryRequesteBuildersFromArgs(
+  static #queryRequestBuildersFromArgs(
     queryArgs: (JSONValue | QueryRequestBuilder)[]
   ): QueryRequestBuilder[] {
     return queryArgs.map((queryArg) =>

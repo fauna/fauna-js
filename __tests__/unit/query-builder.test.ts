@@ -1,9 +1,8 @@
-import { fql, QueryBuilder } from "../../src/query-builder";
+import { fql } from "../../src/query-builder";
 
 describe.each`
-  createFunction         | name
-  ${QueryBuilder.create} | ${"QueryBuilder.create"}
-  ${fql}                 | ${"fql"}
+  createFunction | name
+  ${fql}         | ${"fql"}
 `("Can create QueryRequest using $name", ({ createFunction }) => {
   it("parses with no variables", () => {
     const queryBuilder = createFunction`'foo'.length`;
@@ -93,6 +92,27 @@ describe.each`
     expect(queryRequest.arguments).toStrictEqual({
       arg0: "baz",
       arg1: 17,
+    });
+  });
+
+  it("parses deep nested expressions", () => {
+    const str = "baz";
+    const otherStr = "bar";
+    const num = 17;
+    const otherNum = 3;
+    const deepFirst = createFunction`(${str} + ${otherStr})`;
+    const deeperBuilder = createFunction`Math.add(${num}, 3)`;
+    const innerQueryBuilder = createFunction`Math.add(${deeperBuilder}, ${otherNum})`;
+    const queryBuilder = createFunction`${deepFirst}.length == ${innerQueryBuilder}`;
+    const queryRequest = queryBuilder.toQuery();
+    expect(queryRequest.query).toBe(
+      "(arg0 + arg1).length == Math.add(Math.add(arg2, 3), arg3)"
+    );
+    expect(queryRequest.arguments).toStrictEqual({
+      arg0: "baz",
+      arg1: "bar",
+      arg2: 17,
+      arg3: 3,
     });
   });
 

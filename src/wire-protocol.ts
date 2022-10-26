@@ -1,9 +1,15 @@
 /**
  * A request to make to Fauna.
  */
-export interface QueryRequest {
+export interface QueryRequest extends QueryRequestHeaders {
   /** The query. */
   query: string;
+
+  /** Optional arguments if your query is interpolated. */
+  arguments?: JSONObject;
+}
+
+export interface QueryRequestHeaders {
   /**
    * The ISO-8601 timestamp of the last transaction the client has previously observed.
    * This client will track this by default, however, if you wish to override
@@ -393,3 +399,21 @@ export interface Span {
    */
   function: string;
 }
+
+/**
+ * All objects returned from Fauna are valid JSON objects.
+ */
+export type JSONObject = {
+  [key: string]: JSONValue;
+};
+
+/**
+ * All values returned from Fauna are valid JSON values.
+ */
+export type JSONValue =
+  | null
+  | string
+  | number
+  | boolean
+  | JSONObject
+  | Array<JSONValue>;

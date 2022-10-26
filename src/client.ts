@@ -17,6 +17,7 @@ import {
   type Span,
   ThrottlingError,
   type QueryRequest,
+  type QueryRequestHeaders,
   type QueryResponse,
 } from "./wire-protocol";
 
@@ -194,7 +195,7 @@ export class Client {
     return new ServiceError({ httpStatus, ...error });
   }
 
-  #setHeaders(fromObject: RequestHeaders, headerObject: any): void {
+  #setHeaders(fromObject: QueryRequestHeaders, headerObject: any): void {
     for (const entry of Object.entries(fromObject)) {
       if (
         [
@@ -255,12 +256,3 @@ const nodeOrAxiosNetworkErrorCodes = [
   "ERR_HTTP2_STREAM_CANCEL",
   "ERR_HTTP2_STREAM_ERROR",
 ];
-
-interface RequestHeaders {
-  last_txn?: string;
-  linearized?: boolean;
-  timeout_ms?: number;
-  max_contention_retries?: number;
-  tags?: { [key: string]: string };
-  traceparent?: string;
-}

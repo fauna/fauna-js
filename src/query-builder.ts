@@ -4,10 +4,26 @@ import type {
   QueryRequestHeaders,
 } from "./wire-protocol";
 
+/**
+ * Creates a new QueryBuilder. Accepts template literal inputs.
+ * @param queryFragments - a {@link TemplateStringsArray} that constitute
+ *   the strings that are the basis of the query.
+ * @param queryArgs - an Array\<JSONValue | QueryBuilder\> that
+ *   constitute the arguments to inject between the queryFragments.
+ * @throws Error - if you call this method directly (not using template
+ *   literals) and pass invalid construction parameters
+ * @example
+ * ```typescript
+ *  const str = "baz";
+ *  const num = 17;
+ *  const innerQueryBuilder = QueryBuilder.newBuilder`Math.add(${num}, 3)`;
+ *  const queryRequestBuilder = QueryBuilder.newBuilder`${str}.length == ${innerQueryBuilder}`;
+ * ```
+ */
 export function fql(
   queryFragments: TemplateStringsArray,
   ...queryArgs: (JSONValue | QueryBuilder)[]
-) {
+): QueryBuilder {
   return QueryBuilder.create(queryFragments, ...queryArgs);
 }
 

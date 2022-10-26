@@ -4,26 +4,17 @@ import type {
   QueryRequestHeaders,
 } from "./wire-protocol";
 
-/**
- * A query that can be interpolated.
- * It can be composed of either a set of queryFragments and
- * queryArgs or a plain JSONValue.
- * Note that queryFragments and queryArgs are a javascript
- * artifact that support {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals | template literals}.
- */
-export type QueryInterpolation =
-  | {
-      queryFragments: TemplateStringsArray;
-      queryArgs: QueryRequestBuilder[];
-    }
-  | {
-      json: JSONValue;
-    };
+export function fql(
+  queryFragments: TemplateStringsArray,
+  ...queryArgs: (JSONValue | QueryBuilder)[]
+) {
+  return QueryBuilder.create(queryFragments, ...queryArgs);
+}
 
 /**
- * A builder for composing QueryRequests from QueryInterpolation objects.
+ * A builder for composing queries and QueryRequests.
  */
-export class QueryRequestBuilder {
+export class QueryBuilder {
   readonly #queryInterpolation: QueryInterpolation;
 
   private constructor(queryInterpolation: QueryInterpolation) {
@@ -37,9 +28,7 @@ export class QueryRequestBuilder {
       }
       this.#queryInterpolation = {
         ...queryInterpolation,
-        queryArgs: QueryRequestBuilder.#queryRequestBuildersFromArgs(
-          queryInterpolation.queryArgs
-        ),
+        queryArgs: QueryBuilder.#buildersFromArgs(queryInterpolation.queryArgs),
       };
     } else {
       this.#queryInterpolation = queryInterpolation;
@@ -47,10 +36,10 @@ export class QueryRequestBuilder {
   }
 
   /**
-   * Creates a new QueryRequestBuilder. Accepts template literal inputs.
+   * Creates a new QueryBuilder. Accepts template literal inputs.
    * @param queryFragments - a {@link TemplateStringsArray} that constitute
    *   the strings that are the basis of the query.
-   * @param queryArgs - an Array\<JSONValue | QueryRequestBuilder\> that
+   * @param queryArgs - an Array\<JSONValue | QueryBuilder\> that
    *   constitute the arguments to inject between the queryFragments.
    * @throws Error - if you call this method directly (not using template
    *   literals) and pass invalid construction parameters
@@ -58,22 +47,22 @@ export class QueryRequestBuilder {
    * ```typescript
    *  const str = "baz";
    *  const num = 17;
-   *  const innerQueryRequestBuilder = QueryRequestBuilder.newBuilder`Math.add(${num}, 3)`;
-   *  const queryRequestBuilder = QueryRequestBuilder.newBuilder`${str}.length == ${innerQueryRequestBuilder}`;
+   *  const innerQueryBuilder = QueryBuilder.newBuilder`Math.add(${num}, 3)`;
+   *  const queryRequestBuilder = QueryBuilder.newBuilder`${str}.length == ${innerQueryBuilder}`;
    * ```
    */
-  static newBuilder(
+  static create(
     queryFragments: TemplateStringsArray,
-    ...queryArgs: (JSONValue | QueryRequestBuilder)[]
+    ...queryArgs: (JSONValue | QueryBuilder)[]
   ) {
-    return new QueryRequestBuilder({
+    return new QueryBuilder({
       queryFragments,
-      queryArgs: QueryRequestBuilder.#queryRequestBuildersFromArgs(queryArgs),
+      queryArgs: QueryBuilder.#buildersFromArgs(queryArgs),
     });
   }
 
   /**
-   * Converts this QueryRequestBuilder to a {@link QueryRequest} you can send
+   * Converts this QueryBuilder to a {@link QueryRequest} you can send
    * to Fauna.
    * @param requestHeaders - optional {@link QueryRequestHeaders} to include
    *   in the request (and thus override the defaults in your {@link ClientConfiguration}.
@@ -83,24 +72,24 @@ export class QueryRequestBuilder {
    * ```typescript
    *  const str = "baz";
    *  const num = 17;
-   *  const innerQueryRequestBuilder = QueryRequestBuilder.newBuilder`Math.add(${num}, 3)`;
-   *  const queryRequestBuilder = QueryRequestBuilder.newBuilder`${str}.length == ${innerQueryRequestBuilder}`;
+   *  const innerQueryBuilder = QueryBuilder.newBuilder`Math.add(${num}, 3)`;
+   *  const queryRequestBuilder = QueryBuilder.newBuilder`${str}.length == ${innerQueryBuilder}`;
    *  const queryRequest: QueryRequest = queryRequestBuilder.toQueryRequest();
    *  // produces:
    *  { query: "arg0.length == Math.add(arg1, 3)", arguments: { arg0: "baz", arg1: 17 }}
    * ```
    */
-  toQueryRequest(requestHeaders: QueryRequestHeaders = {}): QueryRequest {
+  toQuery(requestHeaders: QueryRequestHeaders = {}): QueryRequest {
     return { ...this.#render(), ...requestHeaders };
   }
 
-  static #queryRequestBuildersFromArgs(
-    queryArgs: (JSONValue | QueryRequestBuilder)[]
-  ): QueryRequestBuilder[] {
+  static #buildersFromArgs(
+    queryArgs: (JSONValue | QueryBuilder)[]
+  ): QueryBuilder[] {
     return queryArgs.map((queryArg) =>
-      queryArg instanceof QueryRequestBuilder
+      queryArg instanceof QueryBuilder
         ? queryArg
-        : new QueryRequestBuilder({ json: queryArg })
+        : new QueryBuilder({ json: queryArg })
     );
   }
 
@@ -136,3 +125,19 @@ export class QueryRequestBuilder {
     }
   }
 }
+
+/**
+ * A query that can be interpolated.
+ * It can be composed of either a set of queryFragments and
+ * queryArgs or a plain JSONValue.
+ * Note that queryFragments and queryArgs are a javascript
+ * artifact that support {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals | template literals}.
+ */
+type QueryInterpolation =
+  | {
+      queryFragments: TemplateStringsArray;
+      queryArgs: QueryBuilder[];
+    }
+  | {
+      json: JSONValue;
+    };

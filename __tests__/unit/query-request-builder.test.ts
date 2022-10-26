@@ -1,17 +1,21 @@
-import { QueryRequestBuilder } from "../../src/query-request-builder";
+import { fql, QueryBuilder } from "../../src/query-request-builder";
 
-describe("QueryRequestBuilder", () => {
+describe.each`
+  createFunction         | name
+  ${QueryBuilder.create} | ${"QueryBuilder.create"}
+  ${fql}                 | ${"fql"}
+`("Can create QueryRequest using $name", ({ createFunction }) => {
   it("parses with no variables", () => {
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`'foo'.length`;
-    const queryRequest = queryRequestBuilder.toQueryRequest();
+    const queryBuilder = createFunction`'foo'.length`;
+    const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("'foo'.length");
     expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses with a string variable", () => {
     const str = "foo";
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`${str}.length`;
-    const queryRequest = queryRequestBuilder.toQueryRequest();
+    const queryBuilder = createFunction`${str}.length`;
+    const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("arg0.length");
     expect(queryRequest.arguments).toStrictEqual({
       arg0: "foo",
@@ -20,8 +24,8 @@ describe("QueryRequestBuilder", () => {
 
   it("parses with a number variable", () => {
     const num = 8;
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`'foo'.length == ${num}`;
-    const queryRequest = queryRequestBuilder.toQueryRequest();
+    const queryBuilder = createFunction`'foo'.length == ${num}`;
+    const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("'foo'.length == arg0");
     expect(queryRequest.arguments).toStrictEqual({
       arg0: 8,
@@ -30,8 +34,8 @@ describe("QueryRequestBuilder", () => {
 
   it("parses with a boolean variable", () => {
     const bool = true;
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`val.enabled == ${bool}`;
-    const queryRequest = queryRequestBuilder.toQueryRequest();
+    const queryBuilder = createFunction`val.enabled == ${bool}`;
+    const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("val.enabled == arg0");
     expect(queryRequest.arguments).toStrictEqual({
       arg0: true,
@@ -39,8 +43,8 @@ describe("QueryRequestBuilder", () => {
   });
 
   it("parses with a null variable", () => {
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`value: ${null}`;
-    const queryRequest = queryRequestBuilder.toQueryRequest();
+    const queryBuilder = createFunction`value: ${null}`;
+    const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("value: arg0");
     expect(queryRequest.arguments).toStrictEqual({
       arg0: null,
@@ -49,8 +53,8 @@ describe("QueryRequestBuilder", () => {
 
   it("parses with an object variable", () => {
     const obj = { foo: "bar", bar: "baz" };
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`value: ${obj}`;
-    const queryRequest = queryRequestBuilder.toQueryRequest();
+    const queryBuilder = createFunction`value: ${obj}`;
+    const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("value: arg0");
     expect(queryRequest.arguments).toStrictEqual({
       arg0: { foo: "bar", bar: "baz" },
@@ -59,8 +63,8 @@ describe("QueryRequestBuilder", () => {
 
   it("parses with an array variable", () => {
     const arr = [1, 2, 3];
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`value: ${arr}`;
-    const queryRequest = queryRequestBuilder.toQueryRequest();
+    const queryBuilder = createFunction`value: ${arr}`;
+    const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("value: arg0");
     expect(queryRequest.arguments).toStrictEqual({
       arg0: [1, 2, 3],
@@ -70,10 +74,8 @@ describe("QueryRequestBuilder", () => {
   it("parses with multiple variables", () => {
     const str = "bar";
     const num = 17;
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`${str}.length == ${
-      num + 3
-    }`;
-    const queryRequest = queryRequestBuilder.toQueryRequest();
+    const queryBuilder = createFunction`${str}.length == ${num + 3}`;
+    const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("arg0.length == arg1");
     expect(queryRequest.arguments).toStrictEqual({
       arg0: "bar",
@@ -84,9 +86,9 @@ describe("QueryRequestBuilder", () => {
   it("parses nested expressions", () => {
     const str = "baz";
     const num = 17;
-    const innerQueryRequestBuilder = QueryRequestBuilder.newBuilder`Math.add(${num}, 3)`;
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`${str}.length == ${innerQueryRequestBuilder}`;
-    const queryRequest = queryRequestBuilder.toQueryRequest();
+    const innerQueryBuilder = createFunction`Math.add(${num}, 3)`;
+    const queryBuilder = createFunction`${str}.length == ${innerQueryBuilder}`;
+    const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("arg0.length == Math.add(arg1, 3)");
     expect(queryRequest.arguments).toStrictEqual({
       arg0: "baz",
@@ -97,9 +99,9 @@ describe("QueryRequestBuilder", () => {
   it("adds headers if passed in", () => {
     const str = "baz";
     const num = 17;
-    const innerQueryRequestBuilder = QueryRequestBuilder.newBuilder`Math.add(${num}, 3)`;
-    const queryRequestBuilder = QueryRequestBuilder.newBuilder`${str}.length == ${innerQueryRequestBuilder}`;
-    const queryRequest = queryRequestBuilder.toQueryRequest({
+    const innerQueryBuilder = createFunction`Math.add(${num}, 3)`;
+    const queryBuilder = createFunction`${str}.length == ${innerQueryBuilder}`;
+    const queryRequest = queryBuilder.toQuery({
       last_txn: "2022-01-01T00:00:0Z",
       linearized: true,
       timeout_ms: 600,

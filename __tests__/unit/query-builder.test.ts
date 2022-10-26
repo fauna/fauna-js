@@ -1,4 +1,4 @@
-import { fql, QueryBuilder } from "../../src/query-request-builder";
+import { fql, QueryBuilder } from "../../src/query-builder";
 
 describe.each`
   createFunction         | name

@@ -16,8 +16,8 @@ import type {
  * ```typescript
  *  const str = "baz";
  *  const num = 17;
- *  const innerQueryBuilder = QueryBuilder.newBuilder`Math.add(${num}, 3)`;
- *  const queryRequestBuilder = QueryBuilder.newBuilder`${str}.length == ${innerQueryBuilder}`;
+ *  const innerQueryBuilder = fql`Math.add(${num}, 3)`;
+ *  const queryRequestBuilder = fql`${str}.length == ${innerQueryBuilder}`;
  * ```
  */
 export function fql(
@@ -63,8 +63,8 @@ export class QueryBuilder {
    * ```typescript
    *  const str = "baz";
    *  const num = 17;
-   *  const innerQueryBuilder = QueryBuilder.newBuilder`Math.add(${num}, 3)`;
-   *  const queryRequestBuilder = QueryBuilder.newBuilder`${str}.length == ${innerQueryBuilder}`;
+   *  const innerQueryBuilder = QueryBuilder.create`Math.add(${num}, 3)`;
+   *  const queryRequestBuilder = QueryBuilder.create`${str}.length == ${innerQueryBuilder}`;
    * ```
    */
   static create(
@@ -88,9 +88,9 @@ export class QueryBuilder {
    * ```typescript
    *  const str = "baz";
    *  const num = 17;
-   *  const innerQueryBuilder = QueryBuilder.newBuilder`Math.add(${num}, 3)`;
-   *  const queryRequestBuilder = QueryBuilder.newBuilder`${str}.length == ${innerQueryBuilder}`;
-   *  const queryRequest: QueryRequest = queryRequestBuilder.toQueryRequest();
+   *  const innerQueryBuilder = fql`Math.add(${num}, 3)`;
+   *  const queryRequestBuilder = fql`${str}.length == ${innerQueryBuilder}`;
+   *  const queryRequest: QueryRequest = queryRequestBuilder.toQuery();
    *  // produces:
    *  { query: "arg0.length == Math.add(arg1, 3)", arguments: { arg0: "baz", arg1: 17 }}
    * ```

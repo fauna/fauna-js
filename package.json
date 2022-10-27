@@ -30,9 +30,8 @@
   },
   "scripts": {
     "prepare": "husky install",
-    "build": "yarn build:node; yarn build:types",
+    "build": "yarn build:node",
     "build:node": "esbuild src/index.ts --bundle --sourcemap --platform=node --outfile=build/node/fauna.js",
-    "build:types": "tsc -emitDeclarationOnly",
     "check:types": "tsc -noEmit",
     "lint": "eslint -f unix \"src/**/*.{ts,tsx}\"",
     "fauna-local": "docker start faunadb-fql-x || docker run --rm -d --name faunadb-fql-x -p 8443:8443 -p 8084:8084 -v $PWD/fauna-local-config.yml:/fauna/etc/fauna-local-config.yml gcr.io/faunadb-cloud/faunadb/enterprise --config /fauna/etc/fauna-local-config.yml",

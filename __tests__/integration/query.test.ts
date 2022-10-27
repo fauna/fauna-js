@@ -58,21 +58,17 @@ describe.each`
 
   it("Can query with arguments", async () => {
     let result;
-    try {
-      if (queryType === "QueryRequest") {
-        result = await client.query({
-          query: "myArg.length",
-          arguments: { myArg: "taco" },
-        });
-      } else {
-        const str = "taco";
-        result = await client.query(fql`${str}.length`);
-      }
-      expect(result.txn_time).not.toBeUndefined();
-      expect(result).toEqual({ data: 4, txn_time: result.txn_time });
-    } catch (e) {
-      console.log(e);
+    if (queryType === "QueryRequest") {
+      result = await client.query({
+        query: "myArg.length",
+        arguments: { myArg: "taco" },
+      });
+    } else {
+      const str = "taco";
+      result = await client.query(fql`${str}.length`);
     }
+    expect(result.txn_time).not.toBeUndefined();
+    expect(result).toEqual({ data: 4, txn_time: result.txn_time });
   });
 
   type HeaderTestInput = {

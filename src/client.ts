@@ -109,13 +109,13 @@ export class Client {
   }
 
   async #query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
-    const { query } = queryRequest;
+    const { query, arguments: args } = queryRequest;
     const headers: { [key: string]: string } = {};
     this.#setHeaders(queryRequest, headers);
     try {
       const result = await this.client.post<QueryResponse<T>>(
         "/query/1",
-        { query },
+        { query, arguments: args },
         { headers }
       );
       const txnDate = new Date(result.data.txn_time);

@@ -1,11 +1,8 @@
 import { fql } from "../../src/query-builder";
 
-describe.each`
-  createFunction | name
-  ${fql}         | ${"fql"}
-`("Can create QueryRequest using $name", ({ createFunction }) => {
+describe("fql method producing QueryBuilders", () => {
   it("parses with no variables", () => {
-    const queryBuilder = createFunction`'foo'.length`;
+    const queryBuilder = fql`'foo'.length`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("'foo'.length");
     expect(queryRequest.arguments).toStrictEqual({});
@@ -13,7 +10,7 @@ describe.each`
 
   it("parses with a string variable", () => {
     const str = "foo";
-    const queryBuilder = createFunction`${str}.length`;
+    const queryBuilder = fql`${str}.length`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("arg0.length");
     expect(queryRequest.arguments).toStrictEqual({
@@ -23,7 +20,7 @@ describe.each`
 
   it("parses with a number variable", () => {
     const num = 8;
-    const queryBuilder = createFunction`'foo'.length == ${num}`;
+    const queryBuilder = fql`'foo'.length == ${num}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("'foo'.length == arg0");
     expect(queryRequest.arguments).toStrictEqual({
@@ -33,7 +30,7 @@ describe.each`
 
   it("parses with a boolean variable", () => {
     const bool = true;
-    const queryBuilder = createFunction`val.enabled == ${bool}`;
+    const queryBuilder = fql`val.enabled == ${bool}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("val.enabled == arg0");
     expect(queryRequest.arguments).toStrictEqual({
@@ -42,7 +39,7 @@ describe.each`
   });
 
   it("parses with a null variable", () => {
-    const queryBuilder = createFunction`value: ${null}`;
+    const queryBuilder = fql`value: ${null}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("value: arg0");
     expect(queryRequest.arguments).toStrictEqual({
@@ -52,7 +49,7 @@ describe.each`
 
   it("parses with an object variable", () => {
     const obj = { foo: "bar", bar: "baz" };
-    const queryBuilder = createFunction`value: ${obj}`;
+    const queryBuilder = fql`value: ${obj}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("value: arg0");
     expect(queryRequest.arguments).toStrictEqual({
@@ -60,9 +57,19 @@ describe.each`
     });
   });
 
+  it("parses with an object variable having a toQuery property", () => {
+    const obj = { foo: "bar", bar: "baz", toQuery: "hehe" };
+    const queryBuilder = fql`value: ${obj}`;
+    const queryRequest = queryBuilder.toQuery();
+    expect(queryRequest.query).toBe("value: arg0");
+    expect(queryRequest.arguments).toStrictEqual({
+      arg0: { foo: "bar", bar: "baz", toQuery: "hehe" },
+    });
+  });
+
   it("parses with an array variable", () => {
     const arr = [1, 2, 3];
-    const queryBuilder = createFunction`value: ${arr}`;
+    const queryBuilder = fql`value: ${arr}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("value: arg0");
     expect(queryRequest.arguments).toStrictEqual({
@@ -73,7 +80,7 @@ describe.each`
   it("parses with multiple variables", () => {
     const str = "bar";
     const num = 17;
-    const queryBuilder = createFunction`${str}.length == ${num + 3}`;
+    const queryBuilder = fql`${str}.length == ${num + 3}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("arg0.length == arg1");
     expect(queryRequest.arguments).toStrictEqual({
@@ -85,8 +92,8 @@ describe.each`
   it("parses nested expressions", () => {
     const str = "baz";
     const num = 17;
-    const innerQueryBuilder = createFunction`Math.add(${num}, 3)`;
-    const queryBuilder = createFunction`${str}.length == ${innerQueryBuilder}`;
+    const innerQueryBuilder = fql`Math.add(${num}, 3)`;
+    const queryBuilder = fql`${str}.length == ${innerQueryBuilder}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe("arg0.length == Math.add(arg1, 3)");
     expect(queryRequest.arguments).toStrictEqual({
@@ -100,10 +107,10 @@ describe.each`
     const otherStr = "bar";
     const num = 17;
     const otherNum = 3;
-    const deepFirst = createFunction`(${str} + ${otherStr})`;
-    const deeperBuilder = createFunction`Math.add(${num}, 3)`;
-    const innerQueryBuilder = createFunction`Math.add(${deeperBuilder}, ${otherNum})`;
-    const queryBuilder = createFunction`${deepFirst}.length == ${innerQueryBuilder}`;
+    const deepFirst = fql`(${str} + ${otherStr})`;
+    const deeperBuilder = fql`Math.add(${num}, 3)`;
+    const innerQueryBuilder = fql`Math.add(${deeperBuilder}, ${otherNum})`;
+    const queryBuilder = fql`${deepFirst}.length == ${innerQueryBuilder}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toBe(
       "(arg0 + arg1).length == Math.add(Math.add(arg2, 3), arg3)"
@@ -119,8 +126,8 @@ describe.each`
   it("adds headers if passed in", () => {
     const str = "baz";
     const num = 17;
-    const innerQueryBuilder = createFunction`Math.add(${num}, 3)`;
-    const queryBuilder = createFunction`${str}.length == ${innerQueryBuilder}`;
+    const innerQueryBuilder = fql`Math.add(${num}, 3)`;
+    const queryBuilder = fql`${str}.length == ${innerQueryBuilder}`;
     const queryRequest = queryBuilder.toQuery({
       last_txn: "2022-01-01T00:00:0Z",
       linearized: true,

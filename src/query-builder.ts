@@ -118,11 +118,10 @@ class QueryBuilderImpl implements QueryBuilder {
     queryArgs: (JSONValue | QueryBuilder)[]
   ): QueryBuilder[] {
     return queryArgs.map((queryArg) => {
-      if ((<QueryBuilder>queryArg)?.toQuery !== undefined) {
+      if (typeof (<QueryBuilder>queryArg)?.toQuery === "function") {
         return <QueryBuilder>queryArg;
-      } else {
-        return new QueryBuilderImpl({ json: <JSONValue>queryArg });
       }
+      return new QueryBuilderImpl({ json: <JSONValue>queryArg });
     });
   }
 

@@ -193,7 +193,7 @@ if (Collection.byName('Products') == null) {\
   );
 
   it("throws a QueryCheckError if the query is invalid", async () => {
-    expect.assertions(5);
+    expect.assertions(8);
     try {
       await client.query<number>({ query: '"taco".length;' });
     } catch (e) {
@@ -201,21 +201,19 @@ if (Collection.byName('Products') == null) {\
         expect(e.message).toEqual("The query failed 1 validation check");
         expect(e.code).toEqual("invalid_query");
         expect(e.httpStatus).toEqual(400);
+        // TODO once parser errors are stablized do a hard test for equality
+        // rather than a string match.
         expect(e.summary).toEqual(
-          'invalid_syntax: Expected ([ \\t\\n\\r] | lineComment\
- | blockComment | end-of-input):1:14, found ";"\n\
-  |\n\
-1 | "taco".length;\n\
-  |              ^ Expected ([ \\t\\n\\r] | lineComment | blockComment | end-of-input):1:14, found ";"\n\
-  |'
+          expect.stringContaining("invalid_syntax: Expected")
         );
-        expect(e.failures).toEqual([
-          {
-            code: "invalid_syntax",
-            message:
-              'Expected ([ \\t\\n\\r] | lineComment | blockComment | end-of-input):1:14, found ";"',
-          },
-        ]);
+        expect(e.summary).toEqual(
+          expect.stringContaining('1 | "taco".length;')
+        );
+        expect(e.failures.length).toEqual(1);
+        expect(e.failures[0]?.code).toEqual("invalid_syntax");
+        expect(e.failures[0]?.message).toEqual(
+          expect.stringContaining('found ";"')
+        );
       }
     }
   });

@@ -12,8 +12,10 @@ import {
   type QueryRequest,
   QueryRuntimeError,
   QueryTimeoutError,
+  QueryResponse,
 } from "../../src/wire-protocol";
 import { env } from "process";
+import { fql } from "../../src/query-builder";
 
 const client = new Client({
   endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
@@ -22,114 +24,36 @@ const client = new Client({
   timeout_ms: 60_000,
 });
 
-describe("query", () => {
-  it("Can query an FQL-x endpoint", async () => {
-    const result = await client.query<number>({ query: '"taco".length' });
+function getTsa(tsa: TemplateStringsArray, ..._: any[]) {
+  return tsa;
+}
+
+async function doQuery<T>(
+  queryType: string,
+  queryTsa: TemplateStringsArray,
+  queryString: string,
+  client: Client
+): Promise<QueryResponse<T>> {
+  if (queryType === "QueryRequest") {
+    return client.query({ query: queryString });
+  }
+  return client.query(fql(queryTsa));
+}
+
+describe.each`
+  queryType
+  ${"QueryRequest"}
+  ${"QueryBuilder"}
+`("query with $queryType", ({ queryType }) => {
+  it("Can query with a QueryRequest an FQL-x endpoint", async () => {
+    const result = await doQuery<number>(
+      queryType,
+      getTsa`"taco".length`,
+      `"taco".length`,
+      client
+    );
     expect(result.txn_time).not.toBeUndefined();
     expect(result).toEqual({ data: 4, txn_time: result.txn_time });
-  });
-
-  it("Tracks the last_txn datetime and send in the headers", async () => {
-    const myClient = new Client({
-      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
-      max_conns: 5,
-      secret: env["secret"] || "secret",
-      timeout_ms: 60_000,
-    });
-    let expectedLastTxn: string | undefined = undefined;
-    myClient.client.interceptors.response.use(function (response) {
-      expect(response.request?._header).not.toBeUndefined();
-      if (expectedLastTxn === undefined) {
-        expect(response.request?._header).not.toEqual(
-          expect.stringContaining("x-last-txn")
-        );
-      } else {
-        expect(response.request?._header).toEqual(
-          expect.stringContaining(`\nx-last-txn: ${expectedLastTxn}`)
-        );
-      }
-      return response;
-    });
-    const resultOne = await myClient.query({
-      query:
-        "\
-if (Collection.byName('Customers') == null) {\
-  Collection.create({ name: 'Customers' })\
-}",
-    });
-    expect(resultOne.txn_time).not.toBeUndefined();
-    expectedLastTxn = resultOne.txn_time;
-    const resultTwo = await myClient.query({
-      query:
-        "\
-if (Collection.byName('Orders') == null) {\
-  Collection.create({ name: 'Orders' })\
-}",
-    });
-    expect(resultTwo.txn_time).not.toBeUndefined();
-    expect(resultTwo.txn_time).not.toEqual(resultOne.txn_time);
-    expectedLastTxn = resultTwo.txn_time;
-    const resultThree = await myClient.query({
-      query:
-        "\
-if (Collection.byName('Products') == null) {\
-  Collection.create({ name: 'Products' })\
-}",
-    });
-    expect(resultThree.txn_time).not.toBeUndefined();
-    expect(resultThree.txn_time).not.toEqual(resultTwo.txn_time);
-  });
-
-  it("Accepts an override of the last_txn datetime and sends in the headers", async () => {
-    const myClient = new Client({
-      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
-      max_conns: 5,
-      secret: env["secret"] || "secret",
-      timeout_ms: 60_000,
-    });
-    let expectedLastTxn: string | undefined = undefined;
-    myClient.client.interceptors.response.use(function (response) {
-      expect(response.request?._header).not.toBeUndefined();
-      if (expectedLastTxn === undefined) {
-        expect(response.request?._header).not.toEqual(
-          expect.stringContaining("x-last-txn")
-        );
-      } else {
-        expect(response.request?._header).toEqual(
-          expect.stringContaining(`\nx-last-txn: ${expectedLastTxn}`)
-        );
-      }
-      return response;
-    });
-    const resultOne = await myClient.query({
-      query:
-        "\
-if (Collection.byName('Customers') == null) {\
-  Collection.create({ name: 'Customers' })\
-}",
-    });
-    expect(resultOne.txn_time).not.toBeUndefined();
-    expectedLastTxn = resultOne.txn_time;
-    const resultTwo = await myClient.query({
-      last_txn: resultOne.txn_time,
-      query:
-        "\
-if (Collection.byName('Orders') == null) {\
-  Collection.create({ name: 'Orders' })\
-}",
-    });
-    expect(resultTwo.txn_time).not.toBeUndefined();
-    expect(resultTwo.txn_time).not.toEqual(resultOne.txn_time);
-    const resultThree = await myClient.query({
-      last_txn: resultOne.txn_time,
-      query:
-        "\
-if (Collection.byName('Products') == null) {\
-  Collection.create({ name: 'Products' })\
-}",
-    });
-    expect(resultThree.txn_time).not.toBeUndefined();
-    expect(resultThree.txn_time).not.toEqual(resultTwo.txn_time);
   });
 
   type HeaderTestInput = {
@@ -184,18 +108,33 @@ if (Collection.byName('Products') == null) {\
         }
         return response;
       });
-      const queryRequest: QueryRequest = {
-        query: '"taco".length',
-        [fieldName]: fieldValue,
-      };
-      await myClient.query<number>(queryRequest);
+      const headers = { [fieldName]: fieldValue };
+      if (queryType === "QueryRequest") {
+        const queryRequest: QueryRequest = {
+          query: '"taco".length',
+        };
+        await myClient.query<number>({ ...queryRequest, ...headers });
+        // headers object wins if present
+        await myClient.query<number>(
+          { ...queryRequest, [fieldName]: "crap" },
+          headers
+        );
+        await myClient.query<number>(queryRequest, headers);
+      } else {
+        await myClient.query<number>(fql`"taco".length`, headers);
+      }
     }
   );
 
   it("throws a QueryCheckError if the query is invalid", async () => {
     expect.assertions(8);
     try {
-      await client.query<number>({ query: '"taco".length;' });
+      await doQuery<number>(
+        queryType,
+        getTsa`"taco".length;`,
+        '"taco".length;',
+        client
+      );
     } catch (e) {
       if (e instanceof QueryCheckError) {
         expect(e.message).toEqual("The query failed 1 validation check");
@@ -221,7 +160,12 @@ if (Collection.byName('Products') == null) {\
   it("throws a QueryRuntimeError if the query hits a runtime error", async () => {
     expect.assertions(3);
     try {
-      await client.query({ query: '"taco".length + "taco"' });
+      await doQuery<number>(
+        queryType,
+        getTsa`"taco".length + "taco"`,
+        '"taco".length + "taco"',
+        client
+      );
     } catch (e) {
       if (e instanceof QueryRuntimeError) {
         expect(e.httpStatus).toEqual(400);
@@ -247,7 +191,12 @@ if (Collection.byName('Products') == null) {\
       timeout_ms: 1,
     });
     try {
-      await badClient.query({ query: "Collection.create({ name: 'Wah' })" });
+      await doQuery<number>(
+        queryType,
+        getTsa`Collection.create({ name: 'Wah' })`,
+        "Collection.create({ name: 'Wah' })",
+        badClient
+      );
     } catch (e) {
       if (e instanceof QueryTimeoutError) {
         expect(e.message).toEqual(
@@ -273,7 +222,12 @@ if (Collection.byName('Products') == null) {\
       timeout_ms: 60,
     });
     try {
-      await badClient.query<number>({ query: '"taco".length' });
+      await doQuery<number>(
+        queryType,
+        getTsa`Collection.create({ name: 'Wah' })`,
+        "Collection.create({ name: 'Wah' })",
+        badClient
+      );
     } catch (e) {
       if (e instanceof AuthenticationError) {
         expect(e.message).toEqual("Unauthorized: Access token required");
@@ -297,7 +251,12 @@ if (Collection.byName('Products') == null) {\
       timeout_ms: 60,
     });
     try {
-      await myBadClient.query<number>({ query: '"taco".length;' });
+      await doQuery<number>(
+        queryType,
+        getTsa`"taco".length;`,
+        '"taco".length;',
+        myBadClient
+      );
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(
@@ -320,7 +279,7 @@ if (Collection.byName('Products') == null) {\
       throw new Error("boom!");
     };
     try {
-      await myBadClient.query({ query: "foo" });
+      await doQuery<number>(queryType, getTsa`foo`, "foo", myBadClient);
     } catch (e) {
       if (e instanceof ClientError) {
         expect(e.cause).not.toBeUndefined();
@@ -340,12 +299,118 @@ if (Collection.byName('Products') == null) {\
       timeout_ms: 60,
     });
     try {
-      await badClient.query({ query: "foo" });
+      await doQuery<number>(queryType, getTsa`foo`, "foo", badClient);
     } catch (e) {
       if (e instanceof ProtocolError) {
         expect(e.httpStatus).toBeGreaterThanOrEqual(400);
         expect(e.message).not.toBeUndefined();
       }
     }
+  });
+});
+
+describe("last_txn tracking in client", () => {
+  it("Tracks the last_txn datetime and send in the headers", async () => {
+    const myClient = new Client({
+      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+      max_conns: 5,
+      secret: env["secret"] || "secret",
+      timeout_ms: 60_000,
+    });
+    let expectedLastTxn: string | undefined = undefined;
+    myClient.client.interceptors.response.use(function (response) {
+      expect(response.request?._header).not.toBeUndefined();
+      if (expectedLastTxn === undefined) {
+        expect(response.request?._header).not.toEqual(
+          expect.stringContaining("x-last-txn")
+        );
+      } else {
+        expect(response.request?._header).toEqual(
+          expect.stringContaining(`\nx-last-txn: ${expectedLastTxn}`)
+        );
+      }
+      return response;
+    });
+    const resultOne = await myClient.query({
+      query:
+        "\
+if (Collection.byName('Customers') == null) {\
+  Collection.create({ name: 'Customers' })\
+}",
+    });
+    expect(resultOne.txn_time).not.toBeUndefined();
+    expectedLastTxn = resultOne.txn_time;
+    const resultTwo = await myClient.query(
+      fql`
+        if (Collection.byName('Orders') == null) {
+          Collection.create({ name: 'Orders' })
+        }`
+    );
+    expect(resultTwo.txn_time).not.toBeUndefined();
+    expect(resultTwo.txn_time).not.toEqual(resultOne.txn_time);
+    expectedLastTxn = resultTwo.txn_time;
+    const resultThree = await myClient.query({
+      query:
+        "\
+if (Collection.byName('Products') == null) {\
+  Collection.create({ name: 'Products' })\
+}",
+    });
+    expect(resultThree.txn_time).not.toBeUndefined();
+    expect(resultThree.txn_time).not.toEqual(resultTwo.txn_time);
+  });
+
+  it("Accepts an override of the last_txn datetime and sends in the headers", async () => {
+    const myClient = new Client({
+      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+      max_conns: 5,
+      secret: env["secret"] || "secret",
+      timeout_ms: 60_000,
+    });
+    let expectedLastTxn: string | undefined = undefined;
+    myClient.client.interceptors.response.use(function (response) {
+      expect(response.request?._header).not.toBeUndefined();
+      if (expectedLastTxn === undefined) {
+        expect(response.request?._header).not.toEqual(
+          expect.stringContaining("x-last-txn")
+        );
+      } else {
+        expect(response.request?._header).toEqual(
+          expect.stringContaining(`\nx-last-txn: ${expectedLastTxn}`)
+        );
+      }
+      return response;
+    });
+    const resultOne = await myClient.query({
+      query:
+        "\
+if (Collection.byName('Customers') == null) {\
+  Collection.create({ name: 'Customers' })\
+}",
+    });
+    expect(resultOne.txn_time).not.toBeUndefined();
+    expectedLastTxn = resultOne.txn_time;
+    const resultTwo = await myClient.query(
+      fql`
+        if (Collection.byName('Orders') == null) {\
+          Collection.create({ name: 'Orders' })\
+        }
+      `,
+      {
+        last_txn: resultOne.txn_time,
+      }
+    );
+    expect(resultTwo.txn_time).not.toBeUndefined();
+    expect(resultTwo.txn_time).not.toEqual(resultOne.txn_time);
+    const resultThree = await myClient.query({
+      last_txn: resultOne.txn_time,
+      query:
+        "\
+if (Collection.byName('Products') == null) {\
+  Collection.create({ name: 'Products' })\
+}",
+    });
+    expect(resultThree.txn_time).not.toBeUndefined();
+    expect(resultThree.txn_time).not.toEqual(resultTwo.txn_time);
   });
 });

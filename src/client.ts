@@ -1,6 +1,7 @@
+import Agent, { HttpsAgent } from "agentkeepalive";
 import axios, { AxiosInstance } from "axios";
 import type { ClientConfiguration } from "./client-configuration";
-import Agent, { HttpsAgent } from "agentkeepalive";
+import type { QueryBuilder } from "./query-builder";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -75,7 +76,13 @@ export class Client {
 
   /**
    * Queries Fauna.
-   * @param queryRequest - the {@link QueryRequest}
+   * @param request - a {@link QueryRequest} or {@link QueryBuilder} to build a request with.
+   *  Note, you can embed header fields in this object; if you do that there's no need to
+   *  pass the headers parameter.
+   * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input.
+   *   Values in this headers parameter take precedence over the same values in the request
+   *   parameter. This field is primarily intended to be used when you pass a QueryBuilder as
+   *   the parameter.
    * @returns {@link QueryResponse}.
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
@@ -91,7 +98,17 @@ export class Client {
    * @throws A {@link ClientError} the client fails to submit the request
    * due to an internal error.
    */
-  async query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
+  async query<T = any>(
+    request: QueryRequest | QueryBuilder,
+    headers?: QueryRequestHeaders
+  ): Promise<QueryResponse<T>> {
+    if ("query" in request) {
+      return this.#query({ ...request, ...headers });
+    }
+    return this.#query(request.toQuery(headers));
+  }
+
+  async #query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
     const { query } = queryRequest;
     const headers: { [key: string]: string } = {};
     this.#setHeaders(queryRequest, headers);

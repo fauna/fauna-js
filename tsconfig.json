@@ -2,6 +2,10 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@tsconfig/node16-strictest/tsconfig.json",
   "compilerOptions": {
-    "lib": ["es2022"]
-  }
+    "lib": ["es2022"],
+    "outDir": "./lib",
+    "declarationDir": "./lib",
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*.ts"]
 }

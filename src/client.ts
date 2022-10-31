@@ -83,7 +83,7 @@ export class Client {
    *   Values in this headers parameter take precedence over the same values in the request
    *   parameter. This field is primarily intended to be used when you pass a QueryBuilder as
    *   the parameter.
-   * @returns {@link QueryResponse}.
+   * @returns Promise&lt;{@link QueryResponse}&gt;.
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
    *   or a concrete ServiceError if it cannot. ServiceError child types are

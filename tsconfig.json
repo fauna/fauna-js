@@ -3,6 +3,9 @@
   "extends": "@tsconfig/node16-strictest/tsconfig.json",
   "compilerOptions": {
     "lib": ["es2022"],
-    "outDir": "./build"
-  }
+    "outDir": "./dist",
+    "declarationDir": "./dist/types",
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*.ts"]
 }

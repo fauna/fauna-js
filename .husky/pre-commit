@@ -1,5 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+yarn build
+yarn prettier --write lib/
+git add -A .
 yarn lint
 yarn pretty-quick --staged

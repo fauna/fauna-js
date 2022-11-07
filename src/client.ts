@@ -41,8 +41,9 @@ export class Client {
    *  const myClient = new Client(
    *   {
    *     endpoint: endpoints.classic,
+   *     max_conns: 10,
    *     secret: "foo",
-   *     queryTimeoutMs: 60_000,
+   *     timeout_ms: 60_000,
    *   }
    * );
    * ```

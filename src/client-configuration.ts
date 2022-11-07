@@ -49,6 +49,8 @@ export interface ClientConfiguration {
 export interface Endpoints {
   /** Fauna's cloud endpoint. */
   cloud: URL;
+  /** Fauna's preview endpoint for testing new features - requires beta access. */
+  preview: URL;
   /**
    * An endpoint for interacting with local instance of Fauna (e.g. one running in a local docker container).
    */
@@ -72,5 +74,6 @@ export interface Endpoints {
  */
 export const endpoints: Endpoints = {
   cloud: new URL("https://db.fauna.com"),
+  preview: new URL("https://db.fauna-preview.com"),
   local: new URL("http://localhost:8443"),
 };

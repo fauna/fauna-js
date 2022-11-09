@@ -8,6 +8,7 @@ describe("ClientConfiguration", () => {
       cloud: new URL("https://db.fauna.com"),
       preview: new URL("https://db.fauna-preview.com"),
       local: new URL("http://localhost:8443"),
+      localhost: new URL("http://localhost:8443"),
       "my-alternative-port": new URL("http://localhost:7443"),
     });
     const client = new Client({

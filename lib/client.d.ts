@@ -22,7 +22,7 @@ export declare class Client {
    * ```typescript
    *  const myClient = new Client(
    *   {
-   *     endpoint: endpoints.classic,
+   *     endpoint: endpoints.cloud,
    *     max_conns: 10,
    *     secret: "foo",
    *     timeout_ms: 60_000,

@@ -56,7 +56,7 @@ export interface Endpoints {
    */
   local: URL;
   /**
-   * An alias for local.x
+   * An alias for local.
    */
   localhost: URL;
   /**

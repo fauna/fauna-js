@@ -57,6 +57,10 @@ export interface Endpoints {
    */
   local: URL;
   /**
+   * An alias for local.
+   */
+  localhost: URL;
+  /**
    * Any other endpoint you want your client to support. For example, if you run all requests through a proxy
    * configure it here. Most clients will not need to leverage this ability.
    */

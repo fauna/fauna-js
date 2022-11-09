@@ -56,6 +56,10 @@ export interface Endpoints {
    */
   local: URL;
   /**
+   * An alias for local.
+   */
+  localhost: URL;
+  /**
    * Any other endpoint you want your client to support. For example, if you run all requests through a proxy
    * configure it here. Most clients will not need to leverage this ability.
    */
@@ -76,4 +80,5 @@ export const endpoints: Endpoints = {
   cloud: new URL("https://db.fauna.com"),
   preview: new URL("https://db.fauna-preview.com"),
   local: new URL("http://localhost:8443"),
+  localhost: new URL("http://localhost:8443"),
 };

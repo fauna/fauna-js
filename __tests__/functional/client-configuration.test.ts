@@ -28,6 +28,20 @@ describe("ClientConfiguration", () => {
     });
   });
 
+  it("A ClientConfiguration setting with no secret throws an error on driver construction", () => {
+    expect.assertions(1);
+    try {
+      new Client();
+    } catch (e: any) {
+      if ("message" in e) {
+        expect(e.message).toEqual(
+          "You must provide a secret to the driver. Set it in \
+an environmental variable names FAUNA_SECRET or pass it to the Client constructor."
+        );
+      }
+    }
+  });
+
   it("endpoints is extensible", async () => {
     endpoints["my-alternative-port"] = new URL("http://localhost:7443");
     expect(endpoints).toEqual({

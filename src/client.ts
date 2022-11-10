@@ -92,7 +92,11 @@ export class Client {
   #getSecret(partialClientConfig?: Partial<ClientConfiguration>): string {
     const maybeSecret = partialClientConfig?.secret || env["FAUNA_SECRET"];
     if (maybeSecret === undefined) {
-      throw new Error("You must provide a secret to the driver");
+      throw new Error(
+        "You must provide a secret to the driver. Set it \
+in an environmental variable names FAUNA_SECRET or pass it to the Client\
+ constructor."
+      );
     }
     return maybeSecret;
   }

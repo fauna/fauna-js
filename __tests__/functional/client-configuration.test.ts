@@ -36,7 +36,7 @@ describe("ClientConfiguration", () => {
       if ("message" in e) {
         expect(e.message).toEqual(
           "You must provide a secret to the driver. Set it in \
-an environmental variable names FAUNA_SECRET or pass it to the Client constructor."
+an environmental variable named FAUNA_SECRET or pass it to the Client constructor."
         );
       }
     }

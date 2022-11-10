@@ -94,7 +94,7 @@ export class Client {
     if (maybeSecret === undefined) {
       throw new Error(
         "You must provide a secret to the driver. Set it \
-in an environmental variable names FAUNA_SECRET or pass it to the Client\
+in an environmental variable named FAUNA_SECRET or pass it to the Client\
  constructor."
       );
     }

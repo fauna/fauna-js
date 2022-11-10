@@ -1,5 +1,5 @@
 import { AxiosInstance } from "axios";
-import type { ClientConfiguration } from "./client-configuration";
+import { ClientConfiguration } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
 import {
   type QueryRequest,
@@ -30,7 +30,7 @@ export declare class Client {
    * );
    * ```
    */
-  constructor(clientConfiguration: ClientConfiguration);
+  constructor(clientConfiguration?: Partial<ClientConfiguration>);
   /**
    * Queries Fauna.
    * @param request - a {@link QueryRequest} or {@link QueryBuilder} to build a request with.

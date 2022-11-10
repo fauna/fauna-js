@@ -1,7 +1,33 @@
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
 
+beforeEach(() => {
+  delete process.env["FAUNA_SECRET"];
+});
+
 describe("ClientConfiguration", () => {
+  it("Client exposes a default client configuration", () => {
+    process.env["FAUNA_SECRET"] = "foo";
+    const client = new Client();
+    expect(client.clientConfiguration).toEqual({
+      secret: "foo",
+      timeout_ms: 60_000,
+      max_conns: 10,
+      endpoint: endpoints.cloud,
+    });
+  });
+
+  it("Client respectes passed in client configuration over defaults", () => {
+    process.env["FAUNA_SECRET"] = "foo";
+    const client = new Client({ secret: "bar", timeout_ms: 10 });
+    expect(client.clientConfiguration).toEqual({
+      secret: "bar",
+      timeout_ms: 10,
+      max_conns: 10,
+      endpoint: endpoints.cloud,
+    });
+  });
+
   it("endpoints is extensible", async () => {
     endpoints["my-alternative-port"] = new URL("http://localhost:7443");
     expect(endpoints).toEqual({

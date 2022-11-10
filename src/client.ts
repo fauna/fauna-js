@@ -1,6 +1,7 @@
 import Agent, { HttpsAgent } from "agentkeepalive";
 import axios, { AxiosInstance } from "axios";
-import type { ClientConfiguration } from "./client-configuration";
+import { env } from "process";
+import { ClientConfiguration, endpoints } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
 import {
   AuthenticationError,
@@ -21,6 +22,12 @@ import {
   type QueryRequestHeaders,
   type QueryResponse,
 } from "./wire-protocol";
+
+const defaultClientConfiguration = {
+  max_conns: 10,
+  endpoint: endpoints.cloud,
+  timeout_ms: 60_000,
+};
 
 /**
  * Client for calling Fauna.
@@ -48,8 +55,12 @@ export class Client {
    * );
    * ```
    */
-  constructor(clientConfiguration: ClientConfiguration) {
-    this.clientConfiguration = clientConfiguration;
+  constructor(clientConfiguration?: Partial<ClientConfiguration>) {
+    this.clientConfiguration = {
+      ...defaultClientConfiguration,
+      ...clientConfiguration,
+      secret: this.#getSecret(clientConfiguration),
+    };
     // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
     // terminate connections on active queries.
     const timeout = this.clientConfiguration.timeout_ms + 10_000;
@@ -72,7 +83,18 @@ export class Client {
       "Authorization"
     ] = `Bearer ${this.clientConfiguration.secret}`;
     this.client.defaults.headers.common["Content-Type"] = "application/json";
-    this.#setHeaders(clientConfiguration, this.client.defaults.headers.common);
+    this.#setHeaders(
+      this.clientConfiguration,
+      this.client.defaults.headers.common
+    );
+  }
+
+  #getSecret(partialClientConfig?: Partial<ClientConfiguration>): string {
+    const maybeSecret = partialClientConfig?.secret || env["FAUNA_SECRET"];
+    if (maybeSecret === undefined) {
+      throw new Error("You must provide a secret to the driver");
+    }
+    return maybeSecret;
   }
 
   /**

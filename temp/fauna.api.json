@@ -1,0 +1,2690 @@
+{
+  "metadata": {
+    "toolPackage": "@microsoft/api-extractor",
+    "toolVersion": "7.33.6",
+    "schemaVersion": 1010,
+    "oldestForwardsCompatibleVersion": 1001,
+    "tsdocConfig": {
+      "$schema": "https://developer.microsoft.com/json-schemas/tsdoc/v0/tsdoc.schema.json",
+      "noStandardTags": true,
+      "tagDefinitions": [
+        {
+          "tagName": "@alpha",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@beta",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@defaultValue",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@decorator",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@deprecated",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@eventProperty",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@example",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@experimental",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@inheritDoc",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@internal",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@label",
+          "syntaxKind": "inline"
+        },
+        {
+          "tagName": "@link",
+          "syntaxKind": "inline",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@override",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@packageDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@param",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@privateRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@public",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@readonly",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@remarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@returns",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@sealed",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@see",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@throws",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@typeParam",
+          "syntaxKind": "block",
+          "allowMultiple": true
+        },
+        {
+          "tagName": "@virtual",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@betaDocumentation",
+          "syntaxKind": "modifier"
+        },
+        {
+          "tagName": "@internalRemarks",
+          "syntaxKind": "block"
+        },
+        {
+          "tagName": "@preapproved",
+          "syntaxKind": "modifier"
+        }
+      ],
+      "supportForTags": {
+        "@alpha": true,
+        "@beta": true,
+        "@defaultValue": true,
+        "@decorator": true,
+        "@deprecated": true,
+        "@eventProperty": true,
+        "@example": true,
+        "@experimental": true,
+        "@inheritDoc": true,
+        "@internal": true,
+        "@label": true,
+        "@link": true,
+        "@override": true,
+        "@packageDocumentation": true,
+        "@param": true,
+        "@privateRemarks": true,
+        "@public": true,
+        "@readonly": true,
+        "@remarks": true,
+        "@returns": true,
+        "@sealed": true,
+        "@see": true,
+        "@throws": true,
+        "@typeParam": true,
+        "@virtual": true,
+        "@betaDocumentation": true,
+        "@internalRemarks": true,
+        "@preapproved": true
+      },
+      "reportUnsupportedHtmlElements": false
+    }
+  },
+  "kind": "Package",
+  "canonicalReference": "fauna!",
+  "docComment": "",
+  "name": "fauna",
+  "preserveMemberOrder": false,
+  "members": [
+    {
+      "kind": "EntryPoint",
+      "canonicalReference": "fauna!",
+      "name": "",
+      "preserveMemberOrder": false,
+      "members": [
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!AuthenticationError:class",
+          "docComment": "/**\n * AuthenticationError indicates invalid credentials were used.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class AuthenticationError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "ServiceError",
+              "canonicalReference": "fauna!ServiceError:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "AuthenticationError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!AuthenticationError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `AuthenticationError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        code: string;\n        message: string;\n        httpStatus: 401;\n        summary?: string;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!AuthorizationError:class",
+          "docComment": "/**\n * AuthorizationError indicates the credentials used do not have permission to perform the requested action.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class AuthorizationError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "ServiceError",
+              "canonicalReference": "fauna!ServiceError:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "AuthorizationError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!AuthorizationError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `AuthorizationError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        code: string;\n        message: string;\n        httpStatus: 403;\n        summary?: string;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!Client:class",
+          "docComment": "/**\n * Client for calling Fauna.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class Client "
+            }
+          ],
+          "fileUrlPath": "lib/client.d.ts",
+          "releaseTag": "Public",
+          "name": "Client",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!Client:constructor(1)",
+              "docComment": "/**\n * Constructs a new {@link Client}.\n *\n * @param clientConfiguration - the {@link ClientConfiguration} to apply.\n *\n * @example\n * ```typescript\n *  const myClient = new Client(\n *   {\n *     endpoint: endpoints.cloud,\n *     max_conns: 10,\n *     secret: \"foo\",\n *     timeout_ms: 60_000,\n *   }\n * );\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(clientConfiguration?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Partial",
+                  "canonicalReference": "!Partial:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ClientConfiguration",
+                  "canonicalReference": "fauna!ClientConfiguration:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "clientConfiguration",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 5
+                  },
+                  "isOptional": true
+                }
+              ]
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "fauna!Client#client:member",
+              "docComment": "/**\n * The underlying {@link AxiosInstance} client.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly client: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "AxiosInstance",
+                  "canonicalReference": "axios!AxiosInstance:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "client",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "fauna!Client#clientConfiguration:member",
+              "docComment": "/**\n * The {@link ClientConfiguration}\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly clientConfiguration: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "ClientConfiguration",
+                  "canonicalReference": "fauna!ClientConfiguration:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "clientConfiguration",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false
+            },
+            {
+              "kind": "Method",
+              "canonicalReference": "fauna!Client#query:member(1)",
+              "docComment": "/**\n * Queries Fauna.\n *\n * @param request - a {@link QueryRequest} or {@link QueryBuilder} to build a request with. Note, you can embed header fields in this object; if you do that there's no need to pass the headers parameter.\n *\n * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input. Values in this headers parameter take precedence over the same values in the request parameter. This field is primarily intended to be used when you pass a QueryBuilder as the parameter.\n *\n * @returns Promise&lt;{@link QueryResponse}&gt;.\n *\n * @throws\n *\n * {@link ServiceError} Fauna emitted an error. The ServiceError will be one of ServiceError's child classes if the error can be further categorized, or a concrete ServiceError if it cannot. ServiceError child types are {@link AuthenticaionError}, {@link AuthorizationError}, {@link QueryCheckError} {@link QueryRuntimeError}, {@link QueryTimeoutError}, {@link ServiceInternalError} {@link ServiceTimeoutError}, {@link ThrottlingError}. You can use either the type, or the underlying httpStatus + code to determine the root cause.\n *\n * @throws\n *\n * {@link ProtocolError} the client a HTTP error not sent by Fauna.\n *\n * @throws\n *\n * {@link NetworkError} the client encountered a network issue connecting to Fauna.\n *\n * @throws\n *\n * A {@link ClientError} the client fails to submit the request due to an internal error.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "query<T = "
+                },
+                {
+                  "kind": "Content",
+                  "text": "any"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">(request: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "QueryRequest",
+                  "canonicalReference": "fauna!QueryRequest:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": " | "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "QueryBuilder",
+                  "canonicalReference": "fauna!QueryBuilder:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", headers?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "QueryRequestHeaders",
+                  "canonicalReference": "fauna!QueryRequestHeaders:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "): "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Promise",
+                  "canonicalReference": "!Promise:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "QueryResponse",
+                  "canonicalReference": "fauna!QueryResponse:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<T>>"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "typeParameters": [
+                {
+                  "typeParameterName": "T",
+                  "constraintTokenRange": {
+                    "startIndex": 0,
+                    "endIndex": 0
+                  },
+                  "defaultTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  }
+                }
+              ],
+              "isStatic": false,
+              "returnTypeTokenRange": {
+                "startIndex": 9,
+                "endIndex": 13
+              },
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "request",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 6
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "headers",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 7,
+                    "endIndex": 8
+                  },
+                  "isOptional": true
+                }
+              ],
+              "isOptional": false,
+              "name": "query"
+            }
+          ],
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "fauna!ClientConfiguration:interface",
+          "docComment": "/**\n * Configuration for a client.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface ClientConfiguration "
+            }
+          ],
+          "fileUrlPath": "lib/client-configuration.d.ts",
+          "releaseTag": "Public",
+          "name": "ClientConfiguration",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!ClientConfiguration#endpoint:member",
+              "docComment": "/**\n * The {@link URL} of Fauna to call. See {@link endpoints} for some default options.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "endpoint: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "URL",
+                  "canonicalReference": "!\"\\\"url\\\"\".__global.URL:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "endpoint",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!ClientConfiguration#linearized:member",
+              "docComment": "/**\n * If true, unconditionally run the query as strictly serialized. This affects read-only transactions. Transactions which write will always be strictly serialized.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "linearized?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "linearized",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!ClientConfiguration#max_conns:member",
+              "docComment": "/**\n * The maximum number of connections to a make to Fauna.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "max_conns: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "max_conns",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!ClientConfiguration#max_contention_retries:member",
+              "docComment": "/**\n * The max number of times to retry the query if contention is encountered.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "max_contention_retries?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "max_contention_retries",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!ClientConfiguration#secret:member",
+              "docComment": "/**\n * A secret for your Fauna DB, used to authorize your queries.\n *\n * @see\n *\n * https://docs.fauna.com/fauna/current/security/keys\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "secret: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "secret",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!ClientConfiguration#tags:member",
+              "docComment": "/**\n * Tags provided back via logging and telemetry.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "tags?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        [key: string]: string;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "tags",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!ClientConfiguration#timeout_ms:member",
+              "docComment": "/**\n * The timeout of each query, in milliseconds. This controls the maximum amount of time Fauna will execute your query before marking it failed.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "timeout_ms: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "timeout_ms",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!ClientConfiguration#traceparent:member",
+              "docComment": "/**\n * A traceparent provided back via logging and telemetry. Must match format: https://www.w3.org/TR/trace-context/#traceparent-header\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "traceparent?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "traceparent",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!ClientError:class",
+          "docComment": "/**\n * An error representing a failure internal to the client, itself. This indicates Fauna was never called - the client failed internally prior to sending the qreuest.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class ClientError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Error",
+              "canonicalReference": "!Error:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "ClientError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!ClientError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `ClientError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(message: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", options: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        cause: any;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "message",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "options",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ]
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "fauna!Endpoints:interface",
+          "docComment": "/**\n * An extensible interface for a set of Fauna endpoints.\n *\n * @remarks\n *\n * Leverage the `[key: string]: URL;` field to extend to other endpoints.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface Endpoints "
+            }
+          ],
+          "fileUrlPath": "lib/client-configuration.d.ts",
+          "releaseTag": "Public",
+          "name": "Endpoints",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "IndexSignature",
+              "canonicalReference": "fauna!Endpoints:index(1)",
+              "docComment": "/**\n * Any other endpoint you want your client to support. For example, if you run all requests through a proxy configure it here. Most clients will not need to leverage this ability.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "[key: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": "]: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "URL",
+                  "canonicalReference": "!\"\\\"url\\\"\".__global.URL:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "returnTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 4
+              },
+              "releaseTag": "Public",
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "key",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!Endpoints#cloud:member",
+              "docComment": "/**\n * Fauna's cloud endpoint.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "cloud: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "URL",
+                  "canonicalReference": "!\"\\\"url\\\"\".__global.URL:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "cloud",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!Endpoints#local:member",
+              "docComment": "/**\n * An endpoint for interacting with local instance of Fauna (e.g. one running in a local docker container).\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "local: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "URL",
+                  "canonicalReference": "!\"\\\"url\\\"\".__global.URL:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "local",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!Endpoints#localhost:member",
+              "docComment": "/**\n * An alias for local.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "localhost: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "URL",
+                  "canonicalReference": "!\"\\\"url\\\"\".__global.URL:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "localhost",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!Endpoints#preview:member",
+              "docComment": "/**\n * Fauna's preview endpoint for testing new features - requires beta access.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "preview: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "URL",
+                  "canonicalReference": "!\"\\\"url\\\"\".__global.URL:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "preview",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Variable",
+          "canonicalReference": "fauna!endpoints:var",
+          "docComment": "/**\n * A extensible set of endpoints for calling Fauna.\n *\n * @remarks\n *\n * Most clients will will not need to extend this set.\n *\n * @example\n *\n * ## To Extend\n * ```typescript\n *   // add to the endpoints constant\n *   endpoints.myProxyEndpoint = new URL(\"https://my.proxy.url\");\n * ```\n *\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "endpoints: "
+            },
+            {
+              "kind": "Reference",
+              "text": "Endpoints",
+              "canonicalReference": "fauna!Endpoints:interface"
+            }
+          ],
+          "fileUrlPath": "lib/client-configuration.d.ts",
+          "isReadonly": true,
+          "releaseTag": "Public",
+          "name": "endpoints",
+          "variableTypeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          }
+        },
+        {
+          "kind": "Function",
+          "canonicalReference": "fauna!fql:function(1)",
+          "docComment": "/**\n * Creates a new QueryBuilder. Accepts template literal inputs.\n *\n * @param queryFragments - a {@link TemplateStringsArray} that constitute the strings that are the basis of the query.\n *\n * @param queryArgs - an Array\\<JSONValue | QueryBuilder\\> that constitute the arguments to inject between the queryFragments.\n *\n * @throws\n *\n * Error - if you call this method directly (not using template literals) and pass invalid construction parameters\n *\n * @example\n * ```typescript\n *  const str = \"baz\";\n *  const num = 17;\n *  const innerQueryBuilder = fql`Math.add(${num}, 3)`;\n *  const queryRequestBuilder = fql`${str}.length == ${innerQueryBuilder}`;\n * ```\n *\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare function fql(queryFragments: "
+            },
+            {
+              "kind": "Reference",
+              "text": "TemplateStringsArray",
+              "canonicalReference": "!TemplateStringsArray:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ", ...queryArgs: "
+            },
+            {
+              "kind": "Content",
+              "text": "("
+            },
+            {
+              "kind": "Reference",
+              "text": "JSONValue",
+              "canonicalReference": "fauna!JSONValue:type"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "QueryBuilder",
+              "canonicalReference": "fauna!QueryBuilder:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ")[]"
+            },
+            {
+              "kind": "Content",
+              "text": "): "
+            },
+            {
+              "kind": "Reference",
+              "text": "QueryBuilder",
+              "canonicalReference": "fauna!QueryBuilder:interface"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "lib/query-builder.d.ts",
+          "returnTypeTokenRange": {
+            "startIndex": 9,
+            "endIndex": 10
+          },
+          "releaseTag": "Public",
+          "overloadIndex": 1,
+          "parameters": [
+            {
+              "parameterName": "queryFragments",
+              "parameterTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isOptional": false
+            },
+            {
+              "parameterName": "queryArgs",
+              "parameterTypeTokenRange": {
+                "startIndex": 3,
+                "endIndex": 8
+              },
+              "isOptional": false
+            }
+          ],
+          "name": "fql"
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "fauna!JSONObject:type",
+          "docComment": "/**\n * All objects returned from Fauna are valid JSON objects.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare type JSONObject = "
+            },
+            {
+              "kind": "Content",
+              "text": "{\n    [key: string]: "
+            },
+            {
+              "kind": "Reference",
+              "text": "JSONValue",
+              "canonicalReference": "fauna!JSONValue:type"
+            },
+            {
+              "kind": "Content",
+              "text": ";\n}"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "JSONObject",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 4
+          }
+        },
+        {
+          "kind": "TypeAlias",
+          "canonicalReference": "fauna!JSONValue:type",
+          "docComment": "/**\n * All values returned from Fauna are valid JSON values.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare type JSONValue = "
+            },
+            {
+              "kind": "Content",
+              "text": "null | string | number | boolean | "
+            },
+            {
+              "kind": "Reference",
+              "text": "JSONObject",
+              "canonicalReference": "fauna!JSONObject:type"
+            },
+            {
+              "kind": "Content",
+              "text": " | "
+            },
+            {
+              "kind": "Reference",
+              "text": "Array",
+              "canonicalReference": "!Array:interface"
+            },
+            {
+              "kind": "Content",
+              "text": "<"
+            },
+            {
+              "kind": "Reference",
+              "text": "JSONValue",
+              "canonicalReference": "fauna!JSONValue:type"
+            },
+            {
+              "kind": "Content",
+              "text": ">"
+            },
+            {
+              "kind": "Content",
+              "text": ";"
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "JSONValue",
+          "typeTokenRange": {
+            "startIndex": 1,
+            "endIndex": 8
+          }
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!NetworkError:class",
+          "docComment": "/**\n * An error representing a failure due to the network. This indicates Fauna was never reached.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class NetworkError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Error",
+              "canonicalReference": "!Error:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "NetworkError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!NetworkError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `NetworkError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(message: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", options: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        cause: any;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "message",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                },
+                {
+                  "parameterName": "options",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 3,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ]
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!ProtocolError:class",
+          "docComment": "/**\n * An error representing a HTTP failure - but one not directly emitted by Fauna.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class ProtocolError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Error",
+              "canonicalReference": "!Error:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "ProtocolError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!ProtocolError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `ProtocolError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        message: string;\n        httpStatus: number;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "fauna!ProtocolError#httpStatus:member",
+              "docComment": "/**\n * The HTTP Status Code of the error.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly httpStatus: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "httpStatus",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "fauna!QueryBuilder:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface QueryBuilder "
+            }
+          ],
+          "fileUrlPath": "lib/query-builder.d.ts",
+          "releaseTag": "Public",
+          "name": "QueryBuilder",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryBuilder#toQuery:member",
+              "docComment": "",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "toQuery: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "(headers?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "QueryRequestHeaders",
+                  "canonicalReference": "fauna!QueryRequestHeaders:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ", intialArgNumber?: number) => "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "QueryRequest",
+                  "canonicalReference": "fauna!QueryRequest:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "toQuery",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!QueryCheckError:class",
+          "docComment": "/**\n * An error due to a \"compile-time\" check of the query failing.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class QueryCheckError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "ServiceError",
+              "canonicalReference": "fauna!ServiceError:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "QueryCheckError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!QueryCheckError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `QueryCheckError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        code: string;\n        message: string;\n        httpStatus: 400;\n        summary?: string;\n        failures: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "QueryCheckFailure",
+                  "canonicalReference": "fauna!QueryCheckFailure:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "[];\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 4
+                  },
+                  "isOptional": false
+                }
+              ]
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "fauna!QueryCheckError#failures:member",
+              "docComment": "/**\n * An array of {@link QueryCheckFailure} conveying the root cause of an _invalid query_. QueryCheckFailure are detected _before runtime_ - when your query is analyzed for correctness prior to execution. Present only for client-side problems caused by submitting malformed queries. See {@link TODO} for a list of statsuCode and code associated with failures.\n *\n * @example\n *\n * ### This query is invalid as semicolons are not valid syntax.\n * ```\n *   p   * \"taco\".length;\n * ```\n *\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly failures: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Array",
+                  "canonicalReference": "!Array:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": "<"
+                },
+                {
+                  "kind": "Reference",
+                  "text": "QueryCheckFailure",
+                  "canonicalReference": "fauna!QueryCheckFailure:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ">"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "failures",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 5
+              },
+              "isStatic": false,
+              "isProtected": false
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "fauna!QueryCheckFailure:interface",
+          "docComment": "/**\n * QueryCheckFailure represents the cause of a pre-execution problem with the query. For example, if a query has malformed syntax the error thrown by the API will include a QueryCheckFailure indicating where this syntax error is.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface QueryCheckFailure "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "QueryCheckFailure",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryCheckFailure#annotation:member",
+              "docComment": "/**\n * Further detail about the QueryCheckFailure. Intended to be displayed as an in-line annotation of the error location.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly annotation?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "annotation",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryCheckFailure#code:member",
+              "docComment": "/**\n * A predefined code indicating the type of QueryCheckFailure. See the docs at {@link todo} for a list of codes. Safe for programmatic use.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly code: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "code",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryCheckFailure#location:member",
+              "docComment": "/**\n * A source span indicating a segment of FQL. Indicates where the QueryCheckFailure occured.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly location?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "Span",
+                  "canonicalReference": "fauna!Span:interface"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "location",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryCheckFailure#message:member",
+              "docComment": "/**\n * A short, human readable description of the QueryCheckFailure. Not intended for programmatic use.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly message: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "message",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "fauna!QueryRequest:interface",
+          "docComment": "/**\n * A request to make to Fauna.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface QueryRequest extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "QueryRequestHeaders",
+              "canonicalReference": "fauna!QueryRequestHeaders:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "QueryRequest",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryRequest#arguments:member",
+              "docComment": "/**\n * Optional arguments if your query is interpolated.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "arguments?: "
+                },
+                {
+                  "kind": "Reference",
+                  "text": "JSONObject",
+                  "canonicalReference": "fauna!JSONObject:type"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "arguments",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryRequest#query:member",
+              "docComment": "/**\n * The query.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "query: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "query",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": [
+            {
+              "startIndex": 1,
+              "endIndex": 2
+            }
+          ]
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "fauna!QueryRequestHeaders:interface",
+          "docComment": "",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface QueryRequestHeaders "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "QueryRequestHeaders",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryRequestHeaders#last_txn:member",
+              "docComment": "/**\n * The ISO-8601 timestamp of the last transaction the client has previously observed. This client will track this by default, however, if you wish to override this value for a given request set this value.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "last_txn?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "last_txn",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryRequestHeaders#linearized:member",
+              "docComment": "/**\n * If true, unconditionally run the query as strictly serialized. This affects read-only transactions. Transactions which write will always be strictly serialized. Overrides the optional setting for the client.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "linearized?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "boolean"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "linearized",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryRequestHeaders#max_contention_retries:member",
+              "docComment": "/**\n * The max number of times to retry the query if contention is encountered. Overrides the optional setting for the client.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "max_contention_retries?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "max_contention_retries",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryRequestHeaders#tags:member",
+              "docComment": "/**\n * Tags provided back via logging and telemetry. Overrides the optional setting on the client.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "tags?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        [key: string]: string;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "tags",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryRequestHeaders#timeout_ms:member",
+              "docComment": "/**\n * The timeout to use in this query in milliseconds. Overrides the timeout for the client.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "timeout_ms?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "timeout_ms",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryRequestHeaders#traceparent:member",
+              "docComment": "/**\n * A traceparent provided back via logging and telemetry. Must match format: https://www.w3.org/TR/trace-context/#traceparent-header Overrides the optional setting for the client.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "traceparent?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "traceparent",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "fauna!QueryResponse:interface",
+          "docComment": "/**\n * A response to a query.\n *\n * @remarks\n *\n * The QueryResponse is type parameterized so that you can treat it as a a certain type if you are using Typescript.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface QueryResponse<T> "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "typeParameters": [
+            {
+              "typeParameterName": "T",
+              "constraintTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              },
+              "defaultTypeTokenRange": {
+                "startIndex": 0,
+                "endIndex": 0
+              }
+            }
+          ],
+          "name": "QueryResponse",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryResponse#data:member",
+              "docComment": "/**\n * The result of the query. The data is any valid JSON value.\n *\n * @remarks\n *\n * data is type parameterized so that you can treat it as a certain type if you are using typescript.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "data: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "T"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "data",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryResponse#stats:member",
+              "docComment": "/**\n * Stats on query performance and cost\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "stats: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        [key: string]: number;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "stats",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!QueryResponse#txn_time:member",
+              "docComment": "/**\n * The last transaction time of the query. An ISO-8601 date string.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "txn_time: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "txn_time",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!QueryRuntimeError:class",
+          "docComment": "/**\n * An error response that is the result of the query failing during execution. QueryRuntimeError's occur when a bug in your query causes an invalid execution to be requested. The 'code' field will vary based on the specific error cause.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class QueryRuntimeError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "ServiceError",
+              "canonicalReference": "fauna!ServiceError:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "QueryRuntimeError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!QueryRuntimeError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `QueryRuntimeError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        code: string;\n        message: string;\n        httpStatus: 400;\n        summary?: string;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!QueryTimeoutError:class",
+          "docComment": "/**\n * A failure due to the timeout being exceeded, but the timeout was set lower than the query's expected processing time. This response is distinguished from a ServiceTimeoutException in that a QueryTimeoutError shows Fauna behaving in an expected manner.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class QueryTimeoutError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "ServiceError",
+              "canonicalReference": "fauna!ServiceError:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "QueryTimeoutError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!QueryTimeoutError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `QueryTimeoutError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        code: string;\n        message: string;\n        httpStatus: 440;\n        summary?: string;\n        stats?: {\n            [key: string]: number;\n        };\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "fauna!QueryTimeoutError#stats:member",
+              "docComment": "/**\n * Statistics regarding the query.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly stats?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        [key: string]: number;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "stats",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!ServiceError:class",
+          "docComment": "/**\n * An error representing a query failure returned by Fauna.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class ServiceError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "Error",
+              "canonicalReference": "!Error:interface"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "ServiceError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!ServiceError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `ServiceError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        code: string;\n        message: string;\n        httpStatus: number;\n        summary?: string;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "fauna!ServiceError#code:member",
+              "docComment": "/**\n * A code for the error. Codes indicate the cause of the error. It is safe to write programmatic logic against the code. They are part of the API contract.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly code: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "code",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "fauna!ServiceError#httpStatus:member",
+              "docComment": "/**\n * The HTTP Status Code of the error.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly httpStatus: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "httpStatus",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false
+            },
+            {
+              "kind": "Property",
+              "canonicalReference": "fauna!ServiceError#summary:member",
+              "docComment": "/**\n * A summary of the error in a human readable form. Only present where message does not suffice.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "readonly summary?: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": true,
+              "isOptional": true,
+              "releaseTag": "Public",
+              "name": "summary",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              },
+              "isStatic": false,
+              "isProtected": false
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!ServiceInternalError:class",
+          "docComment": "/**\n * ServiceInternalError indicates Fauna failed unexpectedly.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class ServiceInternalError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "ServiceError",
+              "canonicalReference": "fauna!ServiceError:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "ServiceInternalError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!ServiceInternalError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `ServiceInternalError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        code: string;\n        message: string;\n        httpStatus: 500;\n        summary?: string;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!ServiceTimeoutError:class",
+          "docComment": "/**\n * ServiceTimeoutError indicates Fauna was not available to servce the request before the timeout was reached.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class ServiceTimeoutError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "ServiceError",
+              "canonicalReference": "fauna!ServiceError:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "ServiceTimeoutError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!ServiceTimeoutError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `ServiceTimeoutError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        code: string;\n        message: string;\n        httpStatus: 503;\n        summary?: string;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        },
+        {
+          "kind": "Interface",
+          "canonicalReference": "fauna!Span:interface",
+          "docComment": "/**\n * A source span indicating a segment of FQL.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export interface Span "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "Span",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!Span#end:member",
+              "docComment": "/**\n * The span's ending index within the src, inclusive.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "end: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "end",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!Span#function:member",
+              "docComment": "/**\n * The name of the enclosing function, if applicable.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "function: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "function",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!Span#src:member",
+              "docComment": "/**\n * A string identifier of the FQL source. For example, if performing a raw query against the API this would be *query*.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "src: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "string"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "src",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            },
+            {
+              "kind": "PropertySignature",
+              "canonicalReference": "fauna!Span#start:member",
+              "docComment": "/**\n * The span's starting index within the src, inclusive.\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "start: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "number"
+                },
+                {
+                  "kind": "Content",
+                  "text": ";"
+                }
+              ],
+              "isReadonly": false,
+              "isOptional": false,
+              "releaseTag": "Public",
+              "name": "start",
+              "propertyTypeTokenRange": {
+                "startIndex": 1,
+                "endIndex": 2
+              }
+            }
+          ],
+          "extendsTokenRanges": []
+        },
+        {
+          "kind": "Class",
+          "canonicalReference": "fauna!ThrottlingError:class",
+          "docComment": "/**\n * ThrottlingError indicates some capacity limit was exceeded and thus the request could not be served.\n */\n",
+          "excerptTokens": [
+            {
+              "kind": "Content",
+              "text": "export declare class ThrottlingError extends "
+            },
+            {
+              "kind": "Reference",
+              "text": "ServiceError",
+              "canonicalReference": "fauna!ServiceError:class"
+            },
+            {
+              "kind": "Content",
+              "text": " "
+            }
+          ],
+          "fileUrlPath": "lib/wire-protocol.d.ts",
+          "releaseTag": "Public",
+          "name": "ThrottlingError",
+          "preserveMemberOrder": false,
+          "members": [
+            {
+              "kind": "Constructor",
+              "canonicalReference": "fauna!ThrottlingError:constructor(1)",
+              "docComment": "/**\n * Constructs a new instance of the `ThrottlingError` class\n */\n",
+              "excerptTokens": [
+                {
+                  "kind": "Content",
+                  "text": "constructor(error: "
+                },
+                {
+                  "kind": "Content",
+                  "text": "{\n        code: string;\n        message: string;\n        httpStatus: 429;\n        summary?: string;\n    }"
+                },
+                {
+                  "kind": "Content",
+                  "text": ");"
+                }
+              ],
+              "releaseTag": "Public",
+              "isProtected": false,
+              "overloadIndex": 1,
+              "parameters": [
+                {
+                  "parameterName": "error",
+                  "parameterTypeTokenRange": {
+                    "startIndex": 1,
+                    "endIndex": 2
+                  },
+                  "isOptional": false
+                }
+              ]
+            }
+          ],
+          "extendsTokenRange": {
+            "startIndex": 1,
+            "endIndex": 2
+          },
+          "implementsTokenRanges": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,6 +1,5 @@
 import Agent, { HttpsAgent } from "agentkeepalive";
 import axios, { AxiosInstance } from "axios";
-import { env } from "process";
 import { ClientConfiguration, endpoints } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
 import {
@@ -90,7 +89,11 @@ export class Client {
   }
 
   #getSecret(partialClientConfig?: Partial<ClientConfiguration>): string {
-    const maybeSecret = partialClientConfig?.secret || env["FAUNA_SECRET"];
+    let fallback = undefined;
+    if (typeof process === "object") {
+      fallback = process.env["FAUNA_SECRET"];
+    }
+    const maybeSecret = partialClientConfig?.secret || fallback;
     if (maybeSecret === undefined) {
       throw new Error(
         "You must provide a secret to the driver. Set it \

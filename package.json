@@ -2,7 +2,8 @@
   "name": "fauna",
   "version": "10.0.0",
   "description": "TODO",
-  "main": "./lib/index.js",
+  "main": "./lib/node/index.js",
+  "browser": "./lib/browser/index.js",
   "types": "./lib/index.d.ts",
   "repository": "https://github.com/fauna/fauna-js.git",
   "author": "Fauna",
@@ -30,8 +31,9 @@
     "typescript": "^4.8.4"
   },
   "scripts": {
-    "build": "yarn build:node; yarn build:types",
-    "build:node": "esbuild src/index.ts --bundle --sourcemap --platform=node --outfile=lib/index.js",
+    "build": "rm -r lib; yarn build:node; yarn build:browser; yarn build:types",
+    "build:browser": "esbuild src/index.ts --bundle --platform=browser --minify --sourcemap --format=esm --outfile=lib/browser/index.js",
+    "build:node": "esbuild src/index.ts --bundle --sourcemap --platform=node --outfile=lib/node/index.js",
     "build:types": "tsc -emitDeclarationOnly --declaration true",
     "lint": "eslint -f unix \"src/**/*.{ts,tsx}\"",
     "fauna-local": "docker start faunadb-fql-x || docker run --rm -d --name faunadb-fql-x -p 8443:8443 -p 8084:8084 -v $PWD/fauna-local-config.yml:/fauna/etc/fauna-local-config.yml gcr.io/faunadb-cloud/faunadb/enterprise --config /fauna/etc/fauna-local-config.yml",

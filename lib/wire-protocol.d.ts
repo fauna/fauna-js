@@ -111,25 +111,11 @@ export declare class QueryRuntimeError extends ServiceError {
  * failing.
  */
 export declare class QueryCheckError extends ServiceError {
-  /**
-     * An array of {@link QueryCheckFailure} conveying the root cause of an _invalid query_.
-     * QueryCheckFailure are detected _before runtime_ - when your query is analyzed for correctness
-     * prior to execution.
-     * Present only for client-side problems caused by submitting malformed queries.
-     * See {@link TODO} for a list of statsuCode and code associated with failures.
-     * @example
-     * ### This query is invalid as semicolons are not valid syntax.
-     * ```
-  p   * "taco".length;
-     * ```
-     */
-  readonly failures: Array<QueryCheckFailure>;
   constructor(error: {
     code: string;
     message: string;
     httpStatus: 400;
     summary?: string;
-    failures: QueryCheckFailure[];
   });
 }
 /**
@@ -250,33 +236,6 @@ export declare class ProtocolError extends Error {
    */
   readonly httpStatus: number;
   constructor(error: { message: string; httpStatus: number });
-}
-/**
- * QueryCheckFailure represents the cause of a pre-execution problem with the query.
- * For example, if a query has malformed syntax the error thrown by the API will
- * include a QueryCheckFailure indicating where this syntax error is.
- */
-export interface QueryCheckFailure {
-  /**
-   * A predefined code indicating the type of QueryCheckFailure.
-   * See the docs at {@link todo} for a list of codes.
-   * Safe for programmatic use.
-   */
-  readonly code: string;
-  /**
-   * A short, human readable description of the QueryCheckFailure.
-   * Not intended for programmatic use.
-   */
-  readonly message: string;
-  /**
-   * Further detail about the QueryCheckFailure. Intended to be displayed as an
-   * in-line annotation of the error location.
-   */
-  readonly annotation?: string;
-  /**
-   * A source span indicating a segment of FQL. Indicates where the QueryCheckFailure occured.
-   */
-  readonly location?: Span;
 }
 /**
  * A source span indicating a segment of FQL.

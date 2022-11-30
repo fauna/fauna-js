@@ -20,7 +20,6 @@ export {
   ThrottlingError,
   type JSONObject,
   type JSONValue,
-  type QueryCheckFailure,
   type QueryRequest,
   type QueryRequestHeaders,
   type QueryResponse,

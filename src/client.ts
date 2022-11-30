@@ -9,7 +9,6 @@ import {
   NetworkError,
   ProtocolError,
   QueryCheckError,
-  QueryCheckFailure,
   QueryRuntimeError,
   QueryTimeoutError,
   ServiceError,
@@ -200,7 +199,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       code: string;
       message: string;
       summary?: string;
-      failures?: Array<QueryCheckFailure>;
       stats?: { [key: string]: number };
       trace?: Array<Span>;
       txn_time?: string;
@@ -226,18 +224,16 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       // TODO stats not yet returned. Include it when it is.
       return new QueryTimeoutError({ httpStatus, ...error });
     }
-    // TODO trace, txn_time, and stats not yet returned for QueryRuntimeError
-    // flip to check for those rather than a specific code.
-    if (httpStatus === 400 && error.code === "invalid_argument") {
+    // TODO using a list of codes to categorize as QueryCheckError
+    // vs QueryRutimeError is brittle and coupled to the service
+    // implementation.
+    // We need a field sent across the wire that categorizes 400s as either
+    // runtime failures or check failures so we are not coupled to the list
+    // of codes emitted by the service.
+    if (httpStatus === 400 && queryCheckFailureCodes.includes(error.code)) {
+      return new QueryCheckError({ httpStatus, ...error });
+    } else if (httpStatus === 400) {
       return new QueryRuntimeError({ httpStatus, ...error });
-    }
-    if (httpStatus === 400 && error.failures !== undefined) {
-      // same trick
-      return new QueryCheckError({
-        httpStatus,
-        ...error,
-        failures: error.failures,
-      });
     }
     return new ServiceError({ httpStatus, ...error });
   }
@@ -284,6 +280,14 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 }
 
 // Private types and constants for internal logic.
+
+const queryCheckFailureCodes = [
+  "invalid_function_definition",
+  "invalid_identifier",
+  "invalid_query",
+  "invalid_syntax",
+  "invalid_type",
+];
 
 const nodeOrAxiosNetworkErrorCodes = [
   "ECONNABORTED",

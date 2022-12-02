@@ -142,7 +142,7 @@ describe.each`
   );
 
   it("throws a QueryCheckError if the query is invalid", async () => {
-    expect.assertions(8);
+    expect.assertions(5);
     try {
       await doQuery<number>(
         queryType,
@@ -162,11 +162,6 @@ describe.each`
         );
         expect(e.summary).toEqual(
           expect.stringContaining('1 | "taco".length;')
-        );
-        expect(e.failures.length).toEqual(1);
-        expect(e.failures[0]?.code).toEqual("invalid_syntax");
-        expect(e.failures[0]?.message).toEqual(
-          expect.stringContaining('found ";"')
         );
       }
     }

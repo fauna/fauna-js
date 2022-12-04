@@ -6,22 +6,13 @@ export {
 } from "./client-configuration";
 export { type QueryBuilder, fql } from "./query-builder";
 export {
-  AuthenticationError,
-  AuthorizationError,
   ClientError,
   NetworkError,
   ProtocolError,
-  QueryCheckError,
-  QueryRuntimeError,
-  QueryTimeoutError,
   ServiceError,
-  ServiceInternalError,
-  ServiceTimeoutError,
-  ThrottlingError,
   type JSONObject,
   type JSONValue,
   type QueryRequest,
   type QueryRequestHeaders,
   type QueryResponse,
-  type Span,
 } from "./wire-protocol";

@@ -1,15 +1,7 @@
 import MockAdapter from "axios-mock-adapter";
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
-import {
-  AuthorizationError,
-  NetworkError,
-  QueryTimeoutError,
-  ServiceError,
-  ServiceInternalError,
-  ServiceTimeoutError,
-  ThrottlingError,
-} from "../../src/wire-protocol";
+import { NetworkError, ServiceError } from "../../src/wire-protocol";
 
 let client: Client;
 
@@ -41,17 +33,17 @@ describe("query", () => {
 
   // do not treat these codes as canonical. Refer to documentation. These are simply for logical testing.
   it.each`
-    httpStatus | expectedErrorType       | expectedErrorFields
-    ${403}     | ${AuthorizationError}   | ${{ code: "no_permission", message: "nope" }}
-    ${440}     | ${QueryTimeoutError}    | ${{ code: "query_timeout", message: "too slow - increase your timeout" }}
-    ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!" }}
-    ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much" }}
-    ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error" }}
-    ${503}     | ${ServiceTimeoutError}  | ${{ code: "service_timeout", message: "too slow on our side" }}
+    httpStatus | expectedErrorFields
+    ${403}     | ${{ code: "no_permission", message: "nope" }}
+    ${440}     | ${{ code: "query_timeout", message: "too slow - increase your timeout" }}
+    ${999}     | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!" }}
+    ${429}     | ${{ code: "throttle", message: "too much" }}
+    ${500}     | ${{ code: "internal_error", message: "unexpected error" }}
+    ${503}     | ${{ code: "service_timeout", message: "too slow on our side" }}
   `(
     "throws an $expectedErrorType on a $httpStatus",
-    async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
-      expect.assertions(4);
+    async ({ httpStatus, expectedErrorFields }) => {
+      expect.assertions(3);
       // axios mock adapater currently has a bug that cannot match
       // routes on clients using a baseURL. As such we use onAny() in these tests.
       mockAxios.onAny().reply(httpStatus, { error: expectedErrorFields });
@@ -59,7 +51,6 @@ describe("query", () => {
         await client.query({ query: "'foo'.length" });
       } catch (e) {
         if (e instanceof ServiceError) {
-          expect(e).toBeInstanceOf(expectedErrorType);
           expect(e.message).toEqual(expectedErrorFields.message);
           expect(e.httpStatus).toEqual(httpStatus);
           expect(e.code).toEqual(expectedErrorFields.code);

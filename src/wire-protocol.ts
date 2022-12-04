@@ -75,6 +75,8 @@ export interface QueryResponse<T> {
 export class ServiceError extends Error {
   /**
    * The HTTP Status Code of the error.
+   * It is safe to write programmatic logic against the httpStatus. They are
+   * part of the API contract.
    */
   readonly httpStatus: number;
   /**
@@ -108,175 +110,6 @@ export class ServiceError extends Error {
     if (error.summary) {
       this.summary = error.summary;
     }
-  }
-}
-
-/**
- * An error response that is the result of the query failing during execution.
- * QueryRuntimeError's occur when a bug in your query causes an invalid execution
- * to be requested.
- * The 'code' field will vary based on the specific error cause.
- */
-export class QueryRuntimeError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 400;
-    summary?: string;
-  }) {
-    super(error);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, QueryRuntimeError);
-    }
-    this.name = "QueryRuntimeError";
-    // TODO trace, txn_time, and stats not yet returned for QueryRuntimeError
-    // flip to check for those rather than a specific code.
-  }
-}
-
-/**
- * An error due to a "compile-time" check of the query
- * failing.
- */
-export class QueryCheckError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 400;
-    summary?: string;
-  }) {
-    super(error);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, QueryCheckError);
-    }
-    this.name = "QueryCheckError";
-  }
-}
-
-/**
- * A failure due to the timeout being exceeded, but the timeout
- * was set lower than the query's expected processing time.
- * This response is distinguished from a ServiceTimeoutException
- * in that a QueryTimeoutError shows Fauna behaving in an expected
- * manner.
- */
-export class QueryTimeoutError extends ServiceError {
-  /**
-   * Statistics regarding the query.
-   */
-  readonly stats?: { [key: string]: number };
-
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 440;
-    summary?: string;
-    // TODO stats not yet supported in API
-    stats?: { [key: string]: number };
-  }) {
-    const { stats, ...props } = error;
-    super(props);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, QueryTimeoutError);
-    }
-    this.name = "QueryTimeoutError";
-    if (stats) {
-      this.stats = stats;
-    }
-  }
-}
-
-/**
- * AuthenticationError indicates invalid credentials were
- * used.
- */
-export class AuthenticationError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 401;
-    summary?: string;
-  }) {
-    super(error);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, AuthenticationError);
-    }
-    this.name = "AuthenticationError";
-  }
-}
-
-/**
- * AuthorizationError indicates the credentials used do not have
- * permission to perform the requested action.
- */
-export class AuthorizationError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 403;
-    summary?: string;
-  }) {
-    super(error);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, AuthorizationError);
-    }
-    this.name = "AuthorizationError";
-  }
-}
-
-/**
- * ThrottlingError indicates some capacity limit was exceeded
- * and thus the request could not be served.
- */
-export class ThrottlingError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 429;
-    summary?: string;
-  }) {
-    super(error);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ThrottlingError);
-    }
-    this.name = "ThrottlingError";
-  }
-}
-
-/**
- * ServiceInternalError indicates Fauna failed unexpectedly.
- */
-export class ServiceInternalError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 500;
-    summary?: string;
-  }) {
-    super(error);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ServiceInternalError);
-    }
-    this.name = "ServiceInternalError";
-  }
-}
-
-/**
- * ServiceTimeoutError indicates Fauna was not available to servce
- * the request before the timeout was reached.
- */
-export class ServiceTimeoutError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 503;
-    summary?: string;
-  }) {
-    super(error);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ServiceTimeoutError);
-    }
-    this.name = "ServiceTimeoutError";
   }
 }
 
@@ -332,29 +165,6 @@ export class ProtocolError extends Error {
     this.name = "ProtocolError";
     this.httpStatus = error.httpStatus;
   }
-}
-
-/**
- * A source span indicating a segment of FQL.
- */
-export interface Span {
-  /**
-   * A string identifier of the FQL source. For example, if performing
-   * a raw query against the API this would be *query*.
-   */
-  src: string;
-  /**
-   * The span's starting index within the src, inclusive.
-   */
-  start: number;
-  /**
-   * The span's ending index within the src, inclusive.
-   */
-  end: number;
-  /**
-   * The name of the enclosing function, if applicable.
-   */
-  function: string;
 }
 
 /**

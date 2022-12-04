@@ -4,15 +4,12 @@ import {
   endpoints,
 } from "../../src/client-configuration";
 import {
-  AuthenticationError,
   ClientError,
   NetworkError,
   ProtocolError,
-  QueryCheckError,
   type QueryRequest,
-  QueryRuntimeError,
-  QueryTimeoutError,
   QueryResponse,
+  ServiceError,
 } from "../../src/wire-protocol";
 import { env } from "process";
 import { fql } from "../../src/query-builder";
@@ -151,7 +148,7 @@ describe.each`
         client
       );
     } catch (e) {
-      if (e instanceof QueryCheckError) {
+      if (e instanceof ServiceError) {
         expect(e.message).toEqual("The query failed 1 validation check");
         expect(e.code).toEqual("invalid_query");
         expect(e.httpStatus).toEqual(400);
@@ -177,7 +174,7 @@ describe.each`
         client
       );
     } catch (e) {
-      if (e instanceof QueryRuntimeError) {
+      if (e instanceof ServiceError) {
         expect(e.httpStatus).toEqual(400);
         expect(e.code).toEqual("invalid_argument");
         expect(e.summary).toEqual(
@@ -208,7 +205,7 @@ describe.each`
         badClient
       );
     } catch (e) {
-      if (e instanceof QueryTimeoutError) {
+      if (e instanceof ServiceError) {
         expect(e.message).toEqual(
           expect.stringContaining("aggressive deadline")
         );
@@ -239,7 +236,7 @@ describe.each`
         badClient
       );
     } catch (e) {
-      if (e instanceof AuthenticationError) {
+      if (e instanceof ServiceError) {
         expect(e.message).toEqual("Unauthorized: Access token required");
         expect(e.code).toEqual("unauthorized");
         expect(e.httpStatus).toEqual(401);
@@ -303,7 +300,7 @@ describe.each`
   it("throws a ProtocolError if the http fails outside Fauna", async () => {
     expect.assertions(2);
     const badClient = new Client({
-      endpoint: new URL("https://frontdoor.fauna.com/"),
+      endpoint: new URL("http://localhost:8443/foo"),
       max_conns: 5,
       secret: "nah",
       timeout_ms: 60,

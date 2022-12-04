@@ -3,19 +3,10 @@ import axios, { AxiosInstance } from "axios";
 import { ClientConfiguration, endpoints } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
 import {
-  AuthenticationError,
-  AuthorizationError,
   ClientError,
   NetworkError,
   ProtocolError,
-  QueryCheckError,
-  QueryRuntimeError,
-  QueryTimeoutError,
   ServiceError,
-  ServiceInternalError,
-  ServiceTimeoutError,
-  type Span,
-  ThrottlingError,
   type QueryRequest,
   type QueryRequestHeaders,
   type QueryResponse,
@@ -175,7 +166,10 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         ) {
           error.summary = e.response.data.summary;
         }
-        return this.#getServiceError(error, e.response.status);
+        return new ServiceError({
+          httpStatus: e.response.status,
+          ...error,
+        });
       }
       // we got a different error from the protocol layer
       return new ProtocolError({
@@ -205,50 +199,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         cause: e,
       }
     );
-  }
-
-  #getServiceError(
-    error: {
-      code: string;
-      message: string;
-      summary?: string;
-      stats?: { [key: string]: number };
-      trace?: Array<Span>;
-      txn_time?: string;
-    },
-    httpStatus: number
-  ): ServiceError {
-    if (httpStatus === 401) {
-      return new AuthenticationError({ httpStatus, ...error });
-    }
-    if (httpStatus === 403) {
-      return new AuthorizationError({ httpStatus, ...error });
-    }
-    if (httpStatus === 500) {
-      return new ServiceInternalError({ httpStatus, ...error });
-    }
-    if (httpStatus === 503) {
-      return new ServiceTimeoutError({ httpStatus, ...error });
-    }
-    if (httpStatus === 429) {
-      return new ThrottlingError({ httpStatus, ...error });
-    }
-    if (httpStatus === 440) {
-      // TODO stats not yet returned. Include it when it is.
-      return new QueryTimeoutError({ httpStatus, ...error });
-    }
-    // TODO using a list of codes to categorize as QueryCheckError
-    // vs QueryRutimeError is brittle and coupled to the service
-    // implementation.
-    // We need a field sent across the wire that categorizes 400s as either
-    // runtime failures or check failures so we are not coupled to the list
-    // of codes emitted by the service.
-    if (httpStatus === 400 && queryCheckFailureCodes.includes(error.code)) {
-      return new QueryCheckError({ httpStatus, ...error });
-    } else if (httpStatus === 400) {
-      return new QueryRuntimeError({ httpStatus, ...error });
-    }
-    return new ServiceError({ httpStatus, ...error });
   }
 
   #setHeaders(fromObject: QueryRequestHeaders, headerObject: any): void {
@@ -291,16 +241,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
   }
 }
-
-// Private types and constants for internal logic.
-
-const queryCheckFailureCodes = [
-  "invalid_function_definition",
-  "invalid_identifier",
-  "invalid_query",
-  "invalid_syntax",
-  "invalid_type",
-];
 
 const nodeOrAxiosNetworkErrorCodes = [
   "ECONNABORTED",

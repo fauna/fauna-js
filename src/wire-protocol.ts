@@ -65,6 +65,8 @@ export interface QueryResponse<T> {
   stats: { [key: string]: number };
   /** The last transaction time of the query. An ISO-8601 date string. */
   txn_time: string;
+  /** A readable summary of any warnings or logs emitted by the query. */
+  summary?: string;
 }
 
 /**

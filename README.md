@@ -12,10 +12,11 @@
 
 ## Running tests
 
-1. Start local Fauna containers using `yarn fauna-local; yarn fauna-local-alt-port`
-2. Wait a bit for for those containers to start (TODO automate this wait).
-3. Run the tests: `yarn test`
+1. Start a docker desktop or other docker platform.
+2. Run `yarn test`. This will start local fauna containers, verify they're up and run all tests.
 
 ## Linting your code
 
-Run `yarn lint`. Linting will auslo run automatically on each commit.
+Linting runs automatically on each commit.
+
+If you wish to run on-demand run `yarn lint`.

@@ -68,6 +68,79 @@ describe("query", () => {
     }
   );
 
+  // do not treat these codes as canonical. Refer to documentation. These are simply for logical testing.
+  it.each`
+    httpStatus | expectedErrorType       | expectedErrorFields
+    ${403}     | ${AuthorizationError}   | ${{ code: "no_permission", message: "nope", summary: "the summary" }}
+    ${440}     | ${QueryTimeoutError}    | ${{ code: "query_timeout", message: "too slow - increase your timeout", summary: "the summary" }}
+    ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!", summary: "the summary" }}
+    ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much", summary: "the summary" }}
+    ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error", summary: "the summary" }}
+    ${503}     | ${ServiceTimeoutError}  | ${{ code: "service_timeout", message: "too slow on our side", summary: "the summary" }}
+  `(
+    "Includes a summary when present in error field",
+    async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
+      expect.assertions(5);
+      // axios mock adapater currently has a bug that cannot match
+      // routes on clients using a baseURL. As such we use onAny() in these tests.
+      mockAxios.onAny().reply(httpStatus, { error: expectedErrorFields });
+      try {
+        await client.query({ query: "'foo'.length" });
+      } catch (e) {
+        if (e instanceof ServiceError) {
+          expect(e).toBeInstanceOf(expectedErrorType);
+          expect(e.message).toEqual(expectedErrorFields.message);
+          expect(e.httpStatus).toEqual(httpStatus);
+          expect(e.code).toEqual(expectedErrorFields.code);
+          expect(e.summary).toEqual(expectedErrorFields.summary);
+        }
+      }
+    }
+  );
+
+  it.each`
+    httpStatus | expectedErrorType       | expectedErrorFields
+    ${403}     | ${AuthorizationError}   | ${{ code: "no_permission", message: "nope" }}
+    ${440}     | ${QueryTimeoutError}    | ${{ code: "query_timeout", message: "too slow - increase your timeout" }}
+    ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!" }}
+    ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much" }}
+    ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error" }}
+    ${503}     | ${ServiceTimeoutError}  | ${{ code: "service_timeout", message: "too slow on our side" }}
+  `(
+    "Includes a summary when not present in error field but present at top-level",
+    async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
+      expect.assertions(5);
+      // axios mock adapater currently has a bug that cannot match
+      // routes on clients using a baseURL. As such we use onAny() in these tests.
+      mockAxios
+        .onAny()
+        .reply(httpStatus, {
+          error: expectedErrorFields,
+          summary: "the summary",
+        });
+      try {
+        await client.query({ query: "'foo'.length" });
+      } catch (e) {
+        if (e instanceof ServiceError) {
+          expect(e).toBeInstanceOf(expectedErrorType);
+          expect(e.message).toEqual(expectedErrorFields.message);
+          expect(e.httpStatus).toEqual(httpStatus);
+          expect(e.code).toEqual(expectedErrorFields.code);
+          expect(e.summary).toEqual("the summary");
+        }
+      }
+    }
+  );
+
+  it("Includes a summary in a QueryResult when present at top-level", async () => {
+    // axios mock adapater currently has a bug that cannot match
+    // routes on clients using a baseURL. As such we use onAny() in these tests.
+    mockAxios.onAny().reply(200, { data: 3, summary: "the summary" });
+    const actual = await client.query({ query: "'foo'.length" });
+    expect(actual.data).toEqual(3);
+    expect(actual.summary).toEqual("the summary");
+  });
+
   it("throws an NetworkError on a timeout", async () => {
     expect.assertions(2);
     // axios mock adapater currently has a bug that cannot match

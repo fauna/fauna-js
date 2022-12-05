@@ -148,7 +148,12 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         { headers }
       );
       const txnDate = new Date(result.data.txn_time);
-      if (this.#lastTxn === undefined || this.#lastTxn < txnDate) {
+      if (
+        (this.#lastTxn === undefined && result.data.txn_time !== undefined) ||
+        (result.data.txn_time !== undefined &&
+          this.#lastTxn !== undefined &&
+          this.#lastTxn < txnDate)
+      ) {
         this.#lastTxn = txnDate;
       }
       return result.data;
@@ -162,7 +167,15 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     if (e.response) {
       // we got an error from the fauna service
       if (e.response.data?.error) {
-        return this.#getServiceError(e.response.data.error, e.response.status);
+        const error = e.response.data.error;
+        // WIP - summary is moving to a top-level field in the service
+        if (
+          error.summary === undefined &&
+          e.response.data.summary !== undefined
+        ) {
+          error.summary = e.response.data.summary;
+        }
+        return this.#getServiceError(error, e.response.status);
       }
       // we got a different error from the protocol layer
       return new ProtocolError({

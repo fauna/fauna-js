@@ -6,6 +6,8 @@ export interface QueryRequest extends QueryRequestHeaders {
   query: string;
   /** Optional arguments if your query is interpolated. */
   arguments?: JSONObject;
+  /** Optional format argument to switch the argument and response format **/
+  format?: string;
 }
 export interface QueryRequestHeaders {
   /**

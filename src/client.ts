@@ -138,13 +138,13 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   }
 
   async #query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
-    const { query, arguments: args } = queryRequest;
+    const { query, arguments: args, format } = queryRequest;
     const headers: { [key: string]: string } = {};
     this.#setHeaders(queryRequest, headers);
     try {
       const result = await this.client.post<QueryResponse<T>>(
         "/query/1",
-        { query, arguments: args },
+        { query, arguments: args, format },
         { headers }
       );
       const txnDate = new Date(result.data.txn_time);

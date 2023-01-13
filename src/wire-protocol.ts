@@ -8,7 +8,11 @@ export interface QueryRequest extends QueryRequestHeaders {
   /** Optional arguments if your query is interpolated. */
   arguments?: JSONObject;
 
-  /** Optional format argument to switch the argument and response format **/
+  /**
+   * Optional format argument to switch the argument and response format. Note
+   * that other drivers do not need to support this, as this format is only used
+   * for the shell output.
+   */
   format?: string;
 }
 

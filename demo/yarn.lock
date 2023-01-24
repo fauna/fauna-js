@@ -1609,18 +1609,8 @@ fastq@^1.6.0:
   dependencies:
     reusify "^1.0.4"
 
-"fauna-js-demo@file:./..":
-  version "1.0.1"
-  dependencies:
-    "@colors/colors" "^1.5.0"
-    "@tsconfig/node16" "^1.0.3"
-    cli-table3 "^0.6.3"
-    jest-diff "^29.3.1"
-    winston "^3.8.2"
-
-"fauna@file:./tmp/fauna-v10.0.0.tgz":
+"fauna@file:./..":
   version "10.0.0"
-  resolved "file:./tmp/fauna-v10.0.0.tgz#98fcad35ad6457d9b42dedd8109b34ab6ef30865"
   dependencies:
     agentkeepalive "^4.2.1"
     axios "^1.1.2"

@@ -10,7 +10,7 @@
     "@colors/colors": "^1.5.0",
     "@tsconfig/node16": "^1.0.3",
     "cli-table3": "^0.6.3",
-    "fauna-js-demo": "file:./..",
+    "fauna": "file:./..",
     "jest-diff": "^29.3.1",
     "winston": "^3.8.2"
   },
@@ -22,7 +22,6 @@
     "@typescript-eslint/parser": "^5.40.0",
     "eslint": "^8.25.0",
     "eslint-plugin-tsdoc": "^0.2.17",
-    "fauna": "file:./tmp/fauna-v10.0.0.tgz",
     "jest": "^29.1.2",
     "prettier": "^2.7.1",
     "pretty-quick": "^3.1.3",

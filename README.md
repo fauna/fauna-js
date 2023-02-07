@@ -16,7 +16,7 @@
 ## Setting up this Repo
 
 1. Clone the repository; e.g. `gh repo clone fauna/fauna-js` if you use the GitHub CLI
-2. Install dependencies via `yarn install`
+2. Install dependencies via `yarn add`
 
 ## Running tests
 
@@ -41,7 +41,7 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
 ## Set-up and Dependencies
 This driver is not yet hosted on npm. To use it in a toy app clone this repo and add a file system dependency from a node application.
 
-For example: `yarn install file://path-to-your-clone`
+For example: `yarn add file://path-to-your-clone`
 
 
 ## Pre-requisites

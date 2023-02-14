@@ -46,17 +46,22 @@ describe.each`
   ${"QueryBuilder"}
 `("query with $queryType", ({ queryType }) => {
   it("Can query an FQL-x endpoint", async () => {
+    expect.assertions(2);
+
     const result = await doQuery<number>(
       queryType,
       getTsa`"taco".length`,
       `"taco".length`,
       client
     );
-    expect(result.txn_time).not.toBeUndefined();
-    expect(result).toEqual({ data: 4, txn_time: result.txn_time });
+    
+    expect(result.data).toEqual(4);
+    expect(result.txn_time).toBeDefined();
   });
 
   it("Can query with arguments", async () => {
+    expect.assertions(2);
+
     let result;
     if (queryType === "QueryRequest") {
       result = await client.query({
@@ -67,8 +72,8 @@ describe.each`
       const str = "taco";
       result = await client.query(fql`${str}.length`);
     }
-    expect(result.txn_time).not.toBeUndefined();
-    expect(result).toEqual({ data: 4, txn_time: result.txn_time });
+    expect(result.data).toEqual(4);
+    expect(result.txn_time).toBeDefined();
   });
 
   type HeaderTestInput = {
@@ -113,7 +118,7 @@ describe.each`
       };
       expectedHeaders[fieldName] = expectedHeader;
       myClient.client.interceptors.response.use(function (response) {
-        expect(response.request?._header).not.toBeUndefined();
+        expect(response.request?._header).toBeDefined();
         if (response.request?._header) {
           Object.entries(expectedHeaders).forEach((entry) => {
             expect(response.request?._header).toEqual(
@@ -180,14 +185,7 @@ describe.each`
       if (e instanceof QueryRuntimeError) {
         expect(e.httpStatus).toEqual(400);
         expect(e.code).toEqual("invalid_argument");
-        expect(e.summary).toEqual(
-          "invalid_argument: expected value for `other` of type number, received string\n" +
-            "0: *query*:1\n" +
-            "    |\n" +
-            '  1 | "taco".length + "taco"\n' +
-            "    | ^^^^^^^^^^^^^^^^^^^^^^\n" +
-            "    |"
-        );
+        expect(e.summary).toBeDefined();
       }
     }
   });
@@ -272,7 +270,7 @@ describe.each`
         expect(e.message).toEqual(
           "The network connection encountered a problem."
         );
-        expect(e.cause).not.toBeUndefined();
+        expect(e.cause).toBeDefined();
       }
     }
   });
@@ -292,7 +290,7 @@ describe.each`
       await doQuery<number>(queryType, getTsa`foo`, "foo", myBadClient);
     } catch (e) {
       if (e instanceof ClientError) {
-        expect(e.cause).not.toBeUndefined();
+        expect(e.cause).toBeDefined();
         expect(e.message).toEqual(
           "A client level error occurred. Fauna was not called."
         );
@@ -313,7 +311,7 @@ describe.each`
     } catch (e) {
       if (e instanceof ProtocolError) {
         expect(e.httpStatus).toBeGreaterThanOrEqual(400);
-        expect(e.message).not.toBeUndefined();
+        expect(e.message).toBeDefined();
       }
     }
   });

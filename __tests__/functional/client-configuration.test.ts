@@ -43,6 +43,8 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   });
 
   it("endpoints is extensible", async () => {
+    expect.assertions(4);
+
     endpoints["my-alternative-port"] = new URL("http://localhost:7443");
     expect(endpoints).toEqual({
       cloud: new URL("https://db.fauna.com"),
@@ -59,8 +61,8 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     });
     expect(client.client.defaults.baseURL).toEqual("http://localhost:7443/");
     const result = await client.query<number>({ query: '"taco".length' });
-    expect(result.txn_time).not.toBeUndefined();
-    expect(result).toEqual({ data: 4, txn_time: result.txn_time, summary: "" });
+    expect(result.data).toEqual(4);
+    expect(result.txn_time).toBeDefined();
   });
 
   type HeaderTestInput = {

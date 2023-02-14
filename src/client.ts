@@ -221,37 +221,29 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     },
     httpStatus: number
   ): ServiceError {
-    if (httpStatus === 401) {
-      return new AuthenticationError({ httpStatus, ...error });
+    switch (httpStatus) {
+      case 400:
+        if (httpStatus === 400 && queryCheckFailureCodes.includes(error.code)) {
+          return new QueryCheckError({ httpStatus, ...error });
+        }
+
+        return new QueryRuntimeError({ httpStatus, ...error });
+      case 401:
+        return new AuthenticationError({ httpStatus, ...error });
+      case 403:
+        return new AuthorizationError({ httpStatus, ...error });
+      case 429:
+        return new ThrottlingError({ httpStatus, ...error });
+      case 440:
+        // TODO: stats not yet returned. Include it when it is.
+        return new QueryTimeoutError({ httpStatus, ...error });
+      case 500:
+        return new ServiceInternalError({ httpStatus, ...error });
+      case 503:
+        return new ServiceTimeoutError({ httpStatus, ...error });
+      default:
+        return new ServiceError({ httpStatus, ...error });
     }
-    if (httpStatus === 403) {
-      return new AuthorizationError({ httpStatus, ...error });
-    }
-    if (httpStatus === 500) {
-      return new ServiceInternalError({ httpStatus, ...error });
-    }
-    if (httpStatus === 503) {
-      return new ServiceTimeoutError({ httpStatus, ...error });
-    }
-    if (httpStatus === 429) {
-      return new ThrottlingError({ httpStatus, ...error });
-    }
-    if (httpStatus === 440) {
-      // TODO stats not yet returned. Include it when it is.
-      return new QueryTimeoutError({ httpStatus, ...error });
-    }
-    // TODO using a list of codes to categorize as QueryCheckError
-    // vs QueryRutimeError is brittle and coupled to the service
-    // implementation.
-    // We need a field sent across the wire that categorizes 400s as either
-    // runtime failures or check failures so we are not coupled to the list
-    // of codes emitted by the service.
-    if (httpStatus === 400 && queryCheckFailureCodes.includes(error.code)) {
-      return new QueryCheckError({ httpStatus, ...error });
-    } else if (httpStatus === 400) {
-      return new QueryRuntimeError({ httpStatus, ...error });
-    }
-    return new ServiceError({ httpStatus, ...error });
   }
 
   #setHeaders(fromObject: QueryRequestHeaders, headerObject: any): void {

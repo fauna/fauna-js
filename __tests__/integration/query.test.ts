@@ -46,20 +46,18 @@ describe.each`
   ${"QueryBuilder"}
 `("query with $queryType", ({ queryType }) => {
   it("Can query an FQL-x endpoint", async () => {
-
     const result = await doQuery<number>(
       queryType,
       getTsa`"taco".length`,
       `"taco".length`,
       client
     );
-    
+
     expect(result.data).toEqual(4);
     expect(result.txn_time).toBeDefined();
   });
 
   it("Can query with arguments", async () => {
-
     let result;
     if (queryType === "QueryRequest") {
       result = await client.query({

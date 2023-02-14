@@ -158,7 +158,7 @@ describe("query", () => {
           data: {
             error: {
               message: "The network connection encountered a problem.",
-              code: "",
+              code: 504,
             },
           },
           status: 0,
@@ -175,7 +175,7 @@ describe("query", () => {
     }
   });
 
-  it("throws an NetworkError on an axios network error", async () => {
+  it("throws an NetworkError on a network error", async () => {
     expect.assertions(1);
 
     try {
@@ -185,7 +185,7 @@ describe("query", () => {
           data: {
             error: {
               message: "The network connection encountered a problem.",
-              code: "",
+              code: 500,
             },
           },
           status: 0,
@@ -217,7 +217,7 @@ describe("query", () => {
     ${"ERR_HTTP2_SESSION_ERROR"}
     ${"ERR_HTTP2_STREAM_CANCEL"}
     ${"ERR_HTTP2_STREAM_ERROR"}
-  `("throws an NetworkError on error code $errorCode", async () => {
+  `("throws an NetworkError on error code $errorCode", async ({ errorCode }) => {
     expect.assertions(1);
 
     try {
@@ -227,7 +227,7 @@ describe("query", () => {
           data: {
             error: {
               message: "The network connection encountered a problem.",
-              code: "",
+              code: errorCode,
             },
           },
           status: 0,

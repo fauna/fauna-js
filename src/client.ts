@@ -31,8 +31,6 @@ const defaultClientConfiguration = {
 export class Client {
   /** The {@link ClientConfiguration} */
   readonly clientConfiguration: ClientConfiguration;
-  /** The underlying {@link AxiosInstance} client. */
-  // readonly client: AxiosInstance;
   /** last_txn this client has seen */
   #lastTxn?: Date;
   // readonly agentSettings = {};

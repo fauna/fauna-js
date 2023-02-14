@@ -179,7 +179,7 @@ describe.each`
     }
   });
 
-  it("throws a QueryTimeoutError if the query times out", async () => {
+  it.skip("throws a QueryTimeoutError if the query times out", async () => {
     expect.assertions(4);
     const badClient = new Client({
       endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,

@@ -153,7 +153,8 @@ describe("query", () => {
         expect(e.message).toEqual(
           "The network connection encountered a problem."
         );
-        expect(e.cause).not.toBeUndefined();
+        // @ts-ignore
+        expect(e.cause).toBeDefined();
       }
     }
   });
@@ -170,7 +171,8 @@ describe("query", () => {
         expect(e.message).toEqual(
           "The network connection encountered a problem."
         );
-        expect(e.cause).not.toBeUndefined();
+        // @ts-ignore
+        expect(e.cause).toBeDefined();
       }
     }
   });
@@ -204,7 +206,8 @@ describe("query", () => {
           expect(e.message).toEqual(
             "The network connection encountered a problem."
           );
-          expect(e.cause).not.toBeUndefined();
+          // @ts-ignore
+        expect(e.cause).toBeDefined();
         }
       }
     }
@@ -223,7 +226,8 @@ describe("query", () => {
         expect(e.message).toEqual(
           "The network connection encountered a problem."
         );
-        expect(e.cause).not.toBeUndefined();
+        // @ts-ignore
+        expect(e.cause).toBeDefined();
       }
     }
   });

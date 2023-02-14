@@ -4,8 +4,10 @@
   "compilerOptions": {
     "lib": ["es2022"],
     "outDir": "./lib",
+    "declaration": true,
     "declarationDir": "./lib",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "ignoreDeprecations": "5.0"
   },
   "include": ["src/**/*.ts"]
 }

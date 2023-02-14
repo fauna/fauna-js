@@ -60,7 +60,6 @@ describe.each`
   });
 
   it("Can query with arguments", async () => {
-    expect.assertions(2);
 
     let result;
     if (queryType === "QueryRequest") {

@@ -23,7 +23,7 @@ import {
 
 const defaultClientConfiguration = {
   max_conns: 10,
-  endpoint: endpoints.cloud,
+  endpoint: endpoints.production,
   timeout_ms: 60_000,
 };
 
@@ -45,7 +45,7 @@ export class Client {
    * ```typescript
    *  const myClient = new Client(
    *   {
-   *     endpoint: endpoints.cloud,
+   *     endpoint: endpoints.production,
    *     max_conns: 10,
    *     secret: "foo",
    *     timeout_ms: 60_000,

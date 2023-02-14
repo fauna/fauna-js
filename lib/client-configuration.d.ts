@@ -48,8 +48,8 @@ export interface ClientConfiguration {
  * @remarks Leverage the `[key: string]: URL;` field to extend to other endpoints.
  */
 export interface Endpoints {
-  /** Fauna's cloud endpoint. */
-  cloud: URL;
+  /** Fauna's production endpoint. */
+  production: URL;
   /** Fauna's preview endpoint for testing new features - requires beta access. */
   preview: URL;
   /**

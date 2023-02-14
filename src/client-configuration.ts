@@ -47,8 +47,8 @@ export interface ClientConfiguration {
  * @remarks Leverage the `[key: string]: URL;` field to extend to other endpoints.
  */
 export interface Endpoints {
-  /** Fauna's cloud endpoint. */
-  cloud: URL;
+  /** Fauna's production endpoint. */
+  production: URL;
   /** Fauna's preview endpoint for testing new features - requires beta access. */
   preview: URL;
   /**
@@ -77,7 +77,7 @@ export interface Endpoints {
  * ```
  */
 export const endpoints: Endpoints = {
-  cloud: new URL("https://db.fauna.com"),
+  production: new URL("https://db.fauna.com"),
   preview: new URL("https://db.fauna-preview.com"),
   local: new URL("http://localhost:8443"),
   localhost: new URL("http://localhost:8443"),

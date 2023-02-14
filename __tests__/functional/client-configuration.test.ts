@@ -13,7 +13,7 @@ describe("ClientConfiguration", () => {
       secret: "foo",
       timeout_ms: 60_000,
       max_conns: 10,
-      endpoint: endpoints.cloud,
+      endpoint: endpoints.production,
     });
   });
 
@@ -24,7 +24,7 @@ describe("ClientConfiguration", () => {
       secret: "bar",
       timeout_ms: 10,
       max_conns: 10,
-      endpoint: endpoints.cloud,
+      endpoint: endpoints.production,
     });
   });
 
@@ -43,10 +43,9 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   });
 
   it("endpoints is extensible", async () => {
-
     endpoints["my-alternative-port"] = new URL("http://localhost:7443");
     expect(endpoints).toEqual({
-      cloud: new URL("https://db.fauna.com"),
+      production: new URL("https://db.fauna.com"),
       preview: new URL("https://db.fauna-preview.com"),
       local: new URL("http://localhost:8443"),
       localhost: new URL("http://localhost:8443"),

@@ -45,7 +45,7 @@ export interface QueryRequestHeaders {
    */
   traceparent?: string;
 }
-export declare type QueryInfo = {
+export type QueryInfo = {
   /** Stats on query performance and cost */
   stats: {
     [key: string]: number;
@@ -57,7 +57,7 @@ export declare type QueryInfo = {
   /** The query's inferred static result type. */
   static_type?: string;
 };
-export declare type QuerySuccess<T> = QueryInfo & {
+export type QuerySuccess<T> = QueryInfo & {
   /**
    * The result of the query. The data is any valid JSON value.
    * @remarks
@@ -70,7 +70,7 @@ export declare type QuerySuccess<T> = QueryInfo & {
  * A failed query response. Integrations which only want to report a human
  * readable version of the failure can simply print out the "summary" field.
  */
-export declare type QueryFailure = QueryInfo & {
+export type QueryFailure = QueryInfo & {
   /**
    * The result of the query resulting in
    */
@@ -235,13 +235,13 @@ export interface Span {
 /**
  * All objects returned from Fauna are valid JSON objects.
  */
-export declare type JSONObject = {
+export type JSONObject = {
   [key: string]: JSONValue;
 };
 /**
  * All values returned from Fauna are valid JSON values.
  */
-export declare type JSONValue =
+export type JSONValue =
   | null
   | string
   | number

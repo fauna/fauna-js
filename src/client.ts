@@ -81,6 +81,9 @@ export class Client {
       "Authorization"
     ] = `Bearer ${this.clientConfiguration.secret}`;
     this.client.defaults.headers.common["Content-Type"] = "application/json";
+    // WIP - presently core will default to tagged; hardcode to simple for now
+    // until we get back to work on the JS driver.
+    this.client.defaults.headers.common["X-Format"] = "simple";
     this.#setHeaders(
       this.clientConfiguration,
       this.client.defaults.headers.common
@@ -263,7 +266,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
           "tags",
         ].includes(entry[0])
       ) {
-        let headerValue;
+        let headerValue: string;
         let headerKey = `x-${entry[0].replaceAll("_", "-")}`;
         if ("tags" === entry[0]) {
           headerKey = "x-fauna-tags";

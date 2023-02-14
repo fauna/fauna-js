@@ -47,13 +47,18 @@ export interface QueryRequestHeaders {
   traceparent?: string;
 }
 
-/**
- * A response to a query.
- * @remarks
- * The QueryResponse is type parameterized so that you can treat it as a
- * a certain type if you are using Typescript.
- */
-export interface QueryResponse<T> {
+export type QueryInfo = {
+  /** Stats on query performance and cost */
+  stats: { [key: string]: number };
+  /** The last transaction time of the query. An ISO-8601 date string. */
+  txn_time: string;
+  /** A readable summary of any warnings or logs emitted by the query. */
+  summary?: string;
+  /** The query's inferred static result type. */
+  static_type?: string;
+};
+
+export type QuerySuccess<T> = QueryInfo & {
   /**
    * The result of the query. The data is any valid JSON value.
    * @remarks
@@ -61,13 +66,31 @@ export interface QueryResponse<T> {
    * certain type if you are using typescript.
    */
   data: T;
-  /** Stats on query performance and cost */
-  stats: { [key: string]: number };
-  /** The last transaction time of the query. An ISO-8601 date string. */
-  txn_time: string;
-  /** A readable summary of any warnings or logs emitted by the query. */
-  summary?: string;
-}
+};
+
+/**
+ * A failed query response. Integrations which only want to report a human
+ * readable version of the failure can simply print out the "summary" field.
+ */
+export type QueryFailure = QueryInfo & {
+  /**
+   * The result of the query resulting in
+   */
+  error: {
+    /** A predefined code which indicates the type of error. See XXX for a list of error codes. */
+    code: string;
+    /** description: A short, human readable description of the error */
+    message: string;
+  };
+};
+
+export const queryResponseIsSuccess = <T>(
+  res: QuerySuccess<T> | QueryFailure
+): res is QuerySuccess<T> => "data" in res;
+
+export const queryResponseIsFailure = (
+  res: QuerySuccess<any> | QueryFailure
+): res is QueryFailure => "error" in res;
 
 /**
  * An error representing a query failure returned by Fauna.
@@ -89,13 +112,8 @@ export class ServiceError extends Error {
    */
   readonly summary?: string;
 
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: number;
-    summary?: string;
-  }) {
-    super(error.message);
+  constructor(httpStatus: number, failure: QueryFailure) {
+    super(failure.error.message);
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {
@@ -103,10 +121,10 @@ export class ServiceError extends Error {
     }
 
     this.name = "ServiceError";
-    this.code = error.code;
-    this.httpStatus = error.httpStatus;
-    if (error.summary) {
-      this.summary = error.summary;
+    this.code = failure.error.code;
+    this.httpStatus = httpStatus;
+    if (failure.summary) {
+      this.summary = failure.summary;
     }
   }
 }
@@ -118,13 +136,8 @@ export class ServiceError extends Error {
  * The 'code' field will vary based on the specific error cause.
  */
 export class QueryRuntimeError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 400;
-    summary?: string;
-  }) {
-    super(error);
+  constructor(httpStatus: number, failure: QueryFailure) {
+    super(httpStatus, failure);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryRuntimeError);
     }
@@ -139,13 +152,8 @@ export class QueryRuntimeError extends ServiceError {
  * failing.
  */
 export class QueryCheckError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 400;
-    summary?: string;
-  }) {
-    super(error);
+  constructor(httpStatus: number, failure: QueryFailure) {
+    super(httpStatus, failure);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryCheckError);
     }
@@ -166,23 +174,13 @@ export class QueryTimeoutError extends ServiceError {
    */
   readonly stats?: { [key: string]: number };
 
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 440;
-    summary?: string;
-    // TODO stats not yet supported in API
-    stats?: { [key: string]: number };
-  }) {
-    const { stats, ...props } = error;
-    super(props);
+  constructor(httpStatus: number, failure: QueryFailure) {
+    super(httpStatus, failure);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryTimeoutError);
     }
     this.name = "QueryTimeoutError";
-    if (stats) {
-      this.stats = stats;
-    }
+    this.stats = failure.stats;
   }
 }
 
@@ -191,13 +189,8 @@ export class QueryTimeoutError extends ServiceError {
  * used.
  */
 export class AuthenticationError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 401;
-    summary?: string;
-  }) {
-    super(error);
+  constructor(httpStatus: number, failure: QueryFailure) {
+    super(httpStatus, failure);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthenticationError);
     }
@@ -210,13 +203,8 @@ export class AuthenticationError extends ServiceError {
  * permission to perform the requested action.
  */
 export class AuthorizationError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 403;
-    summary?: string;
-  }) {
-    super(error);
+  constructor(httpStatus: number, failure: QueryFailure) {
+    super(httpStatus, failure);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthorizationError);
     }
@@ -229,13 +217,8 @@ export class AuthorizationError extends ServiceError {
  * and thus the request could not be served.
  */
 export class ThrottlingError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 429;
-    summary?: string;
-  }) {
-    super(error);
+  constructor(httpStatus: number, failure: QueryFailure) {
+    super(httpStatus, failure);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ThrottlingError);
     }
@@ -247,13 +230,8 @@ export class ThrottlingError extends ServiceError {
  * ServiceInternalError indicates Fauna failed unexpectedly.
  */
 export class ServiceInternalError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 500;
-    summary?: string;
-  }) {
-    super(error);
+  constructor(httpStatus: number, failure: QueryFailure) {
+    super(httpStatus, failure);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ServiceInternalError);
     }
@@ -266,13 +244,8 @@ export class ServiceInternalError extends ServiceError {
  * the request before the timeout was reached.
  */
 export class ServiceTimeoutError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 503;
-    summary?: string;
-  }) {
-    super(error);
+  constructor(httpStatus: number, failure: QueryFailure) {
+    super(httpStatus, failure);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ServiceTimeoutError);
     }

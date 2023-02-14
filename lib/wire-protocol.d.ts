@@ -45,20 +45,7 @@ export interface QueryRequestHeaders {
    */
   traceparent?: string;
 }
-/**
- * A response to a query.
- * @remarks
- * The QueryResponse is type parameterized so that you can treat it as a
- * a certain type if you are using Typescript.
- */
-export interface QueryResponse<T> {
-  /**
-   * The result of the query. The data is any valid JSON value.
-   * @remarks
-   * data is type parameterized so that you can treat it as a
-   * certain type if you are using typescript.
-   */
-  data: T;
+export declare type QueryInfo = {
   /** Stats on query performance and cost */
   stats: {
     [key: string]: number;
@@ -67,7 +54,39 @@ export interface QueryResponse<T> {
   txn_time: string;
   /** A readable summary of any warnings or logs emitted by the query. */
   summary?: string;
-}
+  /** The query's inferred static result type. */
+  static_type?: string;
+};
+export declare type QuerySuccess<T> = QueryInfo & {
+  /**
+   * The result of the query. The data is any valid JSON value.
+   * @remarks
+   * data is type parameterized so that you can treat it as a
+   * certain type if you are using typescript.
+   */
+  data: T;
+};
+/**
+ * A failed query response. Integrations which only want to report a human
+ * readable version of the failure can simply print out the "summary" field.
+ */
+export declare type QueryFailure = QueryInfo & {
+  /**
+   * The result of the query resulting in
+   */
+  error: {
+    /** A predefined code which indicates the type of error. See XXX for a list of error codes. */
+    code: string;
+    /** description: A short, human readable description of the error */
+    message: string;
+  };
+};
+export declare const queryResponseIsSuccess: <T>(
+  res: QueryFailure | QuerySuccess<T>
+) => res is QuerySuccess<T>;
+export declare const queryResponseIsFailure: (
+  res: QuerySuccess<any> | QueryFailure
+) => res is QueryFailure;
 /**
  * An error representing a query failure returned by Fauna.
  */
@@ -87,12 +106,7 @@ export declare class ServiceError extends Error {
    * where message does not suffice.
    */
   readonly summary?: string;
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: number;
-    summary?: string;
-  });
+  constructor(httpStatus: number, failure: QueryFailure);
 }
 /**
  * An error response that is the result of the query failing during execution.
@@ -101,24 +115,14 @@ export declare class ServiceError extends Error {
  * The 'code' field will vary based on the specific error cause.
  */
 export declare class QueryRuntimeError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 400;
-    summary?: string;
-  });
+  constructor(httpStatus: number, failure: QueryFailure);
 }
 /**
  * An error due to a "compile-time" check of the query
  * failing.
  */
 export declare class QueryCheckError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 400;
-    summary?: string;
-  });
+  constructor(httpStatus: number, failure: QueryFailure);
 }
 /**
  * A failure due to the timeout being exceeded, but the timeout
@@ -134,74 +138,41 @@ export declare class QueryTimeoutError extends ServiceError {
   readonly stats?: {
     [key: string]: number;
   };
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 440;
-    summary?: string;
-    stats?: {
-      [key: string]: number;
-    };
-  });
+  constructor(httpStatus: number, failure: QueryFailure);
 }
 /**
  * AuthenticationError indicates invalid credentials were
  * used.
  */
 export declare class AuthenticationError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 401;
-    summary?: string;
-  });
+  constructor(httpStatus: number, failure: QueryFailure);
 }
 /**
  * AuthorizationError indicates the credentials used do not have
  * permission to perform the requested action.
  */
 export declare class AuthorizationError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 403;
-    summary?: string;
-  });
+  constructor(httpStatus: number, failure: QueryFailure);
 }
 /**
  * ThrottlingError indicates some capacity limit was exceeded
  * and thus the request could not be served.
  */
 export declare class ThrottlingError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 429;
-    summary?: string;
-  });
+  constructor(httpStatus: number, failure: QueryFailure);
 }
 /**
  * ServiceInternalError indicates Fauna failed unexpectedly.
  */
 export declare class ServiceInternalError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 500;
-    summary?: string;
-  });
+  constructor(httpStatus: number, failure: QueryFailure);
 }
 /**
  * ServiceTimeoutError indicates Fauna was not available to servce
  * the request before the timeout was reached.
  */
 export declare class ServiceTimeoutError extends ServiceError {
-  constructor(error: {
-    code: string;
-    message: string;
-    httpStatus: 503;
-    summary?: string;
-  });
+  constructor(httpStatus: number, failure: QueryFailure);
 }
 /**
  * An error representing a failure internal to the client, itself.

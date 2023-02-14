@@ -1,6 +1,5 @@
-import Agent, { HttpsAgent } from "agentkeepalive";
-import axios, { AxiosInstance } from "axios";
 import { ClientConfiguration, endpoints } from "./client-configuration";
+import { DefaultFetch } from "./fetch";
 import type { QueryBuilder } from "./query-builder";
 import {
   AuthenticationError,
@@ -14,17 +13,19 @@ import {
   ServiceError,
   ServiceInternalError,
   ServiceTimeoutError,
-  type Span,
   ThrottlingError,
   type QueryRequest,
   type QueryRequestHeaders,
-  type QueryResponse,
+  type QuerySuccess,
+  type QueryFailure,
+  queryResponseIsFailure,
 } from "./wire-protocol";
 
 const defaultClientConfiguration = {
   max_conns: 10,
   endpoint: endpoints.cloud,
   timeout_ms: 60_000,
+  fetch: DefaultFetch,
 };
 
 /**
@@ -33,8 +34,6 @@ const defaultClientConfiguration = {
 export class Client {
   /** The {@link ClientConfiguration} */
   readonly clientConfiguration: ClientConfiguration;
-  /** The underlying {@link AxiosInstance} client. */
-  readonly client: AxiosInstance;
   /** last_txn this client has seen */
   #lastTxn?: Date;
 
@@ -59,35 +58,6 @@ export class Client {
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
-    // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
-    // terminate connections on active queries.
-    const timeout = this.clientConfiguration.timeout_ms + 10_000;
-    const agentSettings = {
-      maxSockets: this.clientConfiguration.max_conns,
-      maxFreeSockets: this.clientConfiguration.max_conns,
-      timeout,
-      // release socket for usage after 4s of inactivity. Must be less than Fauna's server
-      // side idle timeout of 5 seconds.
-      freeSocketTimeout: 4000,
-      keepAlive: true,
-    };
-    this.client = axios.create({
-      baseURL: this.clientConfiguration.endpoint.toString(),
-      timeout,
-    });
-    this.client.defaults.httpAgent = new Agent(agentSettings);
-    this.client.defaults.httpsAgent = new HttpsAgent(agentSettings);
-    this.client.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${this.clientConfiguration.secret}`;
-    this.client.defaults.headers.common["Content-Type"] = "application/json";
-    // WIP - presently core will default to tagged; hardcode to simple for now
-    // until we get back to work on the JS driver.
-    this.client.defaults.headers.common["X-Format"] = "simple";
-    this.#setHeaders(
-      this.clientConfiguration,
-      this.client.defaults.headers.common
-    );
   }
 
   #getSecret(partialClientConfig?: Partial<ClientConfiguration>): string {
@@ -115,7 +85,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
    *   Values in this headers parameter take precedence over the same values in the request
    *   parameter. This field is primarily intended to be used when you pass a QueryBuilder as
    *   the parameter.
-   * @returns Promise&lt;{@link QueryResponse}&gt;.
+   * @returns Promise&lt;{@link QuerySuccess}&gt;.
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
    *   or a concrete ServiceError if it cannot. ServiceError child types are
@@ -133,34 +103,57 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   async query<T = any>(
     request: QueryRequest | QueryBuilder,
     headers?: QueryRequestHeaders
-  ): Promise<QueryResponse<T>> {
+  ): Promise<QuerySuccess<T>> {
+    // TODO: can we refactor to use a type predicate here instead?
     if ("query" in request) {
       return this.#query({ ...request, ...headers });
     }
     return this.#query(request.toQuery(headers));
   }
 
-  async #query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
+  async #query<T = any>(queryRequest: QueryRequest): Promise<QuerySuccess<T>> {
     const { query, arguments: args } = queryRequest;
-    const headers: { [key: string]: string } = {};
-    this.#setHeaders(queryRequest, headers);
     try {
-      const result = await this.client.post<QueryResponse<T>>(
-        "/query/1",
-        { query, arguments: args },
-        { headers }
-      );
-      const txnDate = new Date(result.data.txn_time);
+      const url = `${this.clientConfiguration.endpoint.toString()}query/1`;
+      const headers = {
+        Authorization: `Bearer ${this.clientConfiguration.secret}`,
+        "Content-Type": "application/json",
+        // WIP - presently core will default to tagged; hardcode to simple for now
+        // until we get back to work on the JS driver.
+        "X-Format": "simple",
+      };
+
+      this.#setHeaders(this.clientConfiguration, headers);
+
+      const response = await this.clientConfiguration.fetch<T>(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ query, arguments: args }),
+        keepalive: true,
+      });
+
+      const queryResult = response.body;
+
+      if (queryResponseIsFailure(queryResult)) {
+        throw this.#getServiceError(response.status, queryResult);
+      }
+
+      const txn_time = queryResult.txn_time;
+      const txnDate = new Date(txn_time);
       if (
-        (this.#lastTxn === undefined && result.data.txn_time !== undefined) ||
-        (result.data.txn_time !== undefined &&
+        (this.#lastTxn === undefined && txn_time !== undefined) ||
+        (txn_time !== undefined &&
           this.#lastTxn !== undefined &&
           this.#lastTxn < txnDate)
       ) {
         this.#lastTxn = txnDate;
       }
-      return result.data;
+
+      return queryResult;
     } catch (e: any) {
+      if (e instanceof ServiceError) {
+        throw e;
+      }
       throw this.#getError(e);
     }
   }
@@ -211,34 +204,35 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   }
 
   #getServiceError(
-    error: {
-      code: string;
-      message: string;
-      summary?: string;
-      stats?: { [key: string]: number };
-      trace?: Array<Span>;
-      txn_time?: string;
-    },
-    httpStatus: number
+    // error: {
+    //   code: string;
+    //   message: string;
+    //   summary?: string;
+    //   stats?: { [key: string]: number };
+    //   trace?: Array<Span>;
+    //   txn_time?: string;
+    // },
+    httpStatus: number,
+    failure: QueryFailure
   ): ServiceError {
     if (httpStatus === 401) {
-      return new AuthenticationError({ httpStatus, ...error });
+      return new AuthenticationError(httpStatus, failure);
     }
     if (httpStatus === 403) {
-      return new AuthorizationError({ httpStatus, ...error });
+      return new AuthorizationError(httpStatus, failure);
     }
     if (httpStatus === 500) {
-      return new ServiceInternalError({ httpStatus, ...error });
+      return new ServiceInternalError(httpStatus, failure);
     }
     if (httpStatus === 503) {
-      return new ServiceTimeoutError({ httpStatus, ...error });
+      return new ServiceTimeoutError(httpStatus, failure);
     }
     if (httpStatus === 429) {
-      return new ThrottlingError({ httpStatus, ...error });
+      return new ThrottlingError(httpStatus, failure);
     }
     if (httpStatus === 440) {
       // TODO stats not yet returned. Include it when it is.
-      return new QueryTimeoutError({ httpStatus, ...error });
+      return new QueryTimeoutError(httpStatus, failure);
     }
     // TODO using a list of codes to categorize as QueryCheckError
     // vs QueryRutimeError is brittle and coupled to the service
@@ -246,12 +240,15 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     // We need a field sent across the wire that categorizes 400s as either
     // runtime failures or check failures so we are not coupled to the list
     // of codes emitted by the service.
-    if (httpStatus === 400 && queryCheckFailureCodes.includes(error.code)) {
-      return new QueryCheckError({ httpStatus, ...error });
+    if (
+      httpStatus === 400 &&
+      queryCheckFailureCodes.includes(failure.error.code)
+    ) {
+      return new QueryCheckError(httpStatus, failure);
     } else if (httpStatus === 400) {
-      return new QueryRuntimeError({ httpStatus, ...error });
+      return new QueryRuntimeError(httpStatus, failure);
     }
-    return new ServiceError({ httpStatus, ...error });
+    return new ServiceError(httpStatus, failure);
   }
 
   #setHeaders(fromObject: QueryRequestHeaders, headerObject: any): void {

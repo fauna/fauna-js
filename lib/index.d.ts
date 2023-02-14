@@ -22,6 +22,6 @@ export {
   type JSONValue,
   type QueryRequest,
   type QueryRequestHeaders,
-  type QueryResponse,
+  type QuerySuccess,
   type Span,
 } from "./wire-protocol";

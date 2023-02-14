@@ -1,10 +1,9 @@
-import { AxiosInstance } from "axios";
 import { ClientConfiguration } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
 import {
   type QueryRequest,
   type QueryRequestHeaders,
-  type QueryResponse,
+  type QuerySuccess,
 } from "./wire-protocol";
 /**
  * Client for calling Fauna.
@@ -13,8 +12,6 @@ export declare class Client {
   #private;
   /** The {@link ClientConfiguration} */
   readonly clientConfiguration: ClientConfiguration;
-  /** The underlying {@link AxiosInstance} client. */
-  readonly client: AxiosInstance;
   /**
    * Constructs a new {@link Client}.
    * @param clientConfiguration - the {@link ClientConfiguration} to apply.
@@ -40,7 +37,7 @@ export declare class Client {
    *   Values in this headers parameter take precedence over the same values in the request
    *   parameter. This field is primarily intended to be used when you pass a QueryBuilder as
    *   the parameter.
-   * @returns Promise&lt;{@link QueryResponse}&gt;.
+   * @returns Promise&lt;{@link QuerySuccess}&gt;.
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
    *   or a concrete ServiceError if it cannot. ServiceError child types are
@@ -58,5 +55,5 @@ export declare class Client {
   query<T = any>(
     request: QueryRequest | QueryBuilder,
     headers?: QueryRequestHeaders
-  ): Promise<QueryResponse<T>>;
+  ): Promise<QuerySuccess<T>>;
 }

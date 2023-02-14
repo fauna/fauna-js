@@ -16,7 +16,7 @@
 ## Setting up this Repo
 
 1. Clone the repository; e.g. `gh repo clone fauna/fauna-js` if you use the GitHub CLI
-2. Install dependencies via `yarn add`
+2. Install dependencies via `yarn install`
 
 ## Running tests
 

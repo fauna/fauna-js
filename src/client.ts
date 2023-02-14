@@ -1,24 +1,22 @@
-import Agent, { HttpsAgent } from "agentkeepalive";
-import axios, { AxiosInstance } from "axios";
 import { ClientConfiguration, endpoints } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
 import {
-  AuthenticationError,
   AuthorizationError,
   ClientError,
-  NetworkError,
-  ProtocolError,
   QueryCheckError,
   QueryRuntimeError,
   QueryTimeoutError,
-  ServiceError,
   ServiceInternalError,
   ServiceTimeoutError,
-  type Span,
   ThrottlingError,
-  type QueryRequest,
-  type QueryRequestHeaders,
-  type QueryResponse,
+  QueryRequest,
+  QueryRequestHeaders,
+  QueryResponse,
+  ServiceError,
+  ProtocolError,
+  NetworkError,
+  Span,
+  AuthenticationError,
 } from "./wire-protocol";
 
 const defaultClientConfiguration = {
@@ -34,60 +32,26 @@ export class Client {
   /** The {@link ClientConfiguration} */
   readonly clientConfiguration: ClientConfiguration;
   /** The underlying {@link AxiosInstance} client. */
-  readonly client: AxiosInstance;
+  // readonly client: AxiosInstance;
   /** last_txn this client has seen */
   #lastTxn?: Date;
+  // readonly agentSettings = {};
+  readonly headers = {};
 
-  /**
-   * Constructs a new {@link Client}.
-   * @param clientConfiguration - the {@link ClientConfiguration} to apply.
-   * @example
-   * ```typescript
-   *  const myClient = new Client(
-   *   {
-   *     endpoint: endpoints.cloud,
-   *     max_conns: 10,
-   *     secret: "foo",
-   *     timeout_ms: 60_000,
-   *   }
-   * );
-   * ```
-   */
   constructor(clientConfiguration?: Partial<ClientConfiguration>) {
     this.clientConfiguration = {
       ...defaultClientConfiguration,
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
-    // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
-    // terminate connections on active queries.
-    const timeout = this.clientConfiguration.timeout_ms + 10_000;
-    const agentSettings = {
-      maxSockets: this.clientConfiguration.max_conns,
-      maxFreeSockets: this.clientConfiguration.max_conns,
-      timeout,
-      // release socket for usage after 4s of inactivity. Must be less than Fauna's server
-      // side idle timeout of 5 seconds.
-      freeSocketTimeout: 4000,
-      keepAlive: true,
+
+    this.headers = {
+      Authorization: `Bearer ${this.clientConfiguration.secret}`,
+      "Content-Type": "application/json",
+      "X-Format": "simple",
     };
-    this.client = axios.create({
-      baseURL: this.clientConfiguration.endpoint.toString(),
-      timeout,
-    });
-    this.client.defaults.httpAgent = new Agent(agentSettings);
-    this.client.defaults.httpsAgent = new HttpsAgent(agentSettings);
-    this.client.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${this.clientConfiguration.secret}`;
-    this.client.defaults.headers.common["Content-Type"] = "application/json";
-    // WIP - presently core will default to tagged; hardcode to simple for now
-    // until we get back to work on the JS driver.
-    this.client.defaults.headers.common["X-Format"] = "simple";
-    this.#setHeaders(
-      this.clientConfiguration,
-      this.client.defaults.headers.common
-    );
+
+    this.#setHeaders(this.clientConfiguration, this.headers);
   }
 
   #getSecret(partialClientConfig?: Partial<ClientConfiguration>): string {
@@ -98,9 +62,7 @@ export class Client {
     const maybeSecret = partialClientConfig?.secret || fallback;
     if (maybeSecret === undefined) {
       throw new Error(
-        "You must provide a secret to the driver. Set it \
-in an environmental variable named FAUNA_SECRET or pass it to the Client\
- constructor."
+        `You must provide a secret to the driver. Set it in an environmental variable named FAUNA_SECRET or pass it to the Client constructor.`
       );
     }
     return maybeSecret;
@@ -142,29 +104,41 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
   async #query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
     const { query, arguments: args } = queryRequest;
-    const headers: { [key: string]: string } = {};
-    this.#setHeaders(queryRequest, headers);
+    this.#setHeaders(queryRequest, this.headers);
+
     try {
-      const result = await this.client.post<QueryResponse<T>>(
-        "/query/1",
-        { query, arguments: args },
-        { headers }
-      );
-      const txnDate = new Date(result.data.txn_time);
+      // To be replaced with some cross functional fetch instance.
+      // @ts-expect-error
+      const result = await fetch(
+        `${this.clientConfiguration.endpoint.toString()}/query/1`,
+        {
+          method: "POST",
+          headers: this.headers,
+          body: JSON.stringify({ query, arguments: args }),
+          keepalive: true,
+        }
+      ).then(async (res: { json: () => {} }) => res.json());
+
+      if (result?.errors?.length || result?.error) {
+        throw new Error(result.errors[0] || result?.error);
+      }
+
+      const txn_time = result.data?.txn_time || result.data?.["_ts"];
+      const txnDate = new Date(txn_time);
       if (
-        (this.#lastTxn === undefined && result.data.txn_time !== undefined) ||
-        (result.data.txn_time !== undefined &&
+        (this.#lastTxn === undefined && txn_time !== undefined) ||
+        (txn_time !== undefined &&
           this.#lastTxn !== undefined &&
           this.#lastTxn < txnDate)
       ) {
         this.#lastTxn = txnDate;
       }
-      return result.data;
+      return { data: result, txn_time: txnDate.toISOString() };
     } catch (e: any) {
       throw this.#getError(e);
     }
   }
-
+  
   #getError(e: any): ServiceError | ProtocolError | NetworkError | ClientError {
     // see: https://axios-http.com/docs/handling_errors
     if (e.response) {

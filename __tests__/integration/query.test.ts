@@ -149,8 +149,8 @@ describe.each`
     try {
       await doQuery<number>(
         queryType,
-        getTsa`"taco".length;`,
-        '"taco".length;',
+        getTsa`happy little fox`,
+        "happy little fox",
         client
       );
     } catch (e) {

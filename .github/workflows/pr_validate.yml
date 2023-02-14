@@ -16,7 +16,7 @@ jobs:
           - 8443:8443
     strategy:
       matrix:
-        node: ["16", "18"]
+        node: ["18", "19"]
       fail-fast: false
     steps:
       - uses: actions/checkout@v3

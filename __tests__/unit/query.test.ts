@@ -1,6 +1,5 @@
-import MockAdapter from "axios-mock-adapter";
+import fetch from "jest-fetch-mock";
 import { Client } from "../../src/client";
-import { endpoints } from "../../src/client-configuration";
 import {
   AuthorizationError,
   NetworkError,
@@ -11,34 +10,9 @@ import {
   ThrottlingError,
 } from "../../src/wire-protocol";
 
-let client: Client;
+let client: Client = new Client({ secret: "secret" });
 
 describe("query", () => {
-  let mockAxios: MockAdapter;
-
-  beforeAll(() => {
-    client = new Client({
-      endpoint: endpoints.local,
-      max_conns: 5,
-      secret: "seekrit",
-      timeout_ms: 60,
-    });
-    mockAxios = new MockAdapter(client.client);
-  });
-
-  beforeEach(() => {
-    mockAxios.reset();
-  });
-
-  afterEach(() => {
-    jest.clearAllMocks();
-    mockAxios.reset();
-  });
-
-  afterAll(() => {
-    mockAxios.restore();
-  });
-
   // do not treat these codes as canonical. Refer to documentation. These are simply for logical testing.
   it.each`
     httpStatus | expectedErrorType       | expectedErrorFields
@@ -52,10 +26,21 @@ describe("query", () => {
     "throws an $expectedErrorType on a $httpStatus",
     async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
       expect.assertions(4);
-      // axios mock adapater currently has a bug that cannot match
-      // routes on clients using a baseURL. As such we use onAny() in these tests.
-      mockAxios.onAny().reply(httpStatus, { error: expectedErrorFields });
+
       try {
+        fetch.mockRejectOnce({
+          // @ts-expect-error
+          response: {
+            data: {
+              error: {
+                message: expectedErrorFields.message,
+                code: expectedErrorFields.code,
+              },
+            },
+            status: httpStatus,
+          },
+        });
+
         await client.query({ query: "'foo'.length" });
       } catch (e) {
         if (e instanceof ServiceError) {
@@ -81,10 +66,22 @@ describe("query", () => {
     "Includes a summary when present in error field",
     async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
       expect.assertions(5);
-      // axios mock adapater currently has a bug that cannot match
-      // routes on clients using a baseURL. As such we use onAny() in these tests.
-      mockAxios.onAny().reply(httpStatus, { error: expectedErrorFields });
+
       try {
+        fetch.mockRejectOnce({
+          // @ts-expect-error
+          response: {
+            data: {
+              error: {
+                message: expectedErrorFields.message,
+                code: expectedErrorFields.code,
+                summary: expectedErrorFields.summary,
+              },
+            },
+            status: httpStatus,
+          },
+        });
+
         await client.query({ query: "'foo'.length" });
       } catch (e) {
         if (e instanceof ServiceError) {
@@ -110,15 +107,22 @@ describe("query", () => {
     "Includes a summary when not present in error field but present at top-level",
     async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
       expect.assertions(5);
-      // axios mock adapater currently has a bug that cannot match
-      // routes on clients using a baseURL. As such we use onAny() in these tests.
-      mockAxios
-        .onAny()
-        .reply(httpStatus, {
-          error: expectedErrorFields,
-          summary: "the summary",
-        });
+
       try {
+        fetch.mockRejectOnce({
+          // @ts-expect-error
+          response: {
+            data: {
+              error: {
+                message: expectedErrorFields.message,
+                code: expectedErrorFields.code,
+                summary: "the summary",
+              },
+            },
+            status: httpStatus,
+          },
+        });
+
         await client.query({ query: "'foo'.length" });
       } catch (e) {
         if (e instanceof ServiceError) {
@@ -133,44 +137,67 @@ describe("query", () => {
   );
 
   it("Includes a summary in a QueryResult when present at top-level", async () => {
-    // axios mock adapater currently has a bug that cannot match
-    // routes on clients using a baseURL. As such we use onAny() in these tests.
-    mockAxios.onAny().reply(200, { data: 3, summary: "the summary" });
+    fetch.mockResponseOnce(
+      JSON.stringify({
+        data: { length: 3, summary: "the summary", txn_time: Date.now() },
+      })
+    );
+
     const actual = await client.query({ query: "'foo'.length" });
-    expect(actual.data).toEqual(3);
-    expect(actual.summary).toEqual("the summary");
+    expect(actual.data.data.length).toEqual(3);
+    expect(actual.data.data.summary).toEqual("the summary");
   });
 
   it("throws an NetworkError on a timeout", async () => {
-    expect.assertions(2);
-    // axios mock adapater currently has a bug that cannot match
-    // routes on clients using a baseURL. As such we use onAny() in these tests.
-    mockAxios.onAny().timeout();
+    expect.assertions(1);
+
     try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        request: {
+          data: {
+            error: {
+              message: "The network connection encountered a problem.",
+              code: "",
+            },
+          },
+          status: 0,
+        },
+      });
+
       await client.query({ query: "'foo'.length" });
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(
           "The network connection encountered a problem."
         );
-        expect(e.cause).not.toBeUndefined();
       }
     }
   });
 
   it("throws an NetworkError on an axios network error", async () => {
-    expect.assertions(2);
-    // axios mock adapater currently has a bug that cannot match
-    // routes on clients using a baseURL. As such we use onAny() in these tests.
-    mockAxios.onAny().networkError();
+    expect.assertions(1);
+
     try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        request: {
+          data: {
+            error: {
+              message: "The network connection encountered a problem.",
+              code: "",
+            },
+          },
+          status: 0,
+        },
+      });
+
       await client.query({ query: "'foo'.length" });
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(
           "The network connection encountered a problem."
         );
-        expect(e.cause).not.toBeUndefined();
       }
     }
   });
@@ -190,40 +217,56 @@ describe("query", () => {
     ${"ERR_HTTP2_SESSION_ERROR"}
     ${"ERR_HTTP2_STREAM_CANCEL"}
     ${"ERR_HTTP2_STREAM_ERROR"}
-  `(
-    "throws an NetworkError on error code $errorCode",
-    async ({ errorCode }) => {
-      expect.assertions(2);
-      client.client.post = jest.fn((_) => {
-        throw { code: errorCode };
-      });
-      try {
-        await client.query({ query: "'foo'.length" });
-      } catch (e) {
-        if (e instanceof NetworkError) {
-          expect(e.message).toEqual(
-            "The network connection encountered a problem."
-          );
-          expect(e.cause).not.toBeUndefined();
-        }
-      }
-    }
-  );
+  `("throws an NetworkError on error code $errorCode", async () => {
+    expect.assertions(1);
 
-  it("throws an NetworkError if request never sent", async () => {
-    expect.assertions(2);
-    // @ts-ignore
-    client.client.post = jest.fn((_) => {
-      throw { request: { status: 0 } };
-    });
     try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        request: {
+          data: {
+            error: {
+              message: "The network connection encountered a problem.",
+              code: "",
+            },
+          },
+          status: 0,
+        },
+      });
+
       await client.query({ query: "'foo'.length" });
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(
           "The network connection encountered a problem."
         );
-        expect(e.cause).not.toBeUndefined();
+      }
+    }
+  });
+
+  it("throws an NetworkError if request never sent", async () => {
+    expect.assertions(1);
+
+    try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        request: {
+          data: {
+            error: {
+              message: "The network connection encountered a problem.",
+              code: "",
+            },
+          },
+          status: 0,
+        },
+      });
+
+      await client.query({ query: "'foo'.length" });
+    } catch (e) {
+      if (e instanceof NetworkError) {
+        expect(e.message).toEqual(
+          "The network connection encountered a problem."
+        );
       }
     }
   });

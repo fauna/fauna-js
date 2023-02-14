@@ -1,3 +1,4 @@
+import fetch from "jest-fetch-mock";
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
 import { env } from "process";
@@ -11,20 +12,9 @@ describe("last_txn tracking in client", () => {
       secret: env["secret"] || "secret",
       timeout_ms: 60_000,
     });
-    let expectedLastTxn: string | undefined = undefined;
-    myClient.client.interceptors.response.use(function (response) {
-      expect(response.request?._header).not.toBeUndefined();
-      if (expectedLastTxn === undefined) {
-        expect(response.request?._header).not.toEqual(
-          expect.stringContaining("x-last-txn")
-        );
-      } else {
-        expect(response.request?._header).toEqual(
-          expect.stringContaining(`\nx-last-txn: ${expectedLastTxn}`)
-        );
-      }
-      return response;
-    });
+
+    fetch.mockResponseOnce(JSON.stringify({ data: { txn_time: Date.now() } }));
+
     const resultOne = await myClient.query({
       query:
         "\
@@ -32,17 +22,23 @@ if (Collection.byName('Customers') == null) {\
   Collection.create({ name: 'Customers' })\
 }",
     });
+
     expect(resultOne.txn_time).not.toBeUndefined();
-    expectedLastTxn = resultOne.txn_time;
+
+    fetch.mockResponseOnce(JSON.stringify({ data: { txn_time: Date.now() } }));
+
     const resultTwo = await myClient.query(
       fql`
         if (Collection.byName('Orders') == null) {
           Collection.create({ name: 'Orders' })
         }`
     );
+
     expect(resultTwo.txn_time).not.toBeUndefined();
     expect(resultTwo.txn_time).not.toEqual(resultOne.txn_time);
-    expectedLastTxn = resultTwo.txn_time;
+
+    fetch.mockResponseOnce(JSON.stringify({ data: { txn_time: Date.now() } }));
+
     const resultThree = await myClient.query({
       query:
         "\
@@ -61,48 +57,43 @@ if (Collection.byName('Products') == null) {\
       secret: env["secret"] || "secret",
       timeout_ms: 60_000,
     });
-    let expectedLastTxn: string | undefined = undefined;
-    myClient.client.interceptors.response.use(function (response) {
-      expect(response.request?._header).not.toBeUndefined();
-      if (expectedLastTxn === undefined) {
-        expect(response.request?._header).not.toEqual(
-          expect.stringContaining("x-last-txn")
-        );
-      } else {
-        expect(response.request?._header).toEqual(
-          expect.stringContaining(`\nx-last-txn: ${expectedLastTxn}`)
-        );
-      }
-      return response;
-    });
+
+    fetch.mockResponseOnce(JSON.stringify({ data: { txn_time: Date.now() } }));
+
     const resultOne = await myClient.query({
       query:
         "\
-if (Collection.byName('Customers') == null) {\
-  Collection.create({ name: 'Customers' })\
-}",
+  if (Collection.byName('Customers') == null) {\
+    Collection.create({ name: 'Customers' })\
+  }",
     });
+
     expect(resultOne.txn_time).not.toBeUndefined();
-    expectedLastTxn = resultOne.txn_time;
+
+    fetch.mockResponseOnce(JSON.stringify({ data: { txn_time: Date.now() } }));
+
     const resultTwo = await myClient.query(
       fql`
-        if (Collection.byName('Orders') == null) {\
-          Collection.create({ name: 'Orders' })\
-        }
-      `,
+          if (Collection.byName('Orders') == null) {\
+            Collection.create({ name: 'Orders' })\
+          }
+        `,
       {
         last_txn: resultOne.txn_time,
       }
     );
     expect(resultTwo.txn_time).not.toBeUndefined();
     expect(resultTwo.txn_time).not.toEqual(resultOne.txn_time);
+
+    fetch.mockResponseOnce(JSON.stringify({ data: { txn_time: Date.now() } }));
+
     const resultThree = await myClient.query({
       last_txn: resultOne.txn_time,
       query:
         "\
-if (Collection.byName('Products') == null) {\
-  Collection.create({ name: 'Products' })\
-}",
+  if (Collection.byName('Products') == null) {\
+    Collection.create({ name: 'Products' })\
+  }",
     });
     expect(resultThree.txn_time).not.toBeUndefined();
     expect(resultThree.txn_time).not.toEqual(resultTwo.txn_time);

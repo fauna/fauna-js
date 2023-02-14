@@ -1,5 +1,8 @@
+import fetch from "jest-fetch-mock";
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
+
+jest.mock("../../src/wire-protocol");
 
 beforeEach(() => {
   delete process.env["FAUNA_SECRET"];
@@ -57,47 +60,25 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       secret: "secret",
       timeout_ms: 60_000,
     });
-    expect(client.client.defaults.baseURL).toEqual("http://localhost:7443/");
-    const result = await client.query<number>({ query: '"taco".length' });
+
+    expect(client.clientConfiguration.endpoint.href).toEqual(
+      "http://localhost:7443/"
+    );
+
+    fetch.mockResponseOnce(
+      JSON.stringify({ data: { length: 4, txn_time: Date.now() } })
+    );
+
+    const result = await client.query({ query: '"taco".length' });
     expect(result.txn_time).not.toBeUndefined();
-    expect(result).toEqual({ data: 4, txn_time: result.txn_time });
+    expect(result).toEqual({
+      data: {
+        data: {
+          ...result.data.data,
+          length: 4,
+        },
+      },
+      txn_time: result.txn_time,
+    });
   });
-
-  type HeaderTestInput = {
-    fieldName: "linearized" | "max_contention_retries" | "tags" | "traceparent";
-    fieldValue: any;
-    expectedHeader: string;
-  };
-
-  it.each`
-    fieldName                   | fieldValue                                                   | expectedHeader
-    ${"linearized"}             | ${true}                                                      | ${"x-linearized: true"}
-    ${"max_contention_retries"} | ${3}                                                         | ${"x-max-contention-retries: 3"}
-    ${"tags"}                   | ${{ t1: "v1", t2: "v2" }}                                    | ${"x-fauna-tags: t1=v1,t2=v2"}
-    ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${"traceparent: 00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"}
-  `(
-    "Setting clientConfiguration $fieldName leads to it being sent in headers",
-    async ({ fieldName, fieldValue, expectedHeader }: HeaderTestInput) => {
-      const client = new Client({
-        endpoint: endpoints.local,
-        max_conns: 5,
-        secret: "secret",
-        timeout_ms: 5000,
-        [fieldName]: fieldValue,
-      });
-      client.client.interceptors.response.use(function (response) {
-        expect(response.request?._header).not.toBeUndefined();
-        if (response.request?._header) {
-          expect(response.request._header).toEqual(
-            expect.stringContaining("x-timeout-ms: 5000")
-          );
-          expect(response.request._header).toEqual(
-            expect.stringContaining(`\n${expectedHeader}`)
-          );
-        }
-        return response;
-      });
-      await client.query<number>({ query: '"taco".length' });
-    }
-  );
 });

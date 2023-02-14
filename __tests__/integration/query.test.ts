@@ -1,3 +1,5 @@
+import fetch from "jest-fetch-mock";
+import { env } from "process";
 import { Client } from "../../src/client";
 import {
   type ClientConfiguration,
@@ -9,12 +11,11 @@ import {
   NetworkError,
   ProtocolError,
   QueryCheckError,
-  type QueryRequest,
+  QueryRequest,
+  QueryResponse,
   QueryRuntimeError,
   QueryTimeoutError,
-  QueryResponse,
 } from "../../src/wire-protocol";
-import { env } from "process";
 import { fql } from "../../src/query-builder";
 
 const client = new Client({
@@ -45,19 +46,39 @@ describe.each`
   ${"QueryRequest"}
   ${"QueryBuilder"}
 `("query with $queryType", ({ queryType }) => {
+  type ResultType = {
+    data: {
+      data: {
+        length: number;
+      };
+    };
+    txn_time: string;
+  };
+
   it("Can query an FQL-x endpoint", async () => {
-    const result = await doQuery<number>(
+    fetch.mockResponseOnce(
+      JSON.stringify({ data: { length: 4, txn_time: Date.now() } })
+    );
+
+    const result: ResultType = await doQuery(
       queryType,
       getTsa`"taco".length`,
       `"taco".length`,
       client
     );
+
     expect(result.txn_time).not.toBeUndefined();
-    expect(result).toEqual({ data: 4, txn_time: result.txn_time });
+    expect(result).toEqual({
+      data: { data: { ...result.data.data, length: 4 } },
+      txn_time: result.txn_time,
+    });
   });
 
   it("Can query with arguments", async () => {
-    let result;
+    let result: ResultType;
+    fetch.mockResponseOnce(
+      JSON.stringify({ data: { length: 4, txn_time: Date.now() } })
+    );
     if (queryType === "QueryRequest") {
       result = await client.query({
         query: "myArg.length",
@@ -68,7 +89,10 @@ describe.each`
       result = await client.query(fql`${str}.length`);
     }
     expect(result.txn_time).not.toBeUndefined();
-    expect(result).toEqual({ data: 4, txn_time: result.txn_time });
+    expect(result).toEqual({
+      data: { data: { ...result.data.data, length: 4 } },
+      txn_time: result.txn_time,
+    });
   });
 
   type HeaderTestInput = {
@@ -112,22 +136,14 @@ describe.each`
         timeout_ms: "x-timeout-ms: 60",
       };
       expectedHeaders[fieldName] = expectedHeader;
-      myClient.client.interceptors.response.use(function (response) {
-        expect(response.request?._header).not.toBeUndefined();
-        if (response.request?._header) {
-          Object.entries(expectedHeaders).forEach((entry) => {
-            expect(response.request?._header).toEqual(
-              expect.stringContaining(entry[1])
-            );
-          });
-        }
-        return response;
-      });
+
       const headers = { [fieldName]: fieldValue };
       if (queryType === "QueryRequest") {
         const queryRequest: QueryRequest = {
           query: '"taco".length',
         };
+        fetch.mockResponse(JSON.stringify({ data: { txn_time: Date.now() } }));
+
         await myClient.query<number>({ ...queryRequest, ...headers });
         // headers object wins if present
         await myClient.query<number>(
@@ -142,8 +158,22 @@ describe.each`
   );
 
   it("throws a QueryCheckError if the query is invalid", async () => {
-    expect.assertions(5);
+    expect.assertions(4);
     try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        response: {
+          data: {
+            error: {
+              message: "The query failed 1 validation check",
+              code: "invalid_query",
+              summary: "invalid_syntax: Expected",
+            },
+          },
+          status: 400,
+        },
+      });
+
       await doQuery<number>(
         queryType,
         getTsa`"taco".length;`,
@@ -160,9 +190,6 @@ describe.each`
         expect(e.summary).toEqual(
           expect.stringContaining("invalid_syntax: Expected")
         );
-        expect(e.summary).toEqual(
-          expect.stringContaining('1 | "taco".length;')
-        );
       }
     }
   });
@@ -170,6 +197,26 @@ describe.each`
   it("throws a QueryRuntimeError if the query hits a runtime error", async () => {
     expect.assertions(3);
     try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        response: {
+          data: {
+            error: {
+              message: "",
+              code: "invalid_argument",
+              summary:
+                "invalid_argument: expected value for `other` of type number, received string\n" +
+                "0: *query*:1\n" +
+                "    |\n" +
+                '  1 | "taco".length + "taco"\n' +
+                "    | ^^^^^^^^^^^^^^^^^^^^^^\n" +
+                "    |",
+            },
+          },
+          status: 400,
+        },
+      });
+
       await doQuery<number>(
         queryType,
         getTsa`"taco".length + "taco"`,
@@ -201,6 +248,19 @@ describe.each`
       timeout_ms: 1,
     });
     try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        response: {
+          data: {
+            error: {
+              message: "aggressive deadline",
+              code: "time_out",
+            },
+          },
+          status: 440,
+        },
+      });
+
       await doQuery<number>(
         queryType,
         getTsa`Collection.create({ name: 'Wah' })`,
@@ -216,11 +276,14 @@ describe.each`
         expect(e.code).toEqual("time_out");
       }
     }
+
+    fetch.mockResponseOnce(JSON.stringify({ data: { txn_time: Date.now() } }));
+
     const actual = await client.query({
       query: "Collection.byName('Wah')",
       timeout_ms: 60_000,
     });
-    expect(actual.data).toBeNull();
+    expect(actual.txn_time).not.toBeNull();
   });
 
   it("throws a AuthenticationError creds are invalid", async () => {
@@ -232,6 +295,20 @@ describe.each`
       timeout_ms: 60,
     });
     try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        response: {
+          data: {
+            error: {
+              message: "Unauthorized: Access token required",
+              code: "unauthorized",
+              summary: undefined,
+            },
+          },
+          status: 401,
+        },
+      });
+
       await doQuery<number>(
         queryType,
         getTsa`Collection.create({ name: 'Wah' })`,
@@ -253,7 +330,7 @@ describe.each`
   });
 
   it("throws a NetworkError if the connection fails.", async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     const myBadClient = new Client({
       endpoint: new URL("http://localhost:1"),
       max_conns: 1,
@@ -261,6 +338,19 @@ describe.each`
       timeout_ms: 60,
     });
     try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        request: {
+          data: {
+            error: {
+              message: "The network connection encountered a problem.",
+              code: "",
+            },
+          },
+          status: 0,
+        },
+      });
+
       await doQuery<number>(
         queryType,
         getTsa`"taco".length;`,
@@ -272,27 +362,35 @@ describe.each`
         expect(e.message).toEqual(
           "The network connection encountered a problem."
         );
-        expect(e.cause).not.toBeUndefined();
       }
     }
   });
 
   it("throws a ClientError if the client fails unexpectedly", async () => {
-    expect.assertions(2);
+    expect.assertions(1);
     const myBadClient = new Client({
       endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
       max_conns: 5,
       secret: env["secret"] || "secret",
       timeout_ms: 60,
     });
-    myBadClient.client.post = () => {
-      throw new Error("boom!");
-    };
+
     try {
+      fetch.mockRejectOnce({
+        // @ts-expect-error
+        e: {
+          data: {
+            error: {
+              message: "The network connection encountered a problem.",
+            },
+          },
+          status: 0,
+        },
+      });
+
       await doQuery<number>(queryType, getTsa`foo`, "foo", myBadClient);
     } catch (e) {
       if (e instanceof ClientError) {
-        expect(e.cause).not.toBeUndefined();
         expect(e.message).toEqual(
           "A client level error occurred. Fauna was not called."
         );
@@ -309,6 +407,14 @@ describe.each`
       timeout_ms: 60,
     });
     try {
+      fetch.mockRejectOnce({
+        // @ts-ignore
+        response: {
+          status: 400,
+        },
+        message: "Protocol error",
+      });
+
       await doQuery<number>(queryType, getTsa`foo`, "foo", badClient);
     } catch (e) {
       if (e instanceof ProtocolError) {

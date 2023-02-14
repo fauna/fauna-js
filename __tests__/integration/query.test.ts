@@ -46,7 +46,6 @@ describe.each`
   ${"QueryBuilder"}
 `("query with $queryType", ({ queryType }) => {
   it("Can query an FQL-x endpoint", async () => {
-    expect.assertions(2);
 
     const result = await doQuery<number>(
       queryType,

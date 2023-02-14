@@ -60,7 +60,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     expect(client.client.defaults.baseURL).toEqual("http://localhost:7443/");
     const result = await client.query<number>({ query: '"taco".length' });
     expect(result.txn_time).not.toBeUndefined();
-    expect(result).toEqual({ data: 4, txn_time: result.txn_time });
+    expect(result).toEqual({ data: 4, txn_time: result.txn_time, summary: "" });
   });
 
   type HeaderTestInput = {

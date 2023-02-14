@@ -1,0 +1,41 @@
+name: Validate Driver
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/pr_validate.yml"
+      - "**.ts"
+      - "yarn.lock"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      core:
+        image: fauna/faunadb:latest
+        ports:
+          - 8443:8443
+    strategy:
+      matrix:
+        node: ["18", "19"]
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+          cache: "yarn"
+
+      - name: Test
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: "test:ci"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Jest Tests ${{ matrix.node }}
+          path: reports/jest-*.xml
+          reporter: jest-junit

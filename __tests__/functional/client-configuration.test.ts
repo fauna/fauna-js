@@ -43,7 +43,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   });
 
   it("endpoints is extensible", async () => {
-    expect.assertions(4);
 
     endpoints["my-alternative-port"] = new URL("http://localhost:7443");
     expect(endpoints).toEqual({

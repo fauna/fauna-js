@@ -118,9 +118,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       const headers = {
         Authorization: `Bearer ${this.clientConfiguration.secret}`,
         "Content-Type": "application/json",
-        // WIP - presently core will default to tagged; hardcode to simple for now
-        // until we get back to work on the JS driver.
-        "X-Format": "simple",
       };
 
       this.#setHeaders(this.clientConfiguration, headers);
@@ -128,7 +125,15 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       const response = await this.clientConfiguration.fetch<T>(url, {
         method: "POST",
         headers,
-        body: JSON.stringify({ query, arguments: args }),
+        body: JSON.stringify({
+          query,
+          arguments: args,
+          // WIP - typecheck should be user configurable, but hard code for now
+          typecheck: false,
+          // WIP - presently core will default to tagged; hardcode to simple for now
+          // until we get back to work on the JS driver.
+          format: "simple",
+        }),
         keepalive: true,
       });
 

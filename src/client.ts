@@ -61,6 +61,12 @@ export class Client {
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
+
+    // protect secret from being accidently logged
+    Object.defineProperty(this.clientConfiguration, "secret", {
+      enumerable: false,
+    });
+
     // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
     // terminate connections on active queries.
     const timeout = this.clientConfiguration.timeout_ms + 10_000;

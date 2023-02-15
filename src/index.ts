@@ -20,8 +20,10 @@ export {
   ThrottlingError,
   type JSONObject,
   type JSONValue,
+  type QueryFailure,
+  type QueryInfo,
   type QueryRequest,
   type QueryRequestHeaders,
-  type QueryResponse,
+  type QuerySuccess,
   type Span,
 } from "./wire-protocol";

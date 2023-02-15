@@ -1,4 +1,4 @@
-import { Client, endpoints, fql, type QueryResponse, } from "fauna";
+import { Client, endpoints, fql, type QuerySuccess } from "fauna";
 import { getSecret, type PartialCustomer } from "../utils";
 
 const client: Client = new Client({
@@ -12,14 +12,14 @@ const client: Client = new Client({
  * Your task - use the client to query Fauna with the string "Hello World!".
  * Return the query result.
  * Try to use the `fql` function included with the driver!
-*/
+ */
 export async function helloWorldWithFql() {
   // return the result of the query
 }
 
 /**
  * Your task - Query for a set of 4 most expensive products.
-*/
+ */
 export async function getTop4MostExpensiveProducts() {
   // return the result of the query
 }
@@ -27,7 +27,7 @@ export async function getTop4MostExpensiveProducts() {
 /**
  * Your task - create a customer named: "Rip Van Winkle" with address: { street: 'Cat Mountain', city: 'Catskills', state: 'NY', country: 'USA', zip: 13451}
  * then fetch and return all customers with this name and address.
-*/
+ */
 export async function createCustomer() {
   // return the result of the query for all customers with the name and address
 }
@@ -42,8 +42,8 @@ export async function createCustomer() {
  * and is { name: string, city: string }. So your job is to return an object from
  * this method conforming to that type. Try to do so by using an FQL X query directly,
  * rather than building the object in Typescript.
-*/
-export async function usingTypes(): Promise<void | QueryResponse<PartialCustomer>> {
+ */
+export async function usingTypes(): Promise<void | QuerySuccess<PartialCustomer>> {
   // return the result of the query
 }
 
@@ -54,7 +54,7 @@ export async function usingTypes(): Promise<void | QueryResponse<PartialCustomer
  * See the README of this package for more details on usage in this driver.
  * Your task - complete the following composed query and return the result.
  */
-export async function composingQueries(): Promise<void | QueryResponse<string>> {
+export async function composingQueries(): Promise<void | QuerySuccess<string>> {
   // write and return a query that infers who the typical customer is of the most expensive
   // product in the Product collection.
   // Your query should return "well fed cat" if the most expensive product has the name catfood
@@ -74,29 +74,29 @@ export async function composingQueries(): Promise<void | QueryResponse<string>> 
   return;
 }
 
-
 /**
  * This exercise exposes four bad queries. Each with a different root cause,
  * but exposed by the driver. Your task is to use the errors emitted by Fauna to fix the errors.
- * The focus here is on ServiceError and its children.  Once you fix the errors 
+ * The focus here is on ServiceError and its children.  Once you fix the errors
  * the return statement will return the data the exercise expects.
-*/
-export async function correctingErrors(): Promise<Array<QueryResponse<any>> | void> {
-  const cityLengthFql = (lengthLimit: any) => fql`c => c.city.length > ${lengthLimit}`;
+ */
+export async function correctingErrors(): Promise<Array<
+  QuerySuccess<any>
+> | void> {
+  const cityLengthFql = (lengthLimit: any) =>
+    fql`c => c.city.length > ${lengthLimit}`;
   try {
     // get 3 customers that live in Catskills
     const catskillCustomers = await client.query(fql`
        Customers.all.where(.addres.city == "Catskills").limit("3")
     `);
-    
+
     // get all customers that live in cities names that more than 5 letters.
     const customersInLongCityNames = await client.query(fql`
        Customers.all.where(${cityLengthFql("5")})
     `);
-    
-    const allProducts = await client.query(
-      fql`Product.all`, { timeout_ms: 1 }
-    );
+
+    const allProducts = await client.query(fql`Product.all`, { timeout_ms: 1 });
     return [catskillCustomers, customersInLongCityNames, allProducts];
   } catch (e) {
     // UNCOMMENT THIS TO DEBUG!!!

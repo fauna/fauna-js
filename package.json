@@ -37,8 +37,8 @@
     "build:node": "esbuild src/index.ts --bundle --sourcemap --platform=node --outfile=lib/node/index.js",
     "build:types": "tsc -emitDeclarationOnly --declaration true",
     "lint": "eslint -f unix \"src/**/*.{ts,tsx}\"",
-    "fauna-local": "docker start faunadb-fql-x || docker run --rm -d --name faunadb-fql-x -p 8443:8443 -p 8084:8084 -v $PWD/fauna-local-config.yml:/fauna/etc/fauna-local-config.yml gcr.io/faunadb-cloud/faunadb/enterprise --config /fauna/etc/fauna-local-config.yml",
-    "fauna-local-alt-port": "docker start faunadb-fql-x-alt-port || docker run --rm -d --name faunadb-fql-x-alt-port -p 7443:8443 -p 7084:8084 -v $PWD/fauna-local-config.yml:/fauna/etc/fauna-local-config.yml gcr.io/faunadb-cloud/faunadb/enterprise --config /fauna/etc/fauna-local-config.yml",
+    "fauna-local": "docker start faunadb-fql-x || docker run --rm -d --name faunadb-fql-x -p 8443:8443 -p 8084:8084 -v $PWD/fauna-local-config.yml:/fauna/etc/fauna-local-config.yml fauna/faunadb:latest --config /fauna/etc/fauna-local-config.yml",
+    "fauna-local-alt-port": "docker start faunadb-fql-x-alt-port || docker run --rm -d --name faunadb-fql-x-alt-port -p 7443:8443 -p 7084:8084 -v $PWD/fauna-local-config.yml:/fauna/etc/fauna-local-config.yml fauna/faunadb:latest --config /fauna/etc/fauna-local-config.yml",
     "prepare": "husky install",
     "test": "yarn fauna-local; yarn fauna-local-alt-port; ./prepare-test-env.sh; jest",
     "test:ci": "yarn install; jest --ci --reporters=default --reporters=jest-junit"

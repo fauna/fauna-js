@@ -3,6 +3,6 @@
 
 yarn build
 yarn prettier --write lib/
-git add -A .
+git add --all ./lib
 yarn lint
 yarn pretty-quick --staged

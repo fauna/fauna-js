@@ -47,7 +47,7 @@ export interface QueryRequestHeaders {
   traceparent?: string;
 }
 
-export type QueryInfoStats = {
+export type QueryStats = {
   /** The amount of Transactional Compute Ops consumed by the query. */
   compute_ops: number;
   /** The amount of Transactional Read Ops consumed by the query. */
@@ -72,7 +72,7 @@ export type QueryInfo = {
   /** The value of the x-query-tags header, if it was provided. */
   query_tags: Record<string, string>;
   /** Stats on query performance and cost */
-  stats: QueryInfoStats;
+  stats: QueryStats;
 };
 
 export type QuerySuccess<T> = QueryInfo & {
@@ -155,7 +155,7 @@ export class ServiceError extends Error {
  * The 'code' field will vary based on the specific error cause.
  */
 export class QueryRuntimeError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: number) {
+  constructor(failure: QueryFailure, httpStatus: 400) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryRuntimeError);
@@ -171,7 +171,7 @@ export class QueryRuntimeError extends ServiceError {
  * failing.
  */
 export class QueryCheckError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: number) {
+  constructor(failure: QueryFailure, httpStatus: 400) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryCheckError);
@@ -193,7 +193,7 @@ export class QueryTimeoutError extends ServiceError {
    */
   readonly stats?: { [key: string]: number };
 
-  constructor(failure: QueryFailure, httpStatus: number) {
+  constructor(failure: QueryFailure, httpStatus: 440) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryTimeoutError);
@@ -208,7 +208,7 @@ export class QueryTimeoutError extends ServiceError {
  * used.
  */
 export class AuthenticationError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: number) {
+  constructor(failure: QueryFailure, httpStatus: 401) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthenticationError);
@@ -222,7 +222,7 @@ export class AuthenticationError extends ServiceError {
  * permission to perform the requested action.
  */
 export class AuthorizationError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: number) {
+  constructor(failure: QueryFailure, httpStatus: 403) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthorizationError);
@@ -236,7 +236,7 @@ export class AuthorizationError extends ServiceError {
  * and thus the request could not be served.
  */
 export class ThrottlingError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: number) {
+  constructor(failure: QueryFailure, httpStatus: 429) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ThrottlingError);
@@ -249,7 +249,7 @@ export class ThrottlingError extends ServiceError {
  * ServiceInternalError indicates Fauna failed unexpectedly.
  */
 export class ServiceInternalError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: number) {
+  constructor(failure: QueryFailure, httpStatus: 500) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ServiceInternalError);
@@ -263,7 +263,7 @@ export class ServiceInternalError extends ServiceError {
  * the request before the timeout was reached.
  */
 export class ServiceTimeoutError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: number) {
+  constructor(failure: QueryFailure, httpStatus: 503) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ServiceTimeoutError);

@@ -199,7 +199,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       case 429:
         return new ThrottlingError(failure, httpStatus);
       case 440:
-        // TODO: stats not yet returned. Include it when it is.
         return new QueryTimeoutError(failure, httpStatus);
       case 500:
         return new ServiceInternalError(failure, httpStatus);

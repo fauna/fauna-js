@@ -24,6 +24,7 @@ export {
   type QueryInfo,
   type QueryRequest,
   type QueryRequestHeaders,
+  type QueryStats,
   type QuerySuccess,
   type Span,
 } from "./wire-protocol";

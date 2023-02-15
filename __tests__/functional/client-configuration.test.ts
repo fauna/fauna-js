@@ -56,6 +56,27 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     expect(result.txn_time).toBeDefined();
   });
 
+  it("client allows txn time to be set", async () => {
+    const client = new Client({
+      endpoint: endpoints.local,
+      secret: "secret",
+    });
+    expect(client.last_txn_time).toBeUndefined();
+    const expectedTxnTime = new Date(Date.now());
+    client.last_txn_time = expectedTxnTime;
+    expect(client.last_txn_time).toBe(expectedTxnTime);
+    const addFiveMinutes = new Date(expectedTxnTime.getTime() + 5 * 60000);
+    client.last_txn_time = addFiveMinutes;
+    expect(client.last_txn_time).toBe(addFiveMinutes);
+    // setting txn time back in history should fail
+    expect(() => {
+      client.last_txn_time = expectedTxnTime;
+    }).toThrow();
+    expect(() => {
+      client.last_txn_time = undefined;
+    }).toThrow();
+  });
+
   type HeaderTestInput = {
     fieldName: "linearized" | "max_contention_retries" | "tags" | "traceparent";
     fieldValue: any;

@@ -32,7 +32,7 @@
     "typescript": "^4.8.4"
   },
   "scripts": {
-    "build": "rm -r lib; yarn build:node; yarn build:browser; yarn build:types",
+    "build": "rm -rf lib; yarn build:node; yarn build:browser; yarn build:types",
     "build:browser": "esbuild src/index.ts --bundle --platform=browser --minify --sourcemap --format=esm --outfile=lib/browser/index.js",
     "build:node": "esbuild src/index.ts --bundle --sourcemap --platform=node --outfile=lib/node/index.js",
     "build:types": "tsc -emitDeclarationOnly --declaration true",

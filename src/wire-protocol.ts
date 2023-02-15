@@ -70,7 +70,7 @@ export type QueryInfo = {
   /** A readable summary of any warnings or logs emitted by the query. */
   summary?: string;
   /** The value of the x-query-tags header, if it was provided. */
-  query_tags: string[];
+  query_tags: Record<string, string>;
   /** Stats on query performance and cost */
   stats: QueryInfoStats;
 };

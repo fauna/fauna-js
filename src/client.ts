@@ -20,6 +20,7 @@ import {
   type QueryRequest,
   type QueryRequestHeaders,
   type QuerySuccess,
+  queryResponseIsFailure,
 } from "./wire-protocol";
 
 const defaultClientConfiguration = {
@@ -129,16 +130,10 @@ export class Client {
     // see: https://axios-http.com/docs/handling_errors
     if (e.response) {
       // we got an error from the fauna service
-      if (e.response.data?.error) {
-        const error = e.response.data.error;
-        // WIP - summary is moving to a top-level field in the service
-        if (
-          error.summary === undefined &&
-          e.response.data.summary !== undefined
-        ) {
-          error.summary = e.response.data.summary;
-        }
-        return this.#getServiceError(error, e.response.status);
+      if (queryResponseIsFailure(e.response.data)) {
+        const failure = e.response.data;
+        const status = e.response.status;
+        return this.#getServiceError(failure, status);
       }
       // we got a different error from the protocol layer
       return new ProtocolError({

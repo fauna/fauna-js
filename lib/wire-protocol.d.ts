@@ -97,8 +97,8 @@ export declare type QueryFailure = QueryInfo & {
         message: string;
     };
 };
-export declare const queryResponseIsSuccess: <T>(res: QueryFailure | QuerySuccess<T>) => res is QuerySuccess<T>;
-export declare const queryResponseIsFailure: (res: QuerySuccess<any> | QueryFailure) => res is QueryFailure;
+export declare const isQuerySuccess: <T>(res: QueryFailure | QuerySuccess<T>) => res is QuerySuccess<T>;
+export declare const isQueryFailure: (res: QuerySuccess<any> | QueryFailure) => res is QueryFailure;
 /**
  * An error representing a query failure returned by Fauna.
  */

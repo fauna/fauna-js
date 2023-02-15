@@ -103,11 +103,11 @@ export type QueryFailure = QueryInfo & {
   };
 };
 
-export const queryResponseIsSuccess = <T>(
+export const isQuerySuccess = <T>(
   res: QuerySuccess<T> | QueryFailure
 ): res is QuerySuccess<T> => "data" in res;
 
-export const queryResponseIsFailure = (
+export const isQueryFailure = (
   res: QuerySuccess<any> | QueryFailure
 ): res is QueryFailure => "error" in res;
 

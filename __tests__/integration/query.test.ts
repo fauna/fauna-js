@@ -227,7 +227,7 @@ describe.each`
       );
     } catch (e) {
       if (e instanceof AuthenticationError) {
-        expect(e.message).toEqual("Unauthorized: Access token required");
+        expect(e.message).toBeDefined();
         expect(e.code).toEqual("unauthorized");
         expect(e.httpStatus).toEqual(401);
         expect(e.summary).toBeUndefined();

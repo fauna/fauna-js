@@ -16,9 +16,11 @@ import {
   ServiceTimeoutError,
   type Span,
   ThrottlingError,
+  type QueryFailure,
   type QueryRequest,
   type QueryRequestHeaders,
-  type QueryResponse,
+  type QuerySuccess,
+  isQueryFailure,
 } from "./wire-protocol";
 
 const defaultClientConfiguration = {
@@ -99,7 +101,7 @@ export class Client {
    *   Values in this headers parameter take precedence over the same values in the request
    *   parameter. This field is primarily intended to be used when you pass a QueryBuilder as
    *   the parameter.
-   * @returns Promise&lt;{@link QueryResponse}&gt;.
+   * @returns Promise&lt;{@link QuerySuccess}&gt;.
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
    *   or a concrete ServiceError if it cannot. ServiceError child types are
@@ -117,7 +119,7 @@ export class Client {
   async query<T = any>(
     request: QueryRequest | QueryBuilder,
     headers?: QueryRequestHeaders
-  ): Promise<QueryResponse<T>> {
+  ): Promise<QuerySuccess<T>> {
     if ("query" in request) {
       return this.#query({ ...request, ...headers });
     }
@@ -128,16 +130,10 @@ export class Client {
     // see: https://axios-http.com/docs/handling_errors
     if (e.response) {
       // we got an error from the fauna service
-      if (e.response.data?.error) {
-        const error = e.response.data.error;
-        // WIP - summary is moving to a top-level field in the service
-        if (
-          error.summary === undefined &&
-          e.response.data.summary !== undefined
-        ) {
-          error.summary = e.response.data.summary;
-        }
-        return this.#getServiceError(error, e.response.status);
+      if (isQueryFailure(e.response.data)) {
+        const failure = e.response.data;
+        const status = e.response.status;
+        return this.#getServiceError(failure, status);
       }
       // we got a different error from the protocol layer
       return new ProtocolError({
@@ -185,48 +181,40 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     return maybeSecret;
   }
 
-  #getServiceError(
-    error: {
-      code: string;
-      message: string;
-      summary?: string;
-      stats?: { [key: string]: number };
-      trace?: Array<Span>;
-      txn_time?: string;
-    },
-    httpStatus: number
-  ): ServiceError {
+  #getServiceError(failure: QueryFailure, httpStatus: number): ServiceError {
     switch (httpStatus) {
       case 400:
-        if (httpStatus === 400 && queryCheckFailureCodes.includes(error.code)) {
-          return new QueryCheckError({ httpStatus, ...error });
+        if (
+          httpStatus === 400 &&
+          queryCheckFailureCodes.includes(failure.error.code)
+        ) {
+          return new QueryCheckError(failure, httpStatus);
         }
 
-        return new QueryRuntimeError({ httpStatus, ...error });
+        return new QueryRuntimeError(failure, httpStatus);
       case 401:
-        return new AuthenticationError({ httpStatus, ...error });
+        return new AuthenticationError(failure, httpStatus);
       case 403:
-        return new AuthorizationError({ httpStatus, ...error });
+        return new AuthorizationError(failure, httpStatus);
       case 429:
-        return new ThrottlingError({ httpStatus, ...error });
+        return new ThrottlingError(failure, httpStatus);
       case 440:
-        // TODO: stats not yet returned. Include it when it is.
-        return new QueryTimeoutError({ httpStatus, ...error });
+        return new QueryTimeoutError(failure, httpStatus);
       case 500:
-        return new ServiceInternalError({ httpStatus, ...error });
+        return new ServiceInternalError(failure, httpStatus);
       case 503:
-        return new ServiceTimeoutError({ httpStatus, ...error });
+        return new ServiceTimeoutError(failure, httpStatus);
       default:
-        return new ServiceError({ httpStatus, ...error });
+        return new ServiceError(failure, httpStatus);
     }
   }
 
-  async #query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
+  async #query<T = any>(queryRequest: QueryRequest): Promise<QuerySuccess<T>> {
     const { query, arguments: args } = queryRequest;
     const headers: { [key: string]: string } = {};
     this.#setHeaders(queryRequest, headers);
     try {
-      const result = await this.client.post<QueryResponse<T>>(
+      const result = await this.client.post<QuerySuccess<T>>(
         "/query/1",
         { query, arguments: args },
         { headers }

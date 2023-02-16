@@ -12,7 +12,7 @@ import {
   type QueryRequest,
   QueryRuntimeError,
   QueryTimeoutError,
-  QueryResponse,
+  QuerySuccess,
 } from "../../src/wire-protocol";
 import { env } from "process";
 import { fql } from "../../src/query-builder";
@@ -33,7 +33,7 @@ async function doQuery<T>(
   queryTsa: TemplateStringsArray,
   queryString: string,
   client: Client
-): Promise<QueryResponse<T>> {
+): Promise<QuerySuccess<T>> {
   if (queryType === "QueryRequest") {
     return client.query({ query: queryString });
   }

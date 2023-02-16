@@ -83,7 +83,13 @@ describe("query", () => {
       expect.assertions(5);
       // axios mock adapater currently has a bug that cannot match
       // routes on clients using a baseURL. As such we use onAny() in these tests.
-      mockAxios.onAny().reply(httpStatus, { error: expectedErrorFields });
+      mockAxios.onAny().reply(httpStatus, {
+        error: {
+          code: expectedErrorFields.code,
+          message: expectedErrorFields.message,
+        },
+        summary: expectedErrorFields.summary,
+      });
       try {
         await client.query({ query: "'foo'.length" });
       } catch (e) {
@@ -112,12 +118,10 @@ describe("query", () => {
       expect.assertions(5);
       // axios mock adapater currently has a bug that cannot match
       // routes on clients using a baseURL. As such we use onAny() in these tests.
-      mockAxios
-        .onAny()
-        .reply(httpStatus, {
-          error: expectedErrorFields,
-          summary: "the summary",
-        });
+      mockAxios.onAny().reply(httpStatus, {
+        error: expectedErrorFields,
+        summary: "the summary",
+      });
       try {
         await client.query({ query: "'foo'.length" });
       } catch (e) {
@@ -207,7 +211,7 @@ describe("query", () => {
             "The network connection encountered a problem."
           );
           // @ts-ignore
-        expect(e.cause).toBeDefined();
+          expect(e.cause).toBeDefined();
         }
       }
     }

@@ -1,5 +1,5 @@
 import { Client } from "../../src/client";
-import type { QueryResponse } from "../../src/wire-protocol";
+import type { QuerySuccess } from "../../src/wire-protocol";
 import {
   type ClientConfiguration,
   endpoints,
@@ -165,7 +165,7 @@ describe("Connection pool", () => {
   });
 
   function fireRequests(count: number, client: Client) {
-    const requests: Array<Promise<QueryResponse<number>>> = [];
+    const requests: Array<Promise<QuerySuccess<number>>> = [];
     for (let i = 0; i < count; i++) {
       requests.push(
         client.query<number>({

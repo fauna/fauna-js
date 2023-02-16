@@ -14,7 +14,6 @@ import {
   ServiceError,
   ServiceInternalError,
   ServiceTimeoutError,
-  type Span,
   ThrottlingError,
   type QueryFailure,
   type QueryRequest,
@@ -91,9 +90,33 @@ export class Client {
   }
 
   /**
+   * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
+   */
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  get lastTxnTime(): Date | undefined {
+    return this.#lastTxn;
+  }
+  /**
+   * Sets the last transaction time of this client.
+   * @param time - the last transaction time to set.
+   * @throws Error if lastTxnTime is before the current lastTxn of the driver
+   */
+  set lastTxnTime(time: Date) {
+    if (
+      this.lastTxnTime !== undefined &&
+      time.getTime() < this.lastTxnTime.getTime()
+    ) {
+      throw new Error("Must be greater than current value");
+    }
+    this.#lastTxn = time;
+  }
+
+  /**
    * Return the {@link ClientConfiguration} of this client, save for the secret.
    */
   get clientConfiguration(): Omit<ClientConfiguration, "secret"> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { secret, ...rest } = this.#clientConfiguration;
     return rest;
   }

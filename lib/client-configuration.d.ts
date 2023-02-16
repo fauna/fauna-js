@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /**
  * Configuration for a client.
  */

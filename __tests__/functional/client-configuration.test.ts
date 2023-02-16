@@ -72,9 +72,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     expect(() => {
       client.lastTxnTime = expectedTxnTime;
     }).toThrow();
-    expect(() => {
-      client.lastTxnTime = undefined;
-    }).toThrow();
   });
 
   type HeaderTestInput = {

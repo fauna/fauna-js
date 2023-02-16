@@ -34,7 +34,7 @@ export declare class Client {
      * @param time - the last transaction time to set.
      * @throws Error if lastTxnTime is before the current lastTxn of the driver
      */
-    set lastTxnTime(time: Date | undefined);
+    set lastTxnTime(time: Date);
     /**
      * Return the {@link ClientConfiguration} of this client, save for the secret.
      */

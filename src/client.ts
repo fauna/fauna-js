@@ -92,6 +92,7 @@ export class Client {
   /**
    * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
    */
+  // @ts-ignore
   get lastTxnTime(): Date | undefined {
     return this.#lastTxn;
   }
@@ -100,13 +101,12 @@ export class Client {
    * @param time - the last transaction time to set.
    * @throws Error if lastTxnTime is before the current lastTxn of the driver
    */
-  set lastTxnTime(time: Date | undefined) {
-    if (this.lastTxnTime != undefined && time != undefined) {
-      if (time.valueOf() < this.lastTxnTime.valueOf()) {
-        throw new Error("Must be greater than current value");
-      }
-    } else if (time == undefined && this.lastTxnTime != undefined) {
-      throw new Error("Unable to clear last_txn_time");
+  set lastTxnTime(time: Date) {
+    if (
+      this.lastTxnTime !== undefined &&
+      time.getTime() < this.lastTxnTime.getTime()
+    ) {
+      throw new Error("Must be greater than current value");
     }
     this.#lastTxn = time;
   }

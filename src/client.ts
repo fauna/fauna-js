@@ -14,7 +14,6 @@ import {
   ServiceError,
   ServiceInternalError,
   ServiceTimeoutError,
-  type Span,
   ThrottlingError,
   type QueryFailure,
   type QueryRequest,
@@ -90,19 +89,25 @@ export class Client {
     );
   }
 
-  public get last_txn_time(): Date | undefined {
+  /**
+   * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
+   */
+  get lastTxnTime(): Date | undefined {
     return this.#lastTxn;
   }
-
-  public set last_txn_time(time: Date | undefined) {
-    if (this.last_txn_time != undefined && time != undefined) {
-      if (time.valueOf() < this.last_txn_time.valueOf()) {
+  /**
+   * Sets the last transaction time of this client.
+   * @param time - the last transaction time to set.
+   * @throws Error if lastTxnTime is before the current lastTxn of the driver
+   */
+  set lastTxnTime(time: Date | undefined) {
+    if (this.lastTxnTime != undefined && time != undefined) {
+      if (time.valueOf() < this.lastTxnTime.valueOf()) {
         throw new Error("Must be greater than current value");
       }
-    } else if (time == undefined && this.last_txn_time != undefined) {
+    } else if (time == undefined && this.lastTxnTime != undefined) {
       throw new Error("Unable to clear last_txn_time");
     }
-
     this.#lastTxn = time;
   }
 

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { AxiosInstance } from "axios";
 import { ClientConfiguration } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
@@ -27,9 +26,19 @@ export declare class Client {
      */
     constructor(clientConfiguration?: Partial<ClientConfiguration>);
     /**
-     * Return the current {@link endpoint} for the Fauna Client
+     * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
      */
-    get endpoint(): URL;
+    get lastTxnTime(): Date | undefined;
+    /**
+     * Sets the last transaction time of this client.
+     * @param time - the last transaction time to set.
+     * @throws Error if lastTxnTime is before the current lastTxn of the driver
+     */
+    set lastTxnTime(time: Date | undefined);
+    /**
+     * Return the {@link ClientConfiguration} of this client, save for the secret.
+     */
+    get clientConfiguration(): Omit<ClientConfiguration, "secret">;
     /**
      * Queries Fauna.
      * @param request - a {@link QueryRequest} or {@link QueryBuilder} to build a request with.

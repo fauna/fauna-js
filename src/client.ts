@@ -92,6 +92,7 @@ export class Client {
   /**
    * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
    */
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   get lastTxnTime(): Date | undefined {
     return this.#lastTxn;
@@ -115,6 +116,7 @@ export class Client {
    * Return the {@link ClientConfiguration} of this client, save for the secret.
    */
   get clientConfiguration(): Omit<ClientConfiguration, "secret"> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { secret, ...rest } = this.#clientConfiguration;
     return rest;
   }

@@ -90,22 +90,6 @@ export class Client {
     );
   }
 
-  #getSecret(partialClientConfig?: Partial<ClientConfiguration>): string {
-    let fallback = undefined;
-    if (typeof process === "object") {
-      fallback = process.env["FAUNA_SECRET"];
-    }
-    const maybeSecret = partialClientConfig?.secret || fallback;
-    if (maybeSecret === undefined) {
-      throw new Error(
-        "You must provide a secret to the driver. Set it \
-in an environmental variable named FAUNA_SECRET or pass it to the Client\
- constructor."
-      );
-    }
-    return maybeSecret;
-  }
-
   /**
    * Queries Fauna.
    * @param request - a {@link QueryRequest} or {@link QueryBuilder} to build a request with.
@@ -138,31 +122,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       return this.#query({ ...request, ...headers });
     }
     return this.#query(request.toQuery(headers));
-  }
-
-  async #query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
-    const { query, arguments: args } = queryRequest;
-    const headers: { [key: string]: string } = {};
-    this.#setHeaders(queryRequest, headers);
-    try {
-      const result = await this.client.post<QueryResponse<T>>(
-        "/query/1",
-        { query, arguments: args },
-        { headers }
-      );
-      const txnDate = new Date(result.data.txn_time);
-      if (
-        (this.#lastTxn === undefined && result.data.txn_time !== undefined) ||
-        (result.data.txn_time !== undefined &&
-          this.#lastTxn !== undefined &&
-          this.#lastTxn < txnDate)
-      ) {
-        this.#lastTxn = txnDate;
-      }
-      return result.data;
-    } catch (e: any) {
-      throw this.#getError(e);
-    }
   }
 
   #getError(e: any): ServiceError | ProtocolError | NetworkError | ClientError {
@@ -210,6 +169,22 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     );
   }
 
+  #getSecret(partialClientConfig?: Partial<ClientConfiguration>): string {
+    let fallback = undefined;
+    if (typeof process === "object") {
+      fallback = process.env["FAUNA_SECRET"];
+    }
+    const maybeSecret = partialClientConfig?.secret || fallback;
+    if (maybeSecret === undefined) {
+      throw new Error(
+        "You must provide a secret to the driver. Set it \
+in an environmental variable named FAUNA_SECRET or pass it to the Client\
+ constructor."
+      );
+    }
+    return maybeSecret;
+  }
+
   #getServiceError(
     error: {
       code: string;
@@ -243,6 +218,31 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         return new ServiceTimeoutError({ httpStatus, ...error });
       default:
         return new ServiceError({ httpStatus, ...error });
+    }
+  }
+
+  async #query<T = any>(queryRequest: QueryRequest): Promise<QueryResponse<T>> {
+    const { query, arguments: args } = queryRequest;
+    const headers: { [key: string]: string } = {};
+    this.#setHeaders(queryRequest, headers);
+    try {
+      const result = await this.client.post<QueryResponse<T>>(
+        "/query/1",
+        { query, arguments: args },
+        { headers }
+      );
+      const txnDate = new Date(result.data.txn_time);
+      if (
+        (this.#lastTxn === undefined && result.data.txn_time !== undefined) ||
+        (result.data.txn_time !== undefined &&
+          this.#lastTxn !== undefined &&
+          this.#lastTxn < txnDate)
+      ) {
+        this.#lastTxn = txnDate;
+      }
+      return result.data;
+    } catch (e: any) {
+      throw this.#getError(e);
     }
   }
 

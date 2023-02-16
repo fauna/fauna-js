@@ -34,7 +34,7 @@ const defaultClientConfiguration = {
  */
 export class Client {
   /** The {@link ClientConfiguration} */
-  readonly clientConfiguration: ClientConfiguration;
+  readonly #clientConfiguration: ClientConfiguration;
   /** The underlying {@link AxiosInstance} client. */
   readonly client: AxiosInstance;
   /** last_txn this client has seen */
@@ -56,17 +56,18 @@ export class Client {
    * ```
    */
   constructor(clientConfiguration?: Partial<ClientConfiguration>) {
-    this.clientConfiguration = {
+    this.#clientConfiguration = {
       ...defaultClientConfiguration,
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
+
     // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
     // terminate connections on active queries.
-    const timeout = this.clientConfiguration.timeout_ms + 10_000;
+    const timeout = this.#clientConfiguration.timeout_ms + 10_000;
     const agentSettings = {
-      maxSockets: this.clientConfiguration.max_conns,
-      maxFreeSockets: this.clientConfiguration.max_conns,
+      maxSockets: this.#clientConfiguration.max_conns,
+      maxFreeSockets: this.#clientConfiguration.max_conns,
       timeout,
       // release socket for usage after 4s of inactivity. Must be less than Fauna's server
       // side idle timeout of 5 seconds.
@@ -74,22 +75,27 @@ export class Client {
       keepAlive: true,
     };
     this.client = axios.create({
-      baseURL: this.clientConfiguration.endpoint.toString(),
+      baseURL: this.#clientConfiguration.endpoint.toString(),
       timeout,
     });
     this.client.defaults.httpAgent = new Agent(agentSettings);
     this.client.defaults.httpsAgent = new HttpsAgent(agentSettings);
-    this.client.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${this.clientConfiguration.secret}`;
     this.client.defaults.headers.common["Content-Type"] = "application/json";
     // WIP - presently core will default to tagged; hardcode to simple for now
     // until we get back to work on the JS driver.
     this.client.defaults.headers.common["X-Format"] = "simple";
     this.#setHeaders(
-      this.clientConfiguration,
+      this.#clientConfiguration,
       this.client.defaults.headers.common
     );
+  }
+
+  /**
+   * Return the {@link ClientConfiguration} of this client, save for the secret.
+   */
+  get clientConfiguration(): Omit<ClientConfiguration, "secret"> {
+    const { secret, ...rest } = this.#clientConfiguration;
+    return rest;
   }
 
   /**
@@ -211,7 +217,9 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
   async #query<T = any>(queryRequest: QueryRequest): Promise<QuerySuccess<T>> {
     const { query, arguments: args } = queryRequest;
-    const headers: { [key: string]: string } = {};
+    const headers: { [key: string]: string } = {
+      Authorization: `Bearer ${this.#clientConfiguration.secret}`,
+    };
     this.#setHeaders(queryRequest, headers);
     try {
       const result = await this.client.post<QuerySuccess<T>>(

@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { AxiosInstance } from "axios";
 import { ClientConfiguration } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
@@ -7,8 +8,6 @@ import { type QueryRequest, type QueryRequestHeaders, type QuerySuccess } from "
  */
 export declare class Client {
     #private;
-    /** The {@link ClientConfiguration} */
-    readonly clientConfiguration: ClientConfiguration;
     /** The underlying {@link AxiosInstance} client. */
     readonly client: AxiosInstance;
     /**
@@ -27,6 +26,10 @@ export declare class Client {
      * ```
      */
     constructor(clientConfiguration?: Partial<ClientConfiguration>);
+    /**
+     * Return the current {@link endpoint} for the Fauna Client
+     */
+    get endpoint(): URL;
     /**
      * Queries Fauna.
      * @param request - a {@link QueryRequest} or {@link QueryBuilder} to build a request with.

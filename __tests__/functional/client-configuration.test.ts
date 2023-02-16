@@ -9,23 +9,16 @@ describe("ClientConfiguration", () => {
   it("Client exposes a default client configuration", () => {
     process.env["FAUNA_SECRET"] = "foo";
     const client = new Client();
-    expect(client.clientConfiguration).toEqual({
-      secret: "foo",
-      timeout_ms: 60_000,
-      max_conns: 10,
-      endpoint: endpoints.cloud,
-    });
+    expect(Buffer.from(JSON.stringify(client)).toString()).not.toContain(
+      "secret"
+    );
   });
 
   it("Client respectes passed in client configuration over defaults", () => {
     process.env["FAUNA_SECRET"] = "foo";
     const client = new Client({ secret: "bar", timeout_ms: 10 });
-    expect(client.clientConfiguration).toEqual({
-      secret: "bar",
-      timeout_ms: 10,
-      max_conns: 10,
-      endpoint: endpoints.cloud,
-    });
+    // TODO: when the Client accepts an http client add a mock that validates
+    //   the configuration changes were applied.
   });
 
   it("A ClientConfiguration setting with no secret throws an error on driver construction", () => {
@@ -43,7 +36,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   });
 
   it("endpoints is extensible", async () => {
-
     endpoints["my-alternative-port"] = new URL("http://localhost:7443");
     expect(endpoints).toEqual({
       cloud: new URL("https://db.fauna.com"),

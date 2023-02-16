@@ -91,10 +91,11 @@ export class Client {
   }
 
   /**
-   * Return the current {@link endpoint} for the Fauna Client
+   * Return the {@link ClientConfiguration} of this client, save for the secret.
    */
-  public get endpoint(): URL {
-    return this.#clientConfiguration.endpoint;
+  get clientConfiguration(): Omit<ClientConfiguration, "secret"> {
+    const { secret, ...rest } = this.#clientConfiguration;
+    return rest;
   }
 
   /**

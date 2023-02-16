@@ -90,6 +90,22 @@ export class Client {
     );
   }
 
+  public get last_txn_time(): Date | undefined {
+    return this.#lastTxn;
+  }
+
+  public set last_txn_time(time: Date | undefined) {
+    if (this.last_txn_time != undefined && time != undefined) {
+      if (time.valueOf() < this.last_txn_time.valueOf()) {
+        throw new Error("Must be greater than current value");
+      }
+    } else if (time == undefined && this.last_txn_time != undefined) {
+      throw new Error("Unable to clear last_txn_time");
+    }
+
+    this.#lastTxn = time;
+  }
+
   /**
    * Return the {@link ClientConfiguration} of this client, save for the secret.
    */

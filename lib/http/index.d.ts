@@ -1,17 +1,17 @@
 /** following reference needed to include types for experimental fetch API in Node */
 /// <reference lib="dom" />
-export declare type FetchOptions = {
+export type FetchOptions = {
   body?: string;
   keepalive?: true;
   method?: string;
   headers?: Record<string, string>;
 };
-export declare type FetchResponse = {
+export type FetchResponse = {
   status: number;
   body: unknown;
 };
 export declare const isFetchResponse: (res: any) => res is FetchResponse;
-export declare type FaunaFetch = (
+export type FaunaFetch = (
   resource: string | URL,
   options: FetchOptions
 ) => Promise<FetchResponse>;

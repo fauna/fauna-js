@@ -45,7 +45,7 @@ export interface QueryRequestHeaders {
    */
   traceparent?: string;
 }
-export declare type QueryStats = {
+export type QueryStats = {
   /** The amount of Transactional Compute Ops consumed by the query. */
   compute_ops: number;
   /** The amount of Transactional Read Ops consumed by the query. */
@@ -61,7 +61,7 @@ export declare type QueryStats = {
   /** The number of times the transaction was retried due to write contention. */
   contention_retries: number;
 };
-export declare type QueryInfo = {
+export type QueryInfo = {
   /** The last transaction time of the query. An ISO-8601 date string. */
   txn_time: string;
   /** A readable summary of any warnings or logs emitted by the query. */
@@ -71,7 +71,7 @@ export declare type QueryInfo = {
   /** Stats on query performance and cost */
   stats?: QueryStats;
 };
-export declare type QuerySuccess<T> = QueryInfo & {
+export type QuerySuccess<T> = QueryInfo & {
   /**
    * The result of the query. The data is any valid JSON value.
    * @remarks
@@ -86,7 +86,7 @@ export declare type QuerySuccess<T> = QueryInfo & {
  * A failed query response. Integrations which only want to report a human
  * readable version of the failure can simply print out the "summary" field.
  */
-export declare type QueryFailure = QueryInfo & {
+export type QueryFailure = QueryInfo & {
   /**
    * The result of the query resulting in
    */
@@ -256,13 +256,13 @@ export interface Span {
 /**
  * All objects returned from Fauna are valid JSON objects.
  */
-export declare type JSONObject = {
+export type JSONObject = {
   [key: string]: JSONValue;
 };
 /**
  * All values returned from Fauna are valid JSON values.
  */
-export declare type JSONValue =
+export type JSONValue =
   | null
   | string
   | number

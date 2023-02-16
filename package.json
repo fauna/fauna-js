@@ -8,17 +8,12 @@
   "repository": "https://github.com/fauna/fauna-js.git",
   "author": "Fauna",
   "private": true,
-  "dependencies": {
-    "agentkeepalive": "^4.2.1",
-    "axios": "^1.1.2"
-  },
   "devDependencies": {
     "@tsconfig/node18": "^1.0.1",
     "@types/jest": "^29.4.0",
     "@types/node": "^18.13.0",
     "@typescript-eslint/eslint-plugin": "^5.40.0",
     "@typescript-eslint/parser": "^5.52.0",
-    "axios-mock-adapter": "^1.21.2",
     "esbuild": "^0.15.12",
     "eslint": "^8.25.0",
     "eslint-plugin-tsdoc": "^0.2.17",

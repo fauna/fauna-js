@@ -9,11 +9,6 @@ describe("ClientConfiguration", () => {
   it("Client exposes a default client configuration", () => {
     process.env["FAUNA_SECRET"] = "foo";
     const client = new Client();
-    expect(client.clientConfiguration).toEqual({
-      timeout_ms: 60_000,
-      max_conns: 10,
-      endpoint: endpoints.cloud,
-    });
     expect(Buffer.from(JSON.stringify(client)).toString()).not.toContain(
       "secret"
     );
@@ -22,11 +17,8 @@ describe("ClientConfiguration", () => {
   it("Client respectes passed in client configuration over defaults", () => {
     process.env["FAUNA_SECRET"] = "foo";
     const client = new Client({ secret: "bar", timeout_ms: 10 });
-    expect(client.clientConfiguration).toEqual({
-      timeout_ms: 10,
-      max_conns: 10,
-      endpoint: endpoints.cloud,
-    });
+    // TODO: when the Client accepts an http client add a mock that validates
+    //   the configuration changes were applied.
   });
 
   it("A ClientConfiguration setting with no secret throws an error on driver construction", () => {

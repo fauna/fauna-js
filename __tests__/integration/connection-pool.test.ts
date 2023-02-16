@@ -29,15 +29,16 @@ describe("Connection pool", () => {
   });
 
   it("Pools connections", async () => {
-    const client = new Client({
+    const config: ClientConfiguration = {
       endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
       max_conns: 5, // pool size 5
       secret: env["secret"] || "secret",
       timeout_ms: 60_000,
-    });
-    const host = client.clientConfiguration.endpoint.host;
+    };
+    const client = new Client(config);
+    const host = config.endpoint.host;
     const agentToTest =
-      client.clientConfiguration.endpoint.protocol === "http:"
+      config.endpoint.protocol === "http:"
         ? client.client.defaults.httpAgent
         : client.client.defaults.httpsAgent;
 
@@ -101,15 +102,16 @@ describe("Connection pool", () => {
   });
 
   it("Closes unused connections", async () => {
-    const client = new Client({
+    const config: ClientConfiguration = {
       endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
       max_conns: 5, // pool size 5
       secret: env["secret"] || "secret",
       timeout_ms: 60_000,
-    });
-    const host = client.clientConfiguration.endpoint.host;
+    };
+    const client = new Client(config);
+    const host = config.endpoint.host;
     const agentToTest =
-      client.clientConfiguration.endpoint.protocol === "http:"
+      config.endpoint.protocol === "http:"
         ? client.client.defaults.httpAgent
         : client.client.defaults.httpsAgent;
 

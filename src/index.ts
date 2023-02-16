@@ -28,3 +28,4 @@ export {
   type QuerySuccess,
   type Span,
 } from "./wire-protocol";
+export { type FaunaFetch, DefaultFetch } from "./http";

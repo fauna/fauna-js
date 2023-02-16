@@ -1,3 +1,5 @@
+import { FaunaFetch } from "./http";
+
 /**
  * Configuration for a client.
  */
@@ -40,6 +42,11 @@ export interface ClientConfiguration {
    * Must match format: https://www.w3.org/TR/trace-context/#traceparent-header
    */
   traceparent?: string;
+
+  /**
+   * Wrapper for the HTTP requests, modeled after the web API. Can be provided by the user.
+   */
+  fetch: FaunaFetch;
 }
 
 /**

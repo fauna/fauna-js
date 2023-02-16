@@ -1,11 +1,13 @@
-import Agent, { HttpsAgent } from "agentkeepalive";
-import axios, { AxiosInstance } from "axios";
 import { ClientConfiguration, endpoints } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
 import {
   AuthenticationError,
   AuthorizationError,
   ClientError,
+  FaunaError,
+  isQueryFailure,
+  isQueryResponse,
+  isQuerySuccess,
   NetworkError,
   ProtocolError,
   QueryCheckError,
@@ -14,19 +16,19 @@ import {
   ServiceError,
   ServiceInternalError,
   ServiceTimeoutError,
-  type Span,
   ThrottlingError,
   type QueryFailure,
   type QueryRequest,
   type QueryRequestHeaders,
   type QuerySuccess,
-  isQueryFailure,
 } from "./wire-protocol";
+import { DefaultFetch, isFetchResponse } from "./http";
 
 const defaultClientConfiguration = {
   max_conns: 10,
   endpoint: endpoints.cloud,
   timeout_ms: 60_000,
+  fetch: DefaultFetch,
 };
 
 /**
@@ -35,8 +37,6 @@ const defaultClientConfiguration = {
 export class Client {
   /** The {@link ClientConfiguration} */
   readonly clientConfiguration: ClientConfiguration;
-  /** The underlying {@link AxiosInstance} client. */
-  readonly client: AxiosInstance;
   /** last_txn this client has seen */
   #lastTxn?: Date;
 
@@ -61,35 +61,6 @@ export class Client {
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
-    // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
-    // terminate connections on active queries.
-    const timeout = this.clientConfiguration.timeout_ms + 10_000;
-    const agentSettings = {
-      maxSockets: this.clientConfiguration.max_conns,
-      maxFreeSockets: this.clientConfiguration.max_conns,
-      timeout,
-      // release socket for usage after 4s of inactivity. Must be less than Fauna's server
-      // side idle timeout of 5 seconds.
-      freeSocketTimeout: 4000,
-      keepAlive: true,
-    };
-    this.client = axios.create({
-      baseURL: this.clientConfiguration.endpoint.toString(),
-      timeout,
-    });
-    this.client.defaults.httpAgent = new Agent(agentSettings);
-    this.client.defaults.httpsAgent = new HttpsAgent(agentSettings);
-    this.client.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${this.clientConfiguration.secret}`;
-    this.client.defaults.headers.common["Content-Type"] = "application/json";
-    // WIP - presently core will default to tagged; hardcode to simple for now
-    // until we get back to work on the JS driver.
-    this.client.defaults.headers.common["X-Format"] = "simple";
-    this.#setHeaders(
-      this.clientConfiguration,
-      this.client.defaults.headers.common
-    );
   }
 
   /**
@@ -105,7 +76,7 @@ export class Client {
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
    *   or a concrete ServiceError if it cannot. ServiceError child types are
-   *   {@link AuthenticaionError}, {@link AuthorizationError}, {@link QueryCheckError}
+   *   {@link AuthenticationError}, {@link AuthorizationError}, {@link QueryCheckError}
    *   {@link QueryRuntimeError}, {@link QueryTimeoutError}, {@link ServiceInternalError}
    *   {@link ServiceTimeoutError}, {@link ThrottlingError}.
    *   You can use either the type, or the underlying httpStatus + code to determine
@@ -127,35 +98,23 @@ export class Client {
   }
 
   #getError(e: any): ServiceError | ProtocolError | NetworkError | ClientError {
-    // see: https://axios-http.com/docs/handling_errors
-    if (e.response) {
-      // we got an error from the fauna service
-      if (isQueryFailure(e.response.data)) {
-        const failure = e.response.data;
-        const status = e.response.status;
-        return this.#getServiceError(failure, status);
+    // a response was received
+    if (isFetchResponse(e)) {
+      const body = e.body;
+      const status = e.status;
+
+      // the response is from Fauna
+      if (isQueryFailure(body)) {
+        return this.#getServiceError(body, status);
       }
-      // we got a different error from the protocol layer
-      return new ProtocolError({
-        message: e.message,
-        httpStatus: e.response.status,
-      });
+
+      // the response is not from Fauna
+      throw new ProtocolError(
+        "Response body is an unknown format: " + JSON.stringify(body),
+        status
+      );
     }
-    // we're in the browser dealing with an XMLHttpRequest that was never sent
-    // OR we're in node dealing with an HTTPClient.Request that never connected
-    // OR node or axios hit a network connection problem at a lower level,
-    // OR axios threw a network error
-    // see: https://nodejs.org/api/errors.html#nodejs-error-codes
-    if (
-      e.request?.status === 0 ||
-      e.request?.socket?.connecting ||
-      nodeOrAxiosNetworkErrorCodes.includes(e.code) ||
-      "Network Error" === e.message
-    ) {
-      return new NetworkError("The network connection encountered a problem.", {
-        cause: e,
-      });
-    }
+
     // unknown error
     return new ClientError(
       "A client level error occurred. Fauna was not called.",
@@ -214,22 +173,61 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     const headers: { [key: string]: string } = {};
     this.#setHeaders(queryRequest, headers);
     try {
-      const result = await this.client.post<QuerySuccess<T>>(
-        "/query/1",
-        { query, arguments: args },
-        { headers }
-      );
-      const txnDate = new Date(result.data.txn_time);
+      const url = `${this.clientConfiguration.endpoint.toString()}query/1`;
+      const headers = {
+        Authorization: `Bearer ${this.clientConfiguration.secret}`,
+        "Content-Type": "application/json",
+        // WIP - typecheck should be user configurable, but hard code for now
+        "x-typecheck": "false",
+        // WIP - presently core will default to tagged; hardcode to simple for now
+        // until we get back to work on the JS driver.
+        "x-format": "simple",
+      };
+
+      this.#setHeaders(this.clientConfiguration, headers);
+
+      const fetchResponse = await this.clientConfiguration.fetch(url, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          query,
+          arguments: args,
+        }),
+        keepalive: true,
+      });
+
+      const queryResponse = fetchResponse.body;
+
+      // Response came back as a valid error from Fauna
+      if (isQueryFailure(queryResponse) || !isQueryResponse(queryResponse)) {
+        // throw this.#getServiceError(queryResponse, response.status);
+        throw this.#getError(fetchResponse);
+      }
+
+      // Response is not from Fauna
+      if (!isQuerySuccess(queryResponse)) {
+        throw new ProtocolError(
+          "Unknown response format: " + JSON.stringify(fetchResponse),
+          fetchResponse.status
+        );
+      }
+
+      const txn_time = queryResponse.txn_time;
+      const txnDate = new Date(txn_time);
       if (
-        (this.#lastTxn === undefined && result.data.txn_time !== undefined) ||
-        (result.data.txn_time !== undefined &&
+        (this.#lastTxn === undefined && txn_time !== undefined) ||
+        (txn_time !== undefined &&
           this.#lastTxn !== undefined &&
           this.#lastTxn < txnDate)
       ) {
         this.#lastTxn = txnDate;
       }
-      return result.data;
+
+      return queryResponse as QuerySuccess<T>;
     } catch (e: any) {
+      if (e instanceof FaunaError) {
+        throw e;
+      }
       throw this.#getError(e);
     }
   }
@@ -283,23 +281,4 @@ const queryCheckFailureCodes = [
   "invalid_query",
   "invalid_syntax",
   "invalid_type",
-];
-
-const nodeOrAxiosNetworkErrorCodes = [
-  "ECONNABORTED",
-  "ECONNREFUSED",
-  "ECONNRESET",
-  "ERR_NETWORK",
-  "ETIMEDOUT",
-  // axios does not yet support http2, but preparing
-  // in case we move to a library that does or axios
-  // adds in support.
-  "ERR_HTTP_REQUEST_TIMEOUT",
-  "ERR_HTTP2_GOAWAY_SESSION",
-  "ERR_HTTP2_INVALID_SESSION",
-  "ERR_HTTP2_INVALID_STREAM",
-  "ERR_HTTP2_OUT_OF_STREAMS",
-  "ERR_HTTP2_SESSION_ERROR",
-  "ERR_HTTP2_STREAM_CANCEL",
-  "ERR_HTTP2_STREAM_ERROR",
 ];

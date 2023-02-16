@@ -68,11 +68,11 @@ export type QueryInfo = {
   /** The last transaction time of the query. An ISO-8601 date string. */
   txn_time: string;
   /** A readable summary of any warnings or logs emitted by the query. */
-  summary?: string;
+  summary: string;
   /** The value of the x-query-tags header, if it was provided. */
-  query_tags: Record<string, string>;
+  query_tags?: Record<string, string>;
   /** Stats on query performance and cost */
-  stats: QueryStats;
+  stats?: QueryStats;
 };
 
 export type QuerySuccess<T> = QueryInfo & {
@@ -103,18 +103,33 @@ export type QueryFailure = QueryInfo & {
   };
 };
 
-export const isQuerySuccess = <T>(
-  res: QuerySuccess<T> | QueryFailure
-): res is QuerySuccess<T> => "data" in res;
+const isQueryInfo = (res: any): res is QueryInfo =>
+  res instanceof Object && "summary" in res;
 
-export const isQueryFailure = (
-  res: QuerySuccess<any> | QueryFailure
-): res is QueryFailure => "error" in res;
+export const isQuerySuccess = <T>(res: any): res is QuerySuccess<T> =>
+  isQueryInfo(res) && "data" in res;
+
+export const isQueryFailure = (res: any): res is QueryFailure =>
+  isQueryInfo(res) && "error" in res;
+
+export const isQueryResponse = (
+  res: any
+): res is QuerySuccess<any> | QueryFailure =>
+  isQuerySuccess(res) || isQueryFailure(res);
+
+/**
+ * Any error handled by this driver.
+ */
+export class FaunaError extends Error {
+  constructor(...args: any[]) {
+    super(...args);
+  }
+}
 
 /**
  * An error representing a query failure returned by Fauna.
  */
-export class ServiceError extends Error {
+export class ServiceError extends FaunaError {
   /**
    * The HTTP Status Code of the error.
    */
@@ -277,7 +292,7 @@ export class ServiceTimeoutError extends ServiceError {
  * This indicates Fauna was never called - the client failed internally
  * prior to sending the qreuest.
  */
-export class ClientError extends Error {
+export class ClientError extends FaunaError {
   constructor(message: string, options: { cause: any }) {
     super(message, options);
     // Maintains proper stack trace for where our error was thrown (only available on V8)
@@ -292,7 +307,7 @@ export class ClientError extends Error {
  * An error representing a failure due to the network.
  * This indicates Fauna was never reached.
  */
-export class NetworkError extends Error {
+export class NetworkError extends FaunaError {
   constructor(message: string, options: { cause: any }) {
     super(message, options);
     // Maintains proper stack trace for where our error was thrown (only available on V8)
@@ -307,14 +322,14 @@ export class NetworkError extends Error {
  * An error representing a HTTP failure - but one not directly
  * emitted by Fauna.
  */
-export class ProtocolError extends Error {
+export class ProtocolError extends FaunaError {
   /**
    * The HTTP Status Code of the error.
    */
   readonly httpStatus: number;
 
-  constructor(error: { message: string; httpStatus: number }) {
-    super(error.message);
+  constructor(message: string, httpStatus: number) {
+    super(message);
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {
@@ -322,7 +337,7 @@ export class ProtocolError extends Error {
     }
 
     this.name = "ProtocolError";
-    this.httpStatus = error.httpStatus;
+    this.httpStatus = httpStatus;
   }
 }
 

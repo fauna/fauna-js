@@ -61,19 +61,19 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       endpoint: endpoints.local,
       secret: "secret",
     });
-    expect(client.last_txn_time).toBeUndefined();
+    expect(client.lastTxnTime).toBeUndefined();
     const expectedTxnTime = new Date(Date.now());
-    client.last_txn_time = expectedTxnTime;
-    expect(client.last_txn_time).toBe(expectedTxnTime);
+    client.lastTxnTime = expectedTxnTime;
+    expect(client.lastTxnTime).toBe(expectedTxnTime);
     const addFiveMinutes = new Date(expectedTxnTime.getTime() + 5 * 60000);
-    client.last_txn_time = addFiveMinutes;
-    expect(client.last_txn_time).toBe(addFiveMinutes);
+    client.lastTxnTime = addFiveMinutes;
+    expect(client.lastTxnTime).toBe(addFiveMinutes);
     // setting txn time back in history should fail
     expect(() => {
-      client.last_txn_time = expectedTxnTime;
+      client.lastTxnTime = expectedTxnTime;
     }).toThrow();
     expect(() => {
-      client.last_txn_time = undefined;
+      client.lastTxnTime = undefined;
     }).toThrow();
   });
 

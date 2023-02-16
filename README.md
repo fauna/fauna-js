@@ -41,7 +41,7 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
 ## Set-up and Dependencies
 This driver is not yet hosted on npm. To use it in a toy app clone this repo and add a file system dependency from a node application.
 
-For example: `yarn install file://path-to-your-clone`
+For example: `yarn add file://path-to-your-clone`
 
 
 ## Pre-requisites
@@ -103,7 +103,7 @@ Rather than hard coding your secret into your code, the driver can load your sec
 
 # Learning how to use the FQL X Driver
 
-You can familiarize yourself with the driver by completing the exercises included in this [demo repo](https://github.com/fauna/fauna-js-demo). Additionally, the **Getting Started With the Driver** section of this README provides driver documentation, and the driver code itself is heavily documented. So, feel free to proceed as works bests for you! 
+You can familiarize yourself with the driver by completing the exercises included in the demo directory of this repo. Additionally, the **Getting Started With the Driver** section of this README provides driver documentation, and the driver code itself is heavily documented. Information about Fauna service and the v10 API is available in the [FQL X alpha documentation](https://deploy-preview-1220--fauna-docs.netlify.app/fqlx/alpha/). So, feel free to proceed as works bests for you! 
 
 ## Querying with your client
 

@@ -36,3 +36,8 @@ export interface HTTPClient {
    */
   request(req: HTTPRequest): Promise<HTTPResponse>;
 }
+
+// utility functions
+
+export const isHTTPResponse = (res: any): res is HTTPResponse =>
+  res instanceof Object && "body" in res && "headers" in res && "status" in res;

@@ -32,3 +32,4 @@ export interface HTTPClient {
      */
     request(req: HTTPRequest): Promise<HTTPResponse>;
 }
+export declare const isHTTPResponse: (res: any) => res is HTTPResponse;

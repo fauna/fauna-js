@@ -15,9 +15,9 @@ export declare type HTTPRequest = {
  * It is returned to, and handled by, the {@link Client}.
  */
 export declare type HTTPResponse = {
+    body: string;
     headers: Record<string, string>;
     status: number;
-    body: string;
 };
 /**
  * An interface to provide implementation-specific, asyncronous http calls.

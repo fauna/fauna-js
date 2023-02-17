@@ -18,9 +18,9 @@ export type HTTPRequest = {
  * It is returned to, and handled by, the {@link Client}.
  */
 export type HTTPResponse = {
+  body: string;
   headers: Record<string, string>;
   status: number;
-  body: string;
 };
 
 /**

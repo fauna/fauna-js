@@ -19,7 +19,7 @@ export class FetchClient implements HTTPClient {
 
     const response = await fetch(url, {
       method,
-      headers: requestHeaders,
+      headers: { ...requestHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(data),
       keepalive,
     });

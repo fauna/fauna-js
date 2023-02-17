@@ -13,7 +13,6 @@ export class FetchClient implements HTTPClient {
     headers: requestHeaders,
     method,
     url,
-    keepalive,
   }: HTTPRequest): Promise<HTTPResponse> {
     // TODO: handle client timeouts with AbortController. Emit NetworkError if so.
 
@@ -21,7 +20,6 @@ export class FetchClient implements HTTPClient {
       method,
       headers: { ...requestHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(data),
-      keepalive,
     });
 
     const status = response.status;

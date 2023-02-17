@@ -6,5 +6,5 @@ import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
  */
 export declare class FetchClient implements HTTPClient {
     /** {@inheritDoc HTTPClient.request} */
-    request({ data, headers: requestHeaders, method, url, keepalive, }: HTTPRequest): Promise<HTTPResponse>;
+    request({ data, headers: requestHeaders, method, url, }: HTTPRequest): Promise<HTTPResponse>;
 }

@@ -1,4 +1,5 @@
 import type { Client } from "../client";
+import { QueryRequest } from "../wire-protocol";
 export { FetchClient } from "./fetch-client";
 
 /**
@@ -6,11 +7,10 @@ export { FetchClient } from "./fetch-client";
  * The {@link Client} provides this to the {@link HTTPClient} implementation.
  */
 export type HTTPRequest = {
-  data: Record<string, any>;
+  data: QueryRequest;
   headers: Record<string, string>;
   method: string;
   url: string;
-  keepalive?: boolean;
 };
 
 /**

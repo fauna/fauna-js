@@ -3,7 +3,11 @@
 
 import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
 
+/**
+ * An implementation for {@link HTTPClient} that uses the native fetch API
+ */
 export class FetchClient implements HTTPClient {
+  /** {@inheritDoc HTTPClient.request} */
   async request({
     data,
     headers: requestHeaders,

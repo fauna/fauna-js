@@ -6,7 +6,7 @@ export { FetchClient } from "./fetch-client";
  */
 export declare type HTTPRequest = {
     data: QueryRequest;
-    headers: Record<string, string | string[]>;
+    headers: Record<string, string>;
     method: string;
     url: string;
 };
@@ -16,7 +16,7 @@ export declare type HTTPRequest = {
  */
 export declare type HTTPResponse = {
     body: string;
-    headers: Record<string, string>;
+    headers: Record<string, string | string[]>;
     status: number;
 };
 /**

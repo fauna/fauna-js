@@ -9,7 +9,7 @@ export declare type HTTPRequest = {
 export declare type HTTPResponse = {
     headers: Record<string, string>;
     status: number;
-    body: unknown;
+    body: string;
 };
 export interface HTTPClient {
     request(req: HTTPRequest): Promise<HTTPResponse>;

@@ -2,12 +2,6 @@
 /// <reference lib="dom" />
 
 import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
-import {
-  NetworkError,
-  ProtocolError,
-  QueryFailure,
-  QuerySuccess,
-} from "../wire-protocol";
 
 export class FetchClient implements HTTPClient {
   async request({
@@ -24,33 +18,14 @@ export class FetchClient implements HTTPClient {
       headers: requestHeaders,
       body: JSON.stringify(data),
       keepalive,
-    })
-      // handle network errors directly
-      .catch((error) => {
-        throw new NetworkError(
-          "The network connection encountered a problem.",
-          {
-            cause: error,
-          }
-        );
-      });
+    });
 
     const status = response.status;
 
     const responseHeaders: Record<string, string> = {};
     response.headers.forEach((value, key) => (responseHeaders[key] = value));
 
-    const body: QuerySuccess<unknown> | QueryFailure = await response
-      .json()
-      // handle JSON parsing errors directly
-      .catch((error) => {
-        throw new ProtocolError({
-          message:
-            "Error parsing response as JSON. Response: " +
-            JSON.stringify(error),
-          httpStatus: status,
-        });
-      });
+    const body = await response.text();
 
     return {
       status,

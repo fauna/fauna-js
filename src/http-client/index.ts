@@ -11,7 +11,7 @@ export type HTTPRequest = {
 export type HTTPResponse = {
   headers: Record<string, string>;
   status: number;
-  body: unknown;
+  body: string;
 };
 
 export interface HTTPClient {

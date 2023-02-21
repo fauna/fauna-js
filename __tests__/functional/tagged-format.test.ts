@@ -89,50 +89,50 @@ describe("tagged format", () => {
     // expect(result).toEqual(
     //   `{"child":{"more":{"itsworking":{"@date":"1983-04-15T00:00:00.000Z"}}},"date":{"@date":"1923-05-13T00:00:00.000Z"},"decimal":{"@decimal":4.14},"long":{"@int":32},"name":"Hello, World","number":{"@int":48},"time":{"@time":"2023-01-30T21:27:45.204Z"}}`
     // );
-    const backToObj = JSON.parse(result);
+    const backToObj = JSON.parse(result)["@object"];
     expect(backToObj.decimal).toStrictEqual({ "@decimal": 4.14 });
     expect(backToObj.extra).toHaveLength(2);
     expect(backToObj.child.more.itsworking).toStrictEqual({
-      "@date": "1983-04-15T00:00:00.000Z",
+      "@date": "1983-04-15",
     });
   });
 
   it("handleds conflicts", () => {
     var result = TaggedTypeFormat.encode({
-      date: { "@date": new Date(2022, 11, 1) },
-      time: { "@time": new Date(2022, 11, 2) },
+      date: { "@date": new Date("2022-11-01T00:00:00.000Z") },
+      time: { "@time": new Date("2022-11-02T05:00:00.000Z") },
       int: { "@int": 1 },
       long: { "@long": 9999999999999 },
       double: { "@double": 1.99 },
     });
-    expect(result["date"]["@object"]["@date"]).toEqual(new Date(2022, 11, 1));
-    expect(result["time"]["@object"]["@time"]).toEqual(new Date(2022, 11, 2));
-    expect(result["int"]["@object"]["@int"]).toEqual(1);
-    expect(result["long"]["@object"]["@long"]).toEqual(9999999999999);
-    expect(result["double"]["@object"]["@double"]).toEqual(1.99);
+    expect(result["date"]["@object"]["@date"]).toStrictEqual({
+      "@date": "2022-11-01",
+    });
+    expect(result["time"]["@object"]["@time"]).toStrictEqual({
+      "@time": "2022-11-02T05:00:00.000Z",
+    });
+    expect(result["int"]["@object"]["@int"]).toStrictEqual({ "@int": 1 });
+    expect(result["long"]["@object"]["@long"]).toStrictEqual({
+      "@int": 9999999999999,
+    });
+    expect(result["double"]["@object"]["@double"]).toEqual({
+      "@decimal": 1.99,
+    });
   });
 
   it("handles nested conflict types", () => {
     expect(
       JSON.stringify(
         TaggedTypeFormat.encode({
-          "@object": {
+          "@date": {
             "@date": {
-              "@object": {
-                "@date": {
-                  "@object": {
-                    "@time": {
-                      "@time": "2022-12-02T02:00:00+00:00",
-                    },
-                  },
-                },
-              },
+              "@time": new Date("2022-12-02T02:00:00.000Z"),
             },
           },
         })
       )
     ).toEqual(
-      '{"@object":{"@date":{"@object":{"@date":{"@object":{"@time":{"@time":"2022-12-02T02:00:00+00:00"}}}}}}}'
+      '{"@object":{"@date":{"@object":{"@date":{"@object":{"@time":{"@time":"2022-12-02T02:00:00.000Z"}}}}}}}'
     );
   });
 

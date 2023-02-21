@@ -36,7 +36,7 @@ export class TaggedTypeFormat {
       } else if (value["@double"]) {
         return Number(value["@double"]);
       } else if (value["@date"]) {
-        return new Date(value["@date"]);
+        return new Date(value["@date"] + "T00:00:00.000Z");
       } else if (value["@time"]) {
         return new Date(value["@time"]);
       } else if (value["@object"]) {
@@ -63,20 +63,20 @@ class TaggedTypeEncoded {
       return value;
     },
     object: (input: any): { [key: string]: string } => {
+      let wrapped = false;
       const _out: { [key: string]: any } = {};
+
       for (const k in input) {
         if (k.startsWith("@")) {
-          _out["@object"] = k == "@object" ? input[k] : { [k]: input[k] };
-        } else {
-          _out[k] = TaggedTypeFormat.encode(input[k]);
+          wrapped = true;
         }
+        _out[k] = TaggedTypeFormat.encode(input[k]);
       }
-      return _out;
+      return wrapped ? { "@object": _out } : _out;
     },
     array: (input: Array<any>): Array<any> => {
       const _out: any = [];
       for (const i in input) _out.push(TaggedTypeFormat.encode(input[i]));
-
       return _out;
     },
     date: (dateValue: Date): { [key: string]: string } => {
@@ -86,7 +86,7 @@ class TaggedTypeEncoded {
         dateValue.getUTCSeconds() == 0 &&
         dateValue.getUTCMilliseconds() == 0
       ) {
-        return { "@date": dateValue.toISOString() };
+        return { "@date": dateValue.toISOString().split("T")[0] };
       }
 
       return { "@time": dateValue.toISOString() };
@@ -94,7 +94,8 @@ class TaggedTypeEncoded {
   };
 
   constructor(input: any) {
-    this.result = {};
+    // default to encoding directly as the input
+    this.result = input;
 
     switch (typeof input) {
       case "string":

@@ -111,4 +111,28 @@ describe("tagged format", () => {
     expect(result["@long"]).toEqual(9999999999999);
     expect(result["@double"]).toEqual(1.99);
   });
+
+  it("handles nested conflict types", () => {
+    expect(
+      JSON.stringify(
+        TaggedTypeFormat.encode({
+          "@object": {
+            "@date": {
+              "@object": {
+                "@date": {
+                  "@object": {
+                    "@time": {
+                      "@time": "2022-12-02T02:00:00+00:00",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        })
+      )
+    ).toEqual(
+      '{"@object":{"@date":{"@object":{"@date":{"@object":{"@time":{"@time":"2022-12-02T02:00:00+00:00"}}}}}}}'
+    );
+  });
 });

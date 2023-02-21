@@ -10,7 +10,8 @@
   "private": true,
   "dependencies": {
     "agentkeepalive": "^4.2.1",
-    "axios": "^1.1.2"
+    "axios": "^1.1.2",
+    "jest-fetch-mock": "^3.0.3"
   },
   "devDependencies": {
     "@tsconfig/node18": "^1.0.1",

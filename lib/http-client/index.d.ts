@@ -6,7 +6,7 @@ export { FetchClient } from "./fetch-client";
  */
 export declare type HTTPRequest = {
     data: QueryRequest;
-    headers: Record<string, string>;
+    headers: Record<string, string | string[]>;
     method: string;
     url: string;
 };
@@ -32,3 +32,4 @@ export interface HTTPClient {
      */
     request(req: HTTPRequest): Promise<HTTPResponse>;
 }
+export declare const isHTTPResponse: (res: any) => res is HTTPResponse;

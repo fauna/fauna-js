@@ -12,7 +12,7 @@ export class TaggedTypeFormat {
    * @returns Map of result
    */
   static encode(obj: any): any {
-    return new taggedTypeEncoded(obj).result;
+    return new TaggedTypeEncoded(obj).result;
   }
 
   /**
@@ -48,7 +48,7 @@ export class TaggedTypeFormat {
   }
 }
 
-class taggedTypeEncoded {
+class TaggedTypeEncoded {
   readonly result: any;
 
   readonly #encodeMap = {

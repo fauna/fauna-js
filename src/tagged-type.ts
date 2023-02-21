@@ -66,7 +66,7 @@ class TaggedTypeEncoded {
       const _out: { [key: string]: any } = {};
       for (const k in input) {
         if (k.startsWith("@")) {
-          _out[k] = input[k];
+          _out["@object"] = k == "@object" ? input[k] : { [k]: input[k] };
         } else {
           _out[k] = TaggedTypeFormat.encode(input[k]);
         }

@@ -99,17 +99,17 @@ describe("tagged format", () => {
 
   it("handleds conflicts", () => {
     var result = TaggedTypeFormat.encode({
-      "@date": new Date(2022, 11, 1),
-      "@time": new Date(2022, 11, 2),
-      "@int": 1,
-      "@long": 9999999999999,
-      "@double": 1.99,
+      date: { "@date": new Date(2022, 11, 1) },
+      time: { "@time": new Date(2022, 11, 2) },
+      int: { "@int": 1 },
+      long: { "@long": 9999999999999 },
+      double: { "@double": 1.99 },
     });
-    expect(result["@date"]).toEqual(new Date(2022, 11, 1));
-    expect(result["@time"]).toEqual(new Date(2022, 11, 2));
-    expect(result["@int"]).toEqual(1);
-    expect(result["@long"]).toEqual(9999999999999);
-    expect(result["@double"]).toEqual(1.99);
+    expect(result["date"]["@object"]["@date"]).toEqual(new Date(2022, 11, 1));
+    expect(result["time"]["@object"]["@time"]).toEqual(new Date(2022, 11, 2));
+    expect(result["int"]["@object"]["@int"]).toEqual(1);
+    expect(result["long"]["@object"]["@long"]).toEqual(9999999999999);
+    expect(result["double"]["@object"]["@double"]).toEqual(1.99);
   });
 
   it("handles nested conflict types", () => {
@@ -134,5 +134,15 @@ describe("tagged format", () => {
     ).toEqual(
       '{"@object":{"@date":{"@object":{"@date":{"@object":{"@time":{"@time":"2022-12-02T02:00:00+00:00"}}}}}}}'
     );
+  });
+
+  it("wraps user-provided `@` fields", () => {
+    expect(
+      JSON.stringify(
+        TaggedTypeFormat.encode({
+          "@foo": true,
+        })
+      )
+    ).toEqual('{"@object":{"@foo":true}}');
   });
 });

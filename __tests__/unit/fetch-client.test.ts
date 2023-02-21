@@ -1,4 +1,4 @@
-import { enableFetchMocks } from "jest-fetch-mock";
+import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
 enableFetchMocks();
 
 import {
@@ -39,11 +39,11 @@ describe("query", () => {
 
   it("returns a valid query response on success", async () => {
     expect.assertions(7);
-    const expected: QuerySuccess<null> = {
-      data: null,
+    const expected: QuerySuccess<{ foo: string }> = {
+      data: { foo: "bar" },
       summary: "summary",
       txn_time: "2023-02-17T19:19:12.887330Z",
-      query_tags: {},
+      query_tags: { "my-tag": "value" },
       stats: dummyStats,
     };
     const expectedHeaders = {

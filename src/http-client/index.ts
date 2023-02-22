@@ -8,7 +8,7 @@ export { FetchClient } from "./fetch-client";
  */
 export type HTTPRequest = {
   data: QueryRequest;
-  headers: Record<string, string | string[]>;
+  headers: Record<string, string>;
   method: string;
   url: string;
 };

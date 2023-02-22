@@ -1,11 +1,11 @@
-import Agent, { HttpsAgent } from "agentkeepalive";
-import axios, { AxiosInstance } from "axios";
 import { ClientConfiguration, endpoints } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
 import {
   AuthenticationError,
   AuthorizationError,
   ClientError,
+  isQueryFailure,
+  isQuerySuccess,
   NetworkError,
   ProtocolError,
   QueryCheckError,
@@ -19,8 +19,13 @@ import {
   type QueryRequest,
   type QueryRequestHeaders,
   type QuerySuccess,
-  isQueryFailure,
 } from "./wire-protocol";
+import {
+  getDefaultHTTPClient,
+  HTTPResponse,
+  isHTTPResponse,
+  type HTTPClient,
+} from "./http-client";
 
 const defaultClientConfiguration = {
   max_conns: 10,
@@ -34,14 +39,15 @@ const defaultClientConfiguration = {
 export class Client {
   /** The {@link ClientConfiguration} */
   readonly #clientConfiguration: ClientConfiguration;
-  /** The underlying {@link AxiosInstance} client. */
-  readonly client: AxiosInstance;
+  /** The underlying {@link HTTPClient} client. */
+  readonly client: HTTPClient;
   /** last_txn this client has seen */
   #lastTxn?: Date;
 
   /**
    * Constructs a new {@link Client}.
    * @param clientConfiguration - the {@link ClientConfiguration} to apply.
+   * @param client - The underlying {@link HTTPClient} that will execute the actual HTTP calls.
    * @example
    * ```typescript
    *  const myClient = new Client(
@@ -54,39 +60,21 @@ export class Client {
    * );
    * ```
    */
-  constructor(clientConfiguration?: Partial<ClientConfiguration>) {
+  constructor(
+    clientConfiguration?: Partial<ClientConfiguration>,
+    client?: HTTPClient
+  ) {
     this.#clientConfiguration = {
       ...defaultClientConfiguration,
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
 
-    // ensure the network timeout > ClientConfiguration.queryTimeoutMillis so we don't
-    // terminate connections on active queries.
-    const timeout = this.#clientConfiguration.timeout_ms + 10_000;
-    const agentSettings = {
-      maxSockets: this.#clientConfiguration.max_conns,
-      maxFreeSockets: this.#clientConfiguration.max_conns,
-      timeout,
-      // release socket for usage after 4s of inactivity. Must be less than Fauna's server
-      // side idle timeout of 5 seconds.
-      freeSocketTimeout: 4000,
-      keepAlive: true,
-    };
-    this.client = axios.create({
-      baseURL: this.#clientConfiguration.endpoint.toString(),
-      timeout,
-    });
-    this.client.defaults.httpAgent = new Agent(agentSettings);
-    this.client.defaults.httpsAgent = new HttpsAgent(agentSettings);
-    this.client.defaults.headers.common["Content-Type"] = "application/json";
-    // WIP - presently core will default to tagged; hardcode to simple for now
-    // until we get back to work on the JS driver.
-    this.client.defaults.headers.common["X-Format"] = "simple";
-    this.#setHeaders(
-      this.#clientConfiguration,
-      this.client.defaults.headers.common
-    );
+    if (!client) {
+      this.client = getDefaultHTTPClient();
+    } else {
+      this.client = client;
+    }
   }
 
   /**
@@ -155,36 +143,33 @@ export class Client {
     return this.#query(request.toQuery(headers));
   }
 
-  #getError(e: any): ServiceError | ProtocolError | NetworkError | ClientError {
-    // see: https://axios-http.com/docs/handling_errors
-    if (e.response) {
+  #getError(e: any): ClientError | NetworkError | ProtocolError | ServiceError {
+    // the error was already handled by the driver
+    if (
+      e instanceof ClientError ||
+      e instanceof NetworkError ||
+      e instanceof ProtocolError ||
+      e instanceof ServiceError
+    ) {
+      return e;
+    }
+
+    // the HTTP request succeeded, but there was an error
+    if (isHTTPResponse(e)) {
       // we got an error from the fauna service
-      if (isQueryFailure(e.response.data)) {
-        const failure = e.response.data;
-        const status = e.response.status;
+      if (isQueryFailure(e.body)) {
+        const failure = e.body;
+        const status = e.status;
         return this.#getServiceError(failure, status);
       }
+
       // we got a different error from the protocol layer
       return new ProtocolError({
-        message: e.message,
-        httpStatus: e.response.status,
+        message: `Response is in an unkown format: ${e.body}`,
+        httpStatus: e.status,
       });
     }
-    // we're in the browser dealing with an XMLHttpRequest that was never sent
-    // OR we're in node dealing with an HTTPClient.Request that never connected
-    // OR node or axios hit a network connection problem at a lower level,
-    // OR axios threw a network error
-    // see: https://nodejs.org/api/errors.html#nodejs-error-codes
-    if (
-      e.request?.status === 0 ||
-      e.request?.socket?.connecting ||
-      nodeOrAxiosNetworkErrorCodes.includes(e.code) ||
-      "Network Error" === e.message
-    ) {
-      return new NetworkError("The network connection encountered a problem.", {
-        cause: e,
-      });
-    }
+
     // unknown error
     return new ClientError(
       "A client level error occurred. Fauna was not called.",
@@ -239,27 +224,66 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   }
 
   async #query<T = any>(queryRequest: QueryRequest): Promise<QuerySuccess<T>> {
-    const { query, arguments: args } = queryRequest;
-    const headers: { [key: string]: string } = {
-      Authorization: `Bearer ${this.#clientConfiguration.secret}`,
-    };
-    this.#setHeaders(queryRequest, headers);
     try {
-      const result = await this.client.post<QuerySuccess<T>>(
-        "/query/1",
-        { query, arguments: args },
-        { headers }
+      const url = `${this.clientConfiguration.endpoint.toString()}query/1`;
+      const headers = {
+        Authorization: `Bearer ${this.#clientConfiguration.secret}`,
+        // WIP - typecheck should be user configurable, but hard code for now
+        "x-typecheck": "false",
+        // WIP - presently core will default to tagged; hardcode to simple for now
+        // until we get back to work on the JS driver.
+        "x-format": "simple",
+        // include per-request headers
+      };
+      this.#setHeaders(
+        { ...this.clientConfiguration, ...queryRequest },
+        headers
       );
-      const txnDate = new Date(result.data.txn_time);
+
+      const requestData = {
+        query: queryRequest.query,
+        // WIP: encode arguments here
+        arguments: queryRequest.arguments,
+      };
+
+      const fetchResponse = await this.client.request({
+        url,
+        method: "POST",
+        headers,
+        data: requestData,
+      });
+
+      let parsedResponse: HTTPResponse;
+      try {
+        parsedResponse = {
+          ...fetchResponse,
+          // WIP: add decoding here
+          body: JSON.parse(fetchResponse.body),
+        };
+      } catch (error: unknown) {
+        throw new ProtocolError({
+          message: `Error parsing response as JSON: ${error}`,
+          httpStatus: fetchResponse.status,
+        });
+      }
+
+      // Response is not from Fauna
+      if (!isQuerySuccess(parsedResponse.body)) {
+        throw this.#getError(parsedResponse);
+      }
+
+      const txn_time = parsedResponse.body.txn_time;
+      const txnDate = new Date(txn_time);
       if (
-        (this.#lastTxn === undefined && result.data.txn_time !== undefined) ||
-        (result.data.txn_time !== undefined &&
+        (this.#lastTxn === undefined && txn_time !== undefined) ||
+        (txn_time !== undefined &&
           this.#lastTxn !== undefined &&
           this.#lastTxn < txnDate)
       ) {
         this.#lastTxn = txnDate;
       }
-      return result.data;
+
+      return parsedResponse.body as QuerySuccess<T>;
     } catch (e: any) {
       throw this.#getError(e);
     }
@@ -314,23 +338,4 @@ const queryCheckFailureCodes = [
   "invalid_query",
   "invalid_syntax",
   "invalid_type",
-];
-
-const nodeOrAxiosNetworkErrorCodes = [
-  "ECONNABORTED",
-  "ECONNREFUSED",
-  "ECONNRESET",
-  "ERR_NETWORK",
-  "ETIMEDOUT",
-  // axios does not yet support http2, but preparing
-  // in case we move to a library that does or axios
-  // adds in support.
-  "ERR_HTTP_REQUEST_TIMEOUT",
-  "ERR_HTTP2_GOAWAY_SESSION",
-  "ERR_HTTP2_INVALID_SESSION",
-  "ERR_HTTP2_INVALID_STREAM",
-  "ERR_HTTP2_OUT_OF_STREAMS",
-  "ERR_HTTP2_SESSION_ERROR",
-  "ERR_HTTP2_STREAM_CANCEL",
-  "ERR_HTTP2_STREAM_ERROR",
 ];

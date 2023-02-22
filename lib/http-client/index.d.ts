@@ -1,4 +1,5 @@
 import { QueryRequest } from "../wire-protocol";
+import { FetchClient } from "./fetch-client";
 export { FetchClient } from "./fetch-client";
 /**
  * An object representing an http request.
@@ -6,7 +7,7 @@ export { FetchClient } from "./fetch-client";
  */
 export declare type HTTPRequest = {
     data: QueryRequest;
-    headers: Record<string, string | string[]>;
+    headers: Record<string, string>;
     method: string;
     url: string;
 };
@@ -32,4 +33,5 @@ export interface HTTPClient {
      */
     request(req: HTTPRequest): Promise<HTTPResponse>;
 }
+export declare const getDefaultHTTPClient: () => FetchClient;
 export declare const isHTTPResponse: (res: any) => res is HTTPResponse;

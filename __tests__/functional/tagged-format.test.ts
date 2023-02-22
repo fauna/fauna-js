@@ -86,9 +86,6 @@ describe("tagged format", () => {
       })
     );
 
-    // expect(result).toEqual(
-    //   `{"child":{"more":{"itsworking":{"@date":"1983-04-15T00:00:00.000Z"}}},"date":{"@date":"1923-05-13T00:00:00.000Z"},"decimal":{"@decimal":4.14},"long":{"@int":32},"name":"Hello, World","number":{"@int":48},"time":{"@time":"2023-01-30T21:27:45.204Z"}}`
-    // );
     const backToObj = JSON.parse(result)["@object"];
     expect(backToObj.double).toStrictEqual({ "@double": 4.14 });
     expect(backToObj.extra).toHaveLength(2);

@@ -31,8 +31,6 @@ export class TaggedTypeFormat {
         return Number(value["@int"]);
       } else if (value["@long"]) {
         return Number(value["@long"]);
-      } else if (value["@decimal"]) {
-        return Number(value["@decimal"]);
       } else if (value["@double"]) {
         return Number(value["@double"]);
       } else if (value["@date"]) {
@@ -54,7 +52,7 @@ class TaggedTypeEncoded {
   readonly #encodeMap = {
     number: (value: number): { [key: string]: number } => {
       if (`${value}`.indexOf(".") > 0) {
-        return { "@decimal": value };
+        return { "@double": value };
       } else {
         return { "@int": value };
       }

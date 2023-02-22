@@ -2,29 +2,35 @@ import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
 import { env } from "process";
 import { fql } from "../../src/query-builder";
+import {
+  HTTPClient,
+  getDefaultHTTPClient,
+} from "../../src/http-client";
 
 describe("last_txn tracking in client", () => {
   it("Tracks the last_txn datetime and send in the headers", async () => {
-    const myClient = new Client({
-      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
-      max_conns: 5,
-      secret: env["secret"] || "secret",
-      timeout_ms: 60_000,
-    });
     let expectedLastTxn: string | undefined = undefined;
-    myClient.client.interceptors.response.use(function (response) {
-      expect(response.request?._header).not.toBeUndefined();
-      if (expectedLastTxn === undefined) {
-        expect(response.request?._header).not.toEqual(
-          expect.stringContaining("x-last-txn")
-        );
-      } else {
-        expect(response.request?._header).toEqual(
-          expect.stringContaining(`\nx-last-txn: ${expectedLastTxn}`)
-        );
-      }
-      return response;
-    });
+    const httpClient: HTTPClient = {
+      async request(req) {
+        if (expectedLastTxn === undefined) {
+          expect(req.headers["x-last-txn"]).toBeUndefined()
+        } else {
+          expect(req.headers["x-last-txn"]).toEqual(expectedLastTxn)
+        }
+        return getDefaultHTTPClient().request(req);
+      },
+    };
+
+    const myClient = new Client(
+      {
+        endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+        max_conns: 5,
+        secret: env["secret"] || "secret",
+        timeout_ms: 60_000,
+      },
+      httpClient
+    );
+
     const resultOne = await myClient.query({
       query:
         "\
@@ -55,26 +61,28 @@ if (Collection.byName('Products') == null) {\
   });
 
   it("Accepts an override of the last_txn datetime and sends in the headers", async () => {
-    const myClient = new Client({
-      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
-      max_conns: 5,
-      secret: env["secret"] || "secret",
-      timeout_ms: 60_000,
-    });
     let expectedLastTxn: string | undefined = undefined;
-    myClient.client.interceptors.response.use(function (response) {
-      expect(response.request?._header).not.toBeUndefined();
-      if (expectedLastTxn === undefined) {
-        expect(response.request?._header).not.toEqual(
-          expect.stringContaining("x-last-txn")
-        );
-      } else {
-        expect(response.request?._header).toEqual(
-          expect.stringContaining(`\nx-last-txn: ${expectedLastTxn}`)
-        );
-      }
-      return response;
-    });
+    const httpClient: HTTPClient = {
+      async request(req) {
+        if (expectedLastTxn === undefined) {
+          expect(req.headers["x-last-txn"]).toBeUndefined()
+        } else {
+          expect(req.headers["x-last-txn"]).toEqual(expectedLastTxn)
+        }
+        return getDefaultHTTPClient().request(req);
+      },
+    };
+
+    const myClient = new Client(
+      {
+        endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+        max_conns: 5,
+        secret: env["secret"] || "secret",
+        timeout_ms: 60_000,
+      },
+      httpClient
+    );
+
     const resultOne = await myClient.query({
       query:
         "\

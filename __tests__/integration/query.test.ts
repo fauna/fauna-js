@@ -16,6 +16,7 @@ import {
 } from "../../src/wire-protocol";
 import { env } from "process";
 import { fql } from "../../src/query-builder";
+import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
 
 const client = new Client({
   endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
@@ -80,19 +81,39 @@ describe.each`
       | "tags"
       | "traceparent";
     fieldValue: any;
-    expectedHeader: string;
+    expectedHeader: { key: string, value: string};
   };
 
   it.each`
     fieldName                   | fieldValue                                                   | expectedHeader
-    ${"linearized"}             | ${false}                                                     | ${"x-linearized: false"}
-    ${"timeout_ms"}             | ${500}                                                       | ${"x-timeout-ms: 500"}
-    ${"max_contention_retries"} | ${3}                                                         | ${"x-max-contention-retries: 3"}
-    ${"tags"}                   | ${{ t1: "v1", t2: "v2" }}                                    | ${"x-fauna-tags: t1=v1,t2=v2"}
-    ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${"traceparent: 00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"}
+    ${"linearized"}             | ${false}                                                     | ${{ key: "x-linearized", value: "false" }}
+    ${"timeout_ms"}             | ${500}                                                       | ${{ key: "x-timeout-ms", value: "500" }}
+    ${"max_contention_retries"} | ${3}                                                         | ${{ key: "x-max-contention-retries", value: "3" }}
+    ${"tags"}                   | ${{ t1: "v1", t2: "v2" }}                                    | ${{ key: "x-fauna-tags", value: "t1=v1,t2=v2" }}
+    ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${{ key: "traceparent", value: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00" }}
   `(
     "respects QueryRequest field $fieldName over ClientConfiguration $fieldName",
     async ({ fieldName, fieldValue, expectedHeader }: HeaderTestInput) => {
+      const expectedHeaders: Record<string, { key: string; value: string }> = {
+        linearized: { key: "x-linearized", value: "true" },
+        max_contention_retries: { key: "x-max-contention-retries", value: "7" },
+        tags: { key: "x-fauna-tags", value: "alpha=beta,gamma=delta" },
+        traceparent: {
+          key: "traceparent",
+          value: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
+        },
+        timeout_ms: { key: "x-timeout-ms", value: "60" },
+      };
+      expectedHeaders[fieldName] = expectedHeader;
+      const httpClient: HTTPClient = {
+        async request(req) {
+          Object.entries(expectedHeaders).forEach(([_, expectedHeader]) => {
+            expect(req.headers[expectedHeader.key]).toEqual(expectedHeader.value);
+          });
+
+          return getDefaultHTTPClient().request(req);
+        },
+      };
       const clientConfiguration: ClientConfiguration = {
         endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
         max_conns: 5,
@@ -103,27 +124,7 @@ describe.each`
         tags: { alpha: "beta", gamma: "delta" },
         traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
       };
-      const myClient = new Client(clientConfiguration);
-      const expectedHeaders: { [key: string]: string } = {
-        linearized: "x-linearized: true",
-        max_contention_retries: "x-max-contention-retries: 7",
-        tags: "x-fauna-tags: alpha=beta,gamma=delta",
-        traceparent:
-          "traceparent: 00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
-        timeout_ms: "x-timeout-ms: 60",
-      };
-      expectedHeaders[fieldName] = expectedHeader;
-      myClient.client.interceptors.response.use(function (response) {
-        expect(response.request?._header).toBeDefined();
-        if (response.request?._header) {
-          Object.entries(expectedHeaders).forEach((entry) => {
-            expect(response.request?._header).toEqual(
-              expect.stringContaining(entry[1])
-            );
-          });
-        }
-        return response;
-      });
+      const myClient = new Client(clientConfiguration, httpClient);
       const headers = { [fieldName]: fieldValue };
       if (queryType === "QueryRequest") {
         const queryRequest: QueryRequest = {
@@ -266,15 +267,20 @@ describe.each`
 
   it("throws a ClientError if the client fails unexpectedly", async () => {
     expect.assertions(2);
-    const myBadClient = new Client({
-      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
-      max_conns: 5,
-      secret: env["secret"] || "secret",
-      timeout_ms: 60,
-    });
-    myBadClient.client.post = () => {
-      throw new Error("boom!");
+    const httpClient: HTTPClient = {
+      async request(req) {
+        throw new Error("boom!");
+      },
     };
+    const myBadClient = new Client(
+      {
+        endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+        max_conns: 5,
+        secret: env["secret"] || "secret",
+        timeout_ms: 60,
+      },
+      httpClient
+    );
     try {
       await doQuery<number>(queryType, getTsa`foo`, "foo", myBadClient);
     } catch (e) {

@@ -81,7 +81,7 @@ import { Client } from "fauna";
 const client = new Client({ endpoint: endpoints.preview });
 ```
 
-The following snippet uses the client object, just created inthe previous example, to execute queries in Fauna.
+The following snippet uses the client object, just created in the previous example, to execute queries in Fauna.
 
 ```typescript
 (async () => {
@@ -96,7 +96,7 @@ The following snippet uses the client object, just created inthe previous exampl
 
 ## Export your secret as an environment variable
 
-Rather than hard coding your secret into your code, the driver can load your secret automaticaly from a FAUNA_SECRET evironment variable. Open a terminal and execute the following command:
+Rather than hard coding your secret into your code, the driver can load your secret automatically from a FAUNA_SECRET environment variable. Open a terminal and execute the following command:
 
 `export FAUNA_SECRET=your-secret`
 

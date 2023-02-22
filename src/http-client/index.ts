@@ -1,5 +1,6 @@
 import type { Client } from "../client";
 import { QueryRequest } from "../wire-protocol";
+import { FetchClient } from "./fetch-client";
 export { FetchClient } from "./fetch-client";
 
 /**
@@ -36,6 +37,12 @@ export interface HTTPClient {
    */
   request(req: HTTPRequest): Promise<HTTPResponse>;
 }
+
+export const getDefaultHTTPClient = () => {
+  // WIP: we only have one implementation right now, but should eventually
+  // inspect the environment for the correct implementation
+  return new FetchClient();
+};
 
 // utility functions
 

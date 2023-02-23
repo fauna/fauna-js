@@ -40,7 +40,7 @@ export class Client {
   /** The {@link ClientConfiguration} */
   readonly #clientConfiguration: ClientConfiguration;
   /** The underlying {@link HTTPClient} client. */
-  readonly client: HTTPClient;
+  readonly #httpClient: HTTPClient;
   /** last_txn this client has seen */
   #lastTxn?: Date;
 
@@ -71,9 +71,9 @@ export class Client {
     };
 
     if (!client) {
-      this.client = getDefaultHTTPClient();
+      this.#httpClient = getDefaultHTTPClient();
     } else {
-      this.client = client;
+      this.#httpClient = client;
     }
   }
 
@@ -246,7 +246,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         arguments: queryRequest.arguments,
       };
 
-      const fetchResponse = await this.client.request({
+      const fetchResponse = await this.#httpClient.request({
         url,
         method: "POST",
         headers,

@@ -7,8 +7,6 @@ import { type HTTPClient } from "./http-client";
  */
 export declare class Client {
     #private;
-    /** The underlying {@link HTTPClient} client. */
-    readonly client: HTTPClient;
     /**
      * Constructs a new {@link Client}.
      * @param clientConfiguration - the {@link ClientConfiguration} to apply.

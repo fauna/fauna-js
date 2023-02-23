@@ -46,9 +46,8 @@ export class Client {
 
   /**
    * Constructs a new {@link Client}.
-   * @param clientConfiguration - the {@link ClientConfiguration} to apply.
-   * @param client - The underlying {@link HTTPClient} that will execute the actual HTTP calls.
-   * @example
+   * @param clientConfiguration - the {@link ClientConfiguration} to apply. Defaults to recommended ClientConfiguraiton.
+   * @param httpClient - The underlying {@link HTTPClient} that will execute the actual HTTP calls. Defaults to recommended HTTPClient.   * @example
    * ```typescript
    *  const myClient = new Client(
    *   {
@@ -62,7 +61,7 @@ export class Client {
    */
   constructor(
     clientConfiguration?: Partial<ClientConfiguration>,
-    client?: HTTPClient
+    httpClient?: HTTPClient
   ) {
     this.#clientConfiguration = {
       ...defaultClientConfiguration,
@@ -70,10 +69,10 @@ export class Client {
       secret: this.#getSecret(clientConfiguration),
     };
 
-    if (!client) {
+    if (!httpClient) {
       this.#httpClient = getDefaultHTTPClient();
     } else {
-      this.#httpClient = client;
+      this.#httpClient = httpClient;
     }
   }
 

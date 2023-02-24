@@ -25,6 +25,7 @@ export class TaggedTypeFormat {
    */
   static decode(input: string): any {
     return JSON.parse(input, (_, value: any) => {
+      if (value == null) return null
       if (value["@mod"]) {
         return value["@mod"] as Module;
       } else if (value["@doc"]) {
@@ -130,7 +131,9 @@ class TaggedTypeEncoded {
         this.result = this.#encodeMap["number"](input);
         break;
       case "object":
-        if (Array.isArray(input)) {
+        if(input == null) {
+          this.result = null
+        } else if (Array.isArray(input)) {
           this.result = this.#encodeMap["array"](input);
         } else if (input instanceof Date) {
           this.result = this.#encodeMap["date"](input);

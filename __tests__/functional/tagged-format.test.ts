@@ -45,7 +45,8 @@ describe("tagged format", () => {
           "time": { "@time": "2023-02-08T14:22:01.000001+00:00" }
         }
       ],
-      "molecules": { "@long": "999999999999999999" }
+      "molecules": { "@long": "999999999999999999" },
+      "null": null
     }`;
 
     const bugs_mod: Module = "Bugs";
@@ -69,6 +70,7 @@ describe("tagged format", () => {
     expect(result.measurements[1].employee).toEqual(5);
     expect(result.measurements[1].time).toBeInstanceOf(Date);
     expect(result.molecules).toEqual(BigInt("999999999999999999"));
+    expect(result.null).toBeNull()
   });
 
   it("can be encoded", () => {
@@ -79,6 +81,7 @@ describe("tagged format", () => {
         double: 4.14,
         int: 32,
         name: "Hello, World",
+        null: null,
         number: 48,
         time: new Date("2023-01-30T16:27:45.204243-05:00"),
         extra: [
@@ -103,6 +106,7 @@ describe("tagged format", () => {
     expect(backToObj.child.more.itsworking).toStrictEqual({
       "@date": "1983-04-15",
     });
+    expect(backToObj.null).toBeNull()
   });
 
   it("handles conflicts", () => {

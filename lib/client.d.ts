@@ -9,8 +9,8 @@ export declare class Client {
     #private;
     /**
      * Constructs a new {@link Client}.
-     * @param clientConfiguration - the {@link ClientConfiguration} to apply.
-     * @param client - The underlying {@link HTTPClient} that will execute the actual HTTP calls.
+     * @param clientConfiguration - the {@link ClientConfiguration} to apply. Defaults to recommended ClientConfiguraiton.
+     * @param httpClient - The underlying {@link HTTPClient} that will execute the actual HTTP calls. Defaults to recommended HTTPClient.
      * @example
      * ```typescript
      *  const myClient = new Client(
@@ -23,7 +23,7 @@ export declare class Client {
      * );
      * ```
      */
-    constructor(clientConfiguration?: Partial<ClientConfiguration>, client?: HTTPClient);
+    constructor(clientConfiguration?: Partial<ClientConfiguration>, httpClient?: HTTPClient);
     /**
      * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
      */

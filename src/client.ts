@@ -43,11 +43,13 @@ export class Client {
   readonly #httpClient: HTTPClient;
   /** last_txn this client has seen */
   #lastTxn?: Date;
+  /** url of Fauna */
+  #url: string;
 
   /**
    * Constructs a new {@link Client}.
    * @param clientConfiguration - the {@link ClientConfiguration} to apply. Defaults to recommended ClientConfiguraiton.
-   * @param httpClient - The underlying {@link HTTPClient} that will execute the actual HTTP calls. Defaults to recommended HTTPClient.   
+   * @param httpClient - The underlying {@link HTTPClient} that will execute the actual HTTP calls. Defaults to recommended HTTPClient.
    * @example
    * ```typescript
    *  const myClient = new Client(
@@ -69,7 +71,7 @@ export class Client {
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
-
+    this.#url = `${this.clientConfiguration.endpoint.toString()}query/1`;
     if (!httpClient) {
       this.#httpClient = getDefaultHTTPClient();
     } else {
@@ -225,7 +227,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
   async #query<T = any>(queryRequest: QueryRequest): Promise<QuerySuccess<T>> {
     try {
-      const url = `${this.clientConfiguration.endpoint.toString()}query/1`;
       const headers = {
         Authorization: `Bearer ${this.#clientConfiguration.secret}`,
         // WIP - typecheck should be user configurable, but hard code for now
@@ -247,7 +248,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       };
 
       const fetchResponse = await this.#httpClient.request({
-        url,
+        url: this.#url,
         method: "POST",
         headers,
         data: requestData,

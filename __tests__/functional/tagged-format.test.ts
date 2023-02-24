@@ -3,6 +3,17 @@ import {
   DocumentReference,
   Module,
 } from "../../src/tagged-type";
+import { Client } from "../../src/client";
+import { env } from "process";
+import { endpoints } from "../../src/client-configuration";
+import { fql } from "../../src/query-builder";
+
+const client = new Client({
+  endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+  max_conns: 5,
+  secret: env["secret"] || "secret",
+  timeout_ms: 60_000,
+});
 
 describe("tagged format", () => {
   it("can be decoded", () => {
@@ -34,7 +45,8 @@ describe("tagged format", () => {
           "time": { "@time": "2023-02-08T14:22:01.000001+00:00" }
         }
       ],
-      "molecules": { "@long": "999999999999999999" }
+      "molecules": { "@long": "999999999999999999" },
+      "null": null
     }`;
 
     const bugs_mod: Module = "Bugs";
@@ -58,6 +70,7 @@ describe("tagged format", () => {
     expect(result.measurements[1].employee).toEqual(5);
     expect(result.measurements[1].time).toBeInstanceOf(Date);
     expect(result.molecules).toEqual(BigInt("999999999999999999"));
+    expect(result.null).toBeNull()
   });
 
   it("can be encoded", () => {
@@ -68,6 +81,7 @@ describe("tagged format", () => {
         double: 4.14,
         int: 32,
         name: "Hello, World",
+        null: null,
         number: 48,
         time: new Date("2023-01-30T16:27:45.204243-05:00"),
         extra: [
@@ -92,6 +106,7 @@ describe("tagged format", () => {
     expect(backToObj.child.more.itsworking).toStrictEqual({
       "@date": "1983-04-15",
     });
+    expect(backToObj.null).toBeNull()
   });
 
   it("handles conflicts", () => {
@@ -142,4 +157,26 @@ describe("tagged format", () => {
       )
     ).toEqual('{"@object":{"@foo":true}}');
   });
+
+  // JS will actually fit big numbers into number but we use BigInt
+  // any way so user can round trip longs.
+  it.each`
+    input             | expected                  | expectedType | testCase
+    ${-(2 ** 31)}     | ${-(2 ** 31)}             | ${"number"}  | ${"-2**31"}
+    ${-(2 ** 31) - 1} | ${BigInt(-(2 ** 31) - 1)} | ${"bigint"}  | ${"-2**31 - 1"}
+    ${-(2 ** 63)}     | ${BigInt(-(2 ** 63))}     | ${"bigint"}  | ${"-2**63"}
+    ${2 ** 31 - 1}    | ${2 ** 31 - 1}            | ${"number"}  | ${"2**31 - 1"}
+    ${2 ** 31}        | ${BigInt(2 ** 31)}        | ${"bigint"}  | ${"2**31"}
+    ${2 ** 63 - 1}    | ${BigInt(2 ** 63 - 1)}    | ${"bigint"}  | ${"2**63 - 1"}
+    ${1.3 ** 63}      | ${1.3 ** 63}              | ${"number"}  | ${"1.3**63"}
+    ${1.3}            | ${1.3}                    | ${"number"}  | ${"1.3"}
+  `(
+    "Properly encodes and decodes number $testCase",
+    async ({ input, expected, expectedType, testCase }) => {
+      testCase;
+      const result = await client.query(fql`${input}`);
+      expect(typeof result.data).toEqual(expectedType);
+      expect(result.data).toEqual(expected);
+    }
+  );
 });

@@ -1,4 +1,6 @@
+/** A reference to a built in Fauna module; e.g. Date */
 export declare type Module = string;
+/** A reference to a document in Fauna */
 export declare type DocumentReference = string;
 /**
  * TaggedType provides the encoding/decoding of the Fauna Tagged Type formatting

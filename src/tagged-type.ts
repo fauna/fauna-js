@@ -84,7 +84,7 @@ class TaggedTypeEncoded {
     },
     object: (input: any): TaggedObject | Record<string, any> => {
       let wrapped = false;
-      const _out: { [key: string]: any } = {};
+      const _out: Record<string, any> = {};
 
       for (const k in input) {
         if (k.startsWith("@")) {

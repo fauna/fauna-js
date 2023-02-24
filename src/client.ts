@@ -47,7 +47,8 @@ export class Client {
   /**
    * Constructs a new {@link Client}.
    * @param clientConfiguration - the {@link ClientConfiguration} to apply. Defaults to recommended ClientConfiguraiton.
-   * @param httpClient - The underlying {@link HTTPClient} that will execute the actual HTTP calls. Defaults to recommended HTTPClient.   * @example
+   * @param httpClient - The underlying {@link HTTPClient} that will execute the actual HTTP calls. Defaults to recommended HTTPClient.   
+   * @example
    * ```typescript
    *  const myClient = new Client(
    *   {

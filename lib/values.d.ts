@@ -7,16 +7,16 @@
  * Since fauna has both `Time` and `Date` data types, we want to make a clear
  * distinction between them and avoid using the native `Date` class.
  */
-declare class Instant {
+declare class FaunaTime {
 }
 /**
  * A Temporal.PlainDate object represents a calendar date that is not associated
  * with a particular time or time zone, e.g. August 24th, 2006.
  *
- * @remarks This class follows the TC39 proposal for `Temporal.Plain`. See the
+ * @remarks This class follows the TC39 proposal for `Temporal.PlainDate`. See the
  * proposal here: https://tc39.es/proposal-temporal/docs/index.html.
  * Since fauna has both `Time` and `Date` data types, we want to make a clear
  * distinction between them and avoid using the native `Date` class.
  */
-declare class PlainDate {
+declare class FaunaDate {
 }

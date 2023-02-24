@@ -1,4 +1,6 @@
+/** A reference to a built in Fauna module; e.g. Date */
 export type Module = string;
+/** A reference to a document in Fauna */
 export type DocumentReference = string;
 
 /**
@@ -58,7 +60,7 @@ class TaggedTypeEncoded {
 
   readonly #encodeMap = {
     bigint: (value: bigint): TaggedLong => {
-      if (value >= -(2 ^ 63) + 1 && value <= 2 ** 63 - 1) {
+      if (value >= -(2 ** 63) && value <= 2 ** 63 - 1) {
         return {
           "@long": value.toString(),
         };
@@ -69,9 +71,9 @@ class TaggedTypeEncoded {
       if (`${value}`.includes(".")) {
         return { "@double": value };
       } else {
-        if (value >= -(2 ^ 31) + 1 && value <= 2 ** 31 - 1) {
+        if (value >= -(2 ** 31) && value <= 2 ** 31 - 1) {
           return { "@int": value };
-        } else if (value >= -(2 ^ 63) + 1 && value <= 2 ** 63 - 1) {
+        } else if (value >= -(2 ** 63) && value <= 2 ** 63 - 1) {
           return {
             "@long": value.toString(),
           };

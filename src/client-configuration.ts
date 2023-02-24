@@ -1,3 +1,5 @@
+import { ValueFormat } from "./wire-protocol";
+
 /**
  * Configuration for a client.
  */
@@ -6,6 +8,11 @@ export interface ClientConfiguration {
    * The {@link URL} of Fauna to call. See {@link endpoints} for some default options.
    */
   endpoint: URL;
+  /**
+   * Determines the encoded format expected for the query `arguments` field, and
+   * the `data` field of a successful response.
+   */
+  format: ValueFormat;
   /**
    * The maximum number of connections to a make to Fauna.
    */

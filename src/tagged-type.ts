@@ -53,7 +53,7 @@ class TaggedTypeEncoded {
     bigint: (value: bigint): { "@long": bigint } => {
       if (value >= -(2 ^ 63) + 1 && value <= 2 ** 63 - 1) {
         return {
-          "@long": value,
+          "@long": value.toString(),
         };
       }
       throw new TypeError("Precision loss when converting int to Fauna type");
@@ -66,7 +66,7 @@ class TaggedTypeEncoded {
           return { "@int": value };
         } else if (value >= -(2 ^ 63) + 1 && value <= 2 ** 63 - 1) {
           return {
-            "@long": value,
+            "@long": value.toString(),
           };
         }
         return { "@double": value };
@@ -111,6 +111,9 @@ class TaggedTypeEncoded {
     this.result = input;
 
     switch (typeof input) {
+      case "bigint":
+        this.result = this.#encodeMap["bigint"](input);
+        break;
       case "string":
         this.result = this.#encodeMap["string"](input);
         break;

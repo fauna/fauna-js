@@ -46,11 +46,18 @@ export class TaggedTypeFormat {
   }
 }
 
+type TaggedDate = { "@date": string };
+type TaggedDouble = { "@double": number };
+type TaggedInt = { "@int": number };
+type TaggedLong = { "@long": string };
+type TaggedObject = { "@object": Record<string, any> };
+type TaggedTime = { "@time": string };
+
 class TaggedTypeEncoded {
   readonly result: any;
 
   readonly #encodeMap = {
-    bigint: (value: bigint): { "@long": bigint } => {
+    bigint: (value: bigint): TaggedLong => {
       if (value >= -(2 ^ 63) + 1 && value <= 2 ** 63 - 1) {
         return {
           "@long": value.toString(),
@@ -58,7 +65,7 @@ class TaggedTypeEncoded {
       }
       throw new TypeError("Precision loss when converting int to Fauna type");
     },
-    number: (value: number): { [key: string]: number } => {
+    number: (value: number): TaggedDouble | TaggedInt | TaggedLong => {
       if (`${value}`.includes(".")) {
         return { "@double": value };
       } else {
@@ -75,7 +82,7 @@ class TaggedTypeEncoded {
     string: (value: string): string => {
       return value;
     },
-    object: (input: any): { [key: string]: string } => {
+    object: (input: any): TaggedObject | Record<string, any> => {
       let wrapped = false;
       const _out: { [key: string]: any } = {};
 
@@ -92,7 +99,7 @@ class TaggedTypeEncoded {
       for (const i in input) _out.push(TaggedTypeFormat.encode(input[i]));
       return _out;
     },
-    date: (dateValue: Date): { [key: string]: string } => {
+    date: (dateValue: Date): TaggedDate | TaggedTime => {
       if (
         dateValue.getUTCHours() == 0 &&
         dateValue.getUTCMinutes() == 0 &&

@@ -1,5 +1,6 @@
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
+import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
 
 beforeEach(() => {
   delete process.env["FAUNA_SECRET"];
@@ -50,7 +51,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       secret: "secret",
       timeout_ms: 60_000,
     });
-    expect(client.client.defaults.baseURL).toEqual("http://localhost:7443/");
     const result = await client.query<number>({ query: '"taco".length' });
     expect(result.data).toEqual(4);
     expect(result.txn_time).toBeDefined();
@@ -77,37 +77,38 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   type HeaderTestInput = {
     fieldName: "linearized" | "max_contention_retries" | "tags" | "traceparent";
     fieldValue: any;
-    expectedHeader: string;
+    expectedHeader: { key: string, value: string};
   };
 
   it.each`
     fieldName                   | fieldValue                                                   | expectedHeader
-    ${"linearized"}             | ${true}                                                      | ${"x-linearized: true"}
-    ${"max_contention_retries"} | ${3}                                                         | ${"x-max-contention-retries: 3"}
-    ${"tags"}                   | ${{ t1: "v1", t2: "v2" }}                                    | ${"x-fauna-tags: t1=v1,t2=v2"}
-    ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${"traceparent: 00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"}
+    ${"linearized"}             | ${true}                                                      | ${{ key: "x-linearized", value: "true" }}
+    ${"max_contention_retries"} | ${3}                                                         | ${{ key: "x-max-contention-retries", value: "3" }}
+    ${"tags"}                   | ${{ t1: "v1", t2: "v2" }}                                    | ${{ key: "x-fauna-tags", value: "t1=v1,t2=v2" }}
+    ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${{ key: "traceparent", value: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00" }}
   `(
     "Setting clientConfiguration $fieldName leads to it being sent in headers",
     async ({ fieldName, fieldValue, expectedHeader }: HeaderTestInput) => {
-      const client = new Client({
-        endpoint: endpoints.local,
-        max_conns: 5,
-        secret: "secret",
-        timeout_ms: 5000,
-        [fieldName]: fieldValue,
-      });
-      client.client.interceptors.response.use(function (response) {
-        expect(response.request?._header).not.toBeUndefined();
-        if (response.request?._header) {
-          expect(response.request._header).toEqual(
-            expect.stringContaining("x-timeout-ms: 5000")
-          );
-          expect(response.request._header).toEqual(
-            expect.stringContaining(`\n${expectedHeader}`)
-          );
-        }
-        return response;
-      });
+      expect.assertions(2);
+      const httpClient: HTTPClient = {
+        async request(req) {
+          expect(req.headers["x-timeout-ms"]).toEqual("5000");
+          const _expectedHeader = expectedHeader
+          expect(req.headers[_expectedHeader.key]).toEqual(_expectedHeader.value);
+          return getDefaultHTTPClient().request(req);
+        },
+      };
+
+      const client = new Client(
+        {
+          endpoint: endpoints.local,
+          max_conns: 5,
+          secret: "secret",
+          timeout_ms: 5000,
+          [fieldName]: fieldValue,
+        },
+        httpClient
+      );
       await client.query<number>({ query: '"taco".length' });
     }
   );

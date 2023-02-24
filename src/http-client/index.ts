@@ -1,5 +1,6 @@
 import type { Client } from "../client";
 import { QueryRequest } from "../wire-protocol";
+import { FetchClient } from "./fetch-client";
 export { FetchClient } from "./fetch-client";
 
 /**
@@ -8,7 +9,7 @@ export { FetchClient } from "./fetch-client";
  */
 export type HTTPRequest = {
   data: QueryRequest;
-  headers: Record<string, string | string[]>;
+  headers: Record<string, string>;
   method: string;
   url: string;
 };
@@ -19,7 +20,7 @@ export type HTTPRequest = {
  */
 export type HTTPResponse = {
   body: string;
-  headers: Record<string, string>;
+  headers: Record<string, string | string[]>;
   status: number;
 };
 
@@ -36,6 +37,12 @@ export interface HTTPClient {
    */
   request(req: HTTPRequest): Promise<HTTPResponse>;
 }
+
+export const getDefaultHTTPClient = () => {
+  // WIP: we only have one implementation right now, but should eventually
+  // inspect the environment for the correct implementation
+  return new FetchClient();
+};
 
 // utility functions
 

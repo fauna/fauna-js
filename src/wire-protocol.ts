@@ -103,13 +103,20 @@ export type QueryFailure = QueryInfo & {
   };
 };
 
-export const isQuerySuccess = <T>(
-  res: QuerySuccess<T> | QueryFailure
-): res is QuerySuccess<T> => "data" in res;
+export type QueryResponse<T> = QuerySuccess<T> | QueryFailure;
 
-export const isQueryFailure = (
-  res: QuerySuccess<any> | QueryFailure
-): res is QueryFailure => "error" in res;
+export const isQuerySuccess = (res: any): res is QuerySuccess<any> =>
+  res instanceof Object && "data" in res;
+
+export const isQueryFailure = (res: any): res is QueryFailure =>
+  res instanceof Object &&
+  "error" in res &&
+  res.error instanceof Object &&
+  "code" in res.error &&
+  "message" in res.error;
+
+export const isQueryResponse = (res: any): res is QueryResponse<any> =>
+  isQueryResponse(res) || isQueryFailure(res);
 
 /**
  * An error representing a query failure returned by Fauna.

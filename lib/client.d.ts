@@ -1,17 +1,16 @@
-import { AxiosInstance } from "axios";
 import { ClientConfiguration } from "./client-configuration";
 import type { QueryBuilder } from "./query-builder";
 import { type QueryRequest, type QueryRequestHeaders, type QuerySuccess } from "./wire-protocol";
+import { type HTTPClient } from "./http-client";
 /**
  * Client for calling Fauna.
  */
 export declare class Client {
     #private;
-    /** The underlying {@link AxiosInstance} client. */
-    readonly client: AxiosInstance;
     /**
      * Constructs a new {@link Client}.
-     * @param clientConfiguration - the {@link ClientConfiguration} to apply.
+     * @param clientConfiguration - the {@link ClientConfiguration} to apply. Defaults to recommended ClientConfiguraiton.
+     * @param httpClient - The underlying {@link HTTPClient} that will execute the actual HTTP calls. Defaults to recommended HTTPClient.
      * @example
      * ```typescript
      *  const myClient = new Client(
@@ -24,7 +23,7 @@ export declare class Client {
      * );
      * ```
      */
-    constructor(clientConfiguration?: Partial<ClientConfiguration>);
+    constructor(clientConfiguration?: Partial<ClientConfiguration>, httpClient?: HTTPClient);
     /**
      * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
      */

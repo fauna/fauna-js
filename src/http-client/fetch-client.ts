@@ -1,6 +1,7 @@
 /** following reference needed to include types for experimental fetch API in Node */
 /// <reference lib="dom" />
 
+import { NetworkError } from "../wire-protocol";
 import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
 
 /**
@@ -20,6 +21,10 @@ export class FetchClient implements HTTPClient {
       method,
       headers: { ...requestHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(data),
+    }).catch((error) => {
+      throw new NetworkError("The network connection encountered a problem.", {
+        cause: error,
+      });
     });
 
     const status = response.status;

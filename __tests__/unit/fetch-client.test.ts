@@ -7,7 +7,7 @@ import {
   HTTPResponse,
   isHTTPResponse,
 } from "../../src/http-client";
-import { QueryFailure, QuerySuccess } from "../../src/wire-protocol";
+import { NetworkError, QueryFailure, QuerySuccess } from "../../src/wire-protocol";
 
 let fetchClient: FetchClient;
 
@@ -101,13 +101,18 @@ describe("query", () => {
     }
   });
 
-  it("forwards errors when fetch rejects", async () => {
-    expect.assertions(1);
+  it("returns a NetworkError if fetch rejects", async () => {
+    expect.assertions(2);
     fetchMock.mockRejectOnce(new Error("oops"));
     try {
       await fetchClient.request(dummyRequest);
-    } catch (error) {
-      expect((error as Error).message).toEqual("oops");
+    } catch (e) {
+      if (e instanceof NetworkError) {
+        expect(e.message).toEqual(
+          "The network connection encountered a problem."
+        );
+        expect(e.cause).toBeDefined();
+      }
     }
   });
 });

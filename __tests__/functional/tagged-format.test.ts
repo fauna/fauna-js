@@ -164,10 +164,12 @@ describe("tagged format", () => {
     input                             | expected                          | expectedType | testCase
     ${-(2 ** 31)}                     | ${-(2 ** 31)}                     | ${"number"}  | ${"-2**31"}
     ${-(2 ** 31) - 1}                 | ${BigInt(-(2 ** 31) - 1)}         | ${"bigint"}  | ${"-2**31 - 1"}
-    ${BigInt("-9223372036854775808")} | ${BigInt("-9223372036854775808")} | ${"bigint"}  | ${"-2**63"}
+    ${-(2 ** 63)}                     | ${BigInt(-(2 ** 63))}             | ${"bigint"}  | ${"-2**63"}
+    ${BigInt("-9223372036854775808")} | ${BigInt("-9223372036854775808")} | ${"bigint"}  | ${"BigInt(-2**63)"}
     ${2 ** 31 - 1}                    | ${2 ** 31 - 1}                    | ${"number"}  | ${"2**31 - 1"}
     ${2 ** 31}                        | ${BigInt(2 ** 31)}                | ${"bigint"}  | ${"2**31"}
-    ${BigInt("9223372036854775807")}  | ${BigInt("9223372036854775807")}  | ${"bigint"}  | ${"2**63 - 1"}
+    ${2 ** 63 - 1}                    | ${BigInt(2 ** 63 - 1)}            | ${"bigint"}  | ${"2**63 - 1"}
+    ${BigInt("9223372036854775807")}  | ${BigInt("9223372036854775807")}  | ${"bigint"}  | ${"BigInt(2**63 - 1)"}
     ${1.3 ** 63}                      | ${1.3 ** 63}                      | ${"number"}  | ${"1.3**63"}
     ${1.3}                            | ${1.3}                            | ${"number"}  | ${"1.3"}
   `(
@@ -176,7 +178,7 @@ describe("tagged format", () => {
       testCase;
       const result = await client.query(fql`${input}`);
       expect(typeof result.data).toEqual(expectedType);
-      expect(result.data).toEqual(expected);
+      expect(result.data.toString()).toEqual(expected.toString());
     }
   );
 });

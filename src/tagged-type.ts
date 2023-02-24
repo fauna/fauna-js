@@ -30,7 +30,7 @@ export class TaggedTypeFormat {
       } else if (value["@int"]) {
         return Number(value["@int"]);
       } else if (value["@long"]) {
-        return Number(value["@long"]);
+        return BigInt(value["@long"]);
       } else if (value["@double"]) {
         return Number(value["@double"]);
       } else if (value["@date"]) {
@@ -50,11 +50,26 @@ class TaggedTypeEncoded {
   readonly result: any;
 
   readonly #encodeMap = {
+    bigint: (value: bigint): { "@long": bigint } => {
+      if (value >= -(2 ^ 63) + 1 && value <= 2 ** 63 - 1) {
+        return {
+          "@long": value,
+        };
+      }
+      throw new TypeError("Precision loss when converting int to Fauna type");
+    },
     number: (value: number): { [key: string]: number } => {
-      if (`${value}`.indexOf(".") > 0) {
+      if (`${value}`.includes(".")) {
         return { "@double": value };
       } else {
-        return { "@int": value };
+        if (value >= -(2 ^ 31) + 1 && value <= 2 ** 31 - 1) {
+          return { "@int": value };
+        } else if (value >= -(2 ^ 63) + 1 && value <= 2 ** 63 - 1) {
+          return {
+            "@long": value,
+          };
+        }
+        return { "@double": value };
       }
     },
     string: (value: string): string => {

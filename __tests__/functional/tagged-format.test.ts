@@ -12,7 +12,6 @@ describe("tagged format", () => {
       "name": "fir",
       "age": { "@int": "200" },
       "birthdate": { "@date": "1823-02-08" },
-      "molecules": { "@long": "999999999999999999" },
       "circumference": { "@double": "3.82" },
       "created_at": { "@time": "2003-02-08T13:28:12.000555+00:00" },
       "extras": {
@@ -34,7 +33,8 @@ describe("tagged format", () => {
           "employee": { "@int": "5" },
           "time": { "@time": "2023-02-08T14:22:01.000001+00:00" }
         }
-      ]
+      ],
+      "molecules": { "@long": "999999999999999999" }
     }`;
 
     const bugs_mod: Module = "Bugs";
@@ -46,7 +46,6 @@ describe("tagged format", () => {
     expect(result.name).toEqual("fir");
     expect(result.age).toEqual(200);
     expect(result.birthdate).toBeInstanceOf(Date);
-    expect(result.molecules).toEqual(999999999999999999);
     expect(result.circumference).toEqual(3.82);
     expect(result.created_at).toBeInstanceOf(Date);
     expect(result.extras.nest.num_sticks).toEqual(58);
@@ -58,6 +57,7 @@ describe("tagged format", () => {
     expect(result.measurements[1].id).toEqual(2);
     expect(result.measurements[1].employee).toEqual(5);
     expect(result.measurements[1].time).toBeInstanceOf(Date);
+    expect(result.molecules).toEqual(BigInt("999999999999999999"));
   });
 
   it("can be encoded", () => {
@@ -66,7 +66,7 @@ describe("tagged format", () => {
         child: { more: { itsworking: new Date("1983-04-15") } },
         date: new Date("1923-05-13"),
         double: 4.14,
-        long: 32,
+        int: 32,
         name: "Hello, World",
         number: 48,
         time: new Date("2023-01-30T16:27:45.204243-05:00"),
@@ -94,12 +94,12 @@ describe("tagged format", () => {
     });
   });
 
-  it("handleds conflicts", () => {
+  it("handles conflicts", () => {
     var result = TaggedTypeFormat.encode({
       date: { "@date": new Date("2022-11-01T00:00:00.000Z") },
       time: { "@time": new Date("2022-11-02T05:00:00.000Z") },
       int: { "@int": 1 },
-      long: { "@long": 9999999999999 },
+      long: { "@long": BigInt("99999999999999999") },
       double: { "@double": 1.99 },
     });
     expect(result["date"]["@object"]["@date"]).toStrictEqual({
@@ -110,7 +110,7 @@ describe("tagged format", () => {
     });
     expect(result["int"]["@object"]["@int"]).toStrictEqual({ "@int": 1 });
     expect(result["long"]["@object"]["@long"]).toStrictEqual({
-      "@int": 9999999999999,
+      "@long": "99999999999999999",
     });
     expect(result["double"]["@object"]["@double"]).toEqual({
       "@double": 1.99,

@@ -70,7 +70,7 @@ describe("tagged format", () => {
     expect(result.measurements[1].employee).toEqual(5);
     expect(result.measurements[1].time).toBeInstanceOf(Date);
     expect(result.molecules).toEqual(BigInt("999999999999999999"));
-    expect(result.null).toBeNull()
+    expect(result.null).toBeNull();
   });
 
   it("can be encoded", () => {
@@ -106,7 +106,7 @@ describe("tagged format", () => {
     expect(backToObj.child.more.itsworking).toStrictEqual({
       "@date": "1983-04-15",
     });
-    expect(backToObj.null).toBeNull()
+    expect(backToObj.null).toBeNull();
   });
 
   it("handles conflicts", () => {
@@ -161,15 +161,15 @@ describe("tagged format", () => {
   // JS will actually fit big numbers into number but we use BigInt
   // any way so user can round trip longs.
   it.each`
-    input             | expected                  | expectedType | testCase
-    ${-(2 ** 31)}     | ${-(2 ** 31)}             | ${"number"}  | ${"-2**31"}
-    ${-(2 ** 31) - 1} | ${BigInt(-(2 ** 31) - 1)} | ${"bigint"}  | ${"-2**31 - 1"}
-    ${-(2 ** 63)}     | ${BigInt(-(2 ** 63))}     | ${"bigint"}  | ${"-2**63"}
-    ${2 ** 31 - 1}    | ${2 ** 31 - 1}            | ${"number"}  | ${"2**31 - 1"}
-    ${2 ** 31}        | ${BigInt(2 ** 31)}        | ${"bigint"}  | ${"2**31"}
-    ${2 ** 63 - 1}    | ${BigInt(2 ** 63 - 1)}    | ${"bigint"}  | ${"2**63 - 1"}
-    ${1.3 ** 63}      | ${1.3 ** 63}              | ${"number"}  | ${"1.3**63"}
-    ${1.3}            | ${1.3}                    | ${"number"}  | ${"1.3"}
+    input                             | expected                          | expectedType | testCase
+    ${-(2 ** 31)}                     | ${-(2 ** 31)}                     | ${"number"}  | ${"-2**31"}
+    ${-(2 ** 31) - 1}                 | ${BigInt(-(2 ** 31) - 1)}         | ${"bigint"}  | ${"-2**31 - 1"}
+    ${BigInt("-9223372036854775808")} | ${BigInt("-9223372036854775808")} | ${"bigint"}  | ${"-2**63"}
+    ${2 ** 31 - 1}                    | ${2 ** 31 - 1}                    | ${"number"}  | ${"2**31 - 1"}
+    ${2 ** 31}                        | ${BigInt(2 ** 31)}                | ${"bigint"}  | ${"2**31"}
+    ${BigInt("9223372036854775807")}  | ${BigInt("9223372036854775807")}  | ${"bigint"}  | ${"2**63 - 1"}
+    ${1.3 ** 63}                      | ${1.3 ** 63}                      | ${"number"}  | ${"1.3**63"}
+    ${1.3}                            | ${1.3}                            | ${"number"}  | ${"1.3"}
   `(
     "Properly encodes and decodes number $testCase",
     async ({ input, expected, expectedType, testCase }) => {

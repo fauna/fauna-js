@@ -81,11 +81,12 @@ describe.each`
       | "tags"
       | "traceparent";
     fieldValue: any;
-    expectedHeader: { key: string, value: string};
+    expectedHeader: { key: string; value: string };
   };
 
   it.each`
     fieldName                   | fieldValue                                                   | expectedHeader
+    ${"format"}                 | ${"simple"}                                                  | ${{ key: "x-format", value: "simple" }}
     ${"linearized"}             | ${false}                                                     | ${{ key: "x-linearized", value: "false" }}
     ${"timeout_ms"}             | ${500}                                                       | ${{ key: "x-timeout-ms", value: "500" }}
     ${"max_contention_retries"} | ${3}                                                         | ${{ key: "x-max-contention-retries", value: "3" }}
@@ -108,7 +109,9 @@ describe.each`
       const httpClient: HTTPClient = {
         async request(req) {
           Object.entries(expectedHeaders).forEach(([_, expectedHeader]) => {
-            expect(req.headers[expectedHeader.key]).toEqual(expectedHeader.value);
+            expect(req.headers[expectedHeader.key]).toEqual(
+              expectedHeader.value
+            );
           });
 
           return getDefaultHTTPClient().request(req);
@@ -116,6 +119,7 @@ describe.each`
       };
       const clientConfiguration: ClientConfiguration = {
         endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+        format: "tagged",
         max_conns: 5,
         secret: env["secret"] || "secret",
         timeout_ms: 60,

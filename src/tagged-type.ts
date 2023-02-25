@@ -56,12 +56,15 @@ type TaggedLong = { "@long": string };
 type TaggedObject = { "@object": Record<string, any> };
 type TaggedTime = { "@time": string };
 
+export const LONG_MIN = BigInt("-9223372036854775808");
+export const LONG_MAX = BigInt("9223372036854775807");
+
 class TaggedTypeEncoded {
   readonly result: any;
 
   readonly #encodeMap = {
     bigint: (value: bigint): TaggedLong => {
-      if (value >= -(2 ** 63) && value <= 2 ** 63 - 1) {
+      if (value >= LONG_MIN && value <= LONG_MAX) {
         return {
           "@long": value.toString(),
         };

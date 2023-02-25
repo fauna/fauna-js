@@ -21,3 +21,5 @@ export declare class TaggedTypeFormat {
      */
     static decode(input: string): any;
 }
+export declare const LONG_MIN: bigint;
+export declare const LONG_MAX: bigint;

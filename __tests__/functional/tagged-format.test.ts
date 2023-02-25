@@ -101,7 +101,7 @@ describe("tagged format", () => {
     );
 
     const backToObj = JSON.parse(result)["@object"];
-    expect(backToObj.double).toStrictEqual({ "@double": 4.14 });
+    expect(backToObj.double).toStrictEqual({ "@double": "4.14" });
     expect(backToObj.extra).toHaveLength(2);
     expect(backToObj.child.more.itsworking).toStrictEqual({
       "@date": "1983-04-15",
@@ -123,12 +123,12 @@ describe("tagged format", () => {
     expect(result["time"]["@object"]["@time"]).toStrictEqual({
       "@time": "2022-11-02T05:00:00.000Z",
     });
-    expect(result["int"]["@object"]["@int"]).toStrictEqual({ "@int": 1 });
+    expect(result["int"]["@object"]["@int"]).toStrictEqual({ "@int": "1" });
     expect(result["long"]["@object"]["@long"]).toStrictEqual({
       "@long": "99999999999999999",
     });
     expect(result["double"]["@object"]["@double"]).toEqual({
-      "@double": 1.99,
+      "@double": "1.99",
     });
   });
 
@@ -161,21 +161,29 @@ describe("tagged format", () => {
   // JS will actually fit big numbers into number but we use BigInt
   // any way so user can round trip longs.
   it.each`
-    input                             | expected                          | expectedType | testCase
-    ${-(2 ** 31)}                     | ${-(2 ** 31)}                     | ${"number"}  | ${"-2**31"}
-    ${-(2 ** 31) - 1}                 | ${BigInt(-(2 ** 31) - 1)}         | ${"bigint"}  | ${"-2**31 - 1"}
-    ${-(2 ** 63)}                     | ${BigInt(-(2 ** 63))}             | ${"bigint"}  | ${"-2**63"}
-    ${BigInt("-9223372036854775808")} | ${BigInt("-9223372036854775808")} | ${"bigint"}  | ${"BigInt(-2**63)"}
-    ${2 ** 31 - 1}                    | ${2 ** 31 - 1}                    | ${"number"}  | ${"2**31 - 1"}
-    ${2 ** 31}                        | ${BigInt(2 ** 31)}                | ${"bigint"}  | ${"2**31"}
-    ${2 ** 63 - 1}                    | ${BigInt(2 ** 63 - 1)}            | ${"bigint"}  | ${"2**63 - 1"}
-    ${BigInt("9223372036854775807")}  | ${BigInt("9223372036854775807")}  | ${"bigint"}  | ${"BigInt(2**63 - 1)"}
-    ${1.3 ** 63}                      | ${1.3 ** 63}                      | ${"number"}  | ${"1.3**63"}
-    ${1.3}                            | ${1.3}                            | ${"number"}  | ${"1.3"}
+    input                             | expected                          | expectedType | tag          | testCase
+    ${BigInt("-9223372036854775808")} | ${BigInt("-9223372036854775808")} | ${"bigint"}  | ${"@long"}   | ${"-(2**64)"}
+    ${-9007199254740992}              | ${-9007199254740992}              | ${"number"}  | ${"@double"} | ${"-(2**53)"}
+    ${-9007199254740991}              | ${BigInt(-9007199254740991)}      | ${"bigint"}  | ${"@long"}   | ${"-(2**53 - 1)"}
+    ${-(2 ** 31) - 1}                 | ${BigInt(-(2 ** 31) - 1)}         | ${"bigint"}  | ${"@long"}   | ${"-(2**31) - 1"}
+    ${-(2 ** 31)}                     | ${-(2 ** 31)}                     | ${"number"}  | ${"@int"}    | ${"-(2**31)"}
+    ${0}                              | ${0}                              | ${"number"}  | ${"@int"}    | ${"0 (Int)"}
+    ${1}                              | ${1}                              | ${"number"}  | ${"@int"}    | ${"1 (Int)"}
+    ${BigInt("0")}                    | ${BigInt("0")}                    | ${"bigint"}  | ${"@long"}   | ${"0 (Long)"}
+    ${2 ** 31 - 1}                    | ${2 ** 31 - 1}                    | ${"number"}  | ${"@int"}    | ${"2**31 - 1"}
+    ${2 ** 31}                        | ${BigInt(2 ** 31)}                | ${"bigint"}  | ${"@long"}   | ${"2**31"}
+    ${9007199254740991}               | ${BigInt(9007199254740991)}       | ${"bigint"}  | ${"@long"}   | ${"2**53 - 1"}
+    ${9007199254740992}               | ${9007199254740992}               | ${"number"}  | ${"@double"} | ${"2**53"}
+    ${BigInt("9223372036854775807")}  | ${BigInt("9223372036854775807")}  | ${"bigint"}  | ${"@long"}   | ${"2**64 - 1"}
+    ${1.3 ** 63}                      | ${1.3 ** 63}                      | ${"number"}  | ${"@double"} | ${"1.3**63"}
+    ${1.3}                            | ${1.3}                            | ${"number"}  | ${"@double"} | ${"1.3"}
   `(
     "Properly encodes and decodes number $testCase",
-    async ({ input, expected, expectedType, testCase }) => {
+    async ({ input, expected, expectedType, tag, testCase }) => {
       testCase;
+      const encoded = TaggedTypeFormat.encode(input);
+      const encodedKey = Object.keys(encoded)[0];
+      expect(encodedKey).toEqual(tag);
       const result = await client.query(fql`${input}`);
       expect(typeof result.data).toEqual(expectedType);
       expect(result.data.toString()).toEqual(expected.toString());

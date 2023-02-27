@@ -196,7 +196,7 @@ describe("tagged format", () => {
   it.each`
     input                   | testCase
     ${LONG_MIN - BigInt(1)} | ${"lower than -(2**63) - 1"}
-    ${LONG_MAX + BigInt(1)} | ${"greater than 2**64"}
+    ${LONG_MAX + BigInt(1)} | ${"greater than 2**63"}
   `("Throws if BigInt value is $testCase", async ({ input }) => {
     expect.assertions(2);
     try {

@@ -2,11 +2,14 @@ import {
   TaggedTypeFormat,
   DocumentReference,
   Module,
+  LONG_MIN,
+  LONG_MAX,
 } from "../../src/tagged-type";
 import { Client } from "../../src/client";
 import { env } from "process";
 import { endpoints } from "../../src/client-configuration";
 import { fql } from "../../src/query-builder";
+import { ClientError } from "../../src/wire-protocol";
 
 const client = new Client({
   endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
@@ -70,7 +73,7 @@ describe("tagged format", () => {
     expect(result.measurements[1].employee).toEqual(5);
     expect(result.measurements[1].time).toBeInstanceOf(Date);
     expect(result.molecules).toEqual(BigInt("999999999999999999"));
-    expect(result.null).toBeNull()
+    expect(result.null).toBeNull();
   });
 
   it("can be encoded", () => {
@@ -101,12 +104,12 @@ describe("tagged format", () => {
     );
 
     const backToObj = JSON.parse(result)["@object"];
-    expect(backToObj.double).toStrictEqual({ "@double": 4.14 });
+    expect(backToObj.double).toStrictEqual({ "@double": "4.14" });
     expect(backToObj.extra).toHaveLength(2);
     expect(backToObj.child.more.itsworking).toStrictEqual({
       "@date": "1983-04-15",
     });
-    expect(backToObj.null).toBeNull()
+    expect(backToObj.null).toBeNull();
   });
 
   it("handles conflicts", () => {
@@ -123,12 +126,12 @@ describe("tagged format", () => {
     expect(result["time"]["@object"]["@time"]).toStrictEqual({
       "@time": "2022-11-02T05:00:00.000Z",
     });
-    expect(result["int"]["@object"]["@int"]).toStrictEqual({ "@int": 1 });
+    expect(result["int"]["@object"]["@int"]).toStrictEqual({ "@int": "1" });
     expect(result["long"]["@object"]["@long"]).toStrictEqual({
       "@long": "99999999999999999",
     });
     expect(result["double"]["@object"]["@double"]).toEqual({
-      "@double": 1.99,
+      "@double": "1.99",
     });
   });
 
@@ -161,22 +164,51 @@ describe("tagged format", () => {
   // JS will actually fit big numbers into number but we use BigInt
   // any way so user can round trip longs.
   it.each`
-    input             | expected                  | expectedType | testCase
-    ${-(2 ** 31)}     | ${-(2 ** 31)}             | ${"number"}  | ${"-2**31"}
-    ${-(2 ** 31) - 1} | ${BigInt(-(2 ** 31) - 1)} | ${"bigint"}  | ${"-2**31 - 1"}
-    ${-(2 ** 63)}     | ${BigInt(-(2 ** 63))}     | ${"bigint"}  | ${"-2**63"}
-    ${2 ** 31 - 1}    | ${2 ** 31 - 1}            | ${"number"}  | ${"2**31 - 1"}
-    ${2 ** 31}        | ${BigInt(2 ** 31)}        | ${"bigint"}  | ${"2**31"}
-    ${2 ** 63 - 1}    | ${BigInt(2 ** 63 - 1)}    | ${"bigint"}  | ${"2**63 - 1"}
-    ${1.3 ** 63}      | ${1.3 ** 63}              | ${"number"}  | ${"1.3**63"}
-    ${1.3}            | ${1.3}                    | ${"number"}  | ${"1.3"}
+    input                          | expected                           | expectedType | tag          | testCase
+    ${LONG_MIN}                    | ${LONG_MIN}                        | ${"bigint"}  | ${"@long"}   | ${"-(2**63)"}
+    ${Number.MIN_SAFE_INTEGER - 1} | ${Number.MIN_SAFE_INTEGER - 1}     | ${"number"}  | ${"@double"} | ${"-(2**53)"}
+    ${Number.MIN_SAFE_INTEGER}     | ${BigInt(Number.MIN_SAFE_INTEGER)} | ${"bigint"}  | ${"@long"}   | ${"-(2**53 - 1)"}
+    ${-(2 ** 31) - 1}              | ${BigInt(-(2 ** 31) - 1)}          | ${"bigint"}  | ${"@long"}   | ${"-(2**31) - 1"}
+    ${-(2 ** 31)}                  | ${-(2 ** 31)}                      | ${"number"}  | ${"@int"}    | ${"-(2**31)"}
+    ${0}                           | ${0}                               | ${"number"}  | ${"@int"}    | ${"0 (Int)"}
+    ${1}                           | ${1}                               | ${"number"}  | ${"@int"}    | ${"1 (Int)"}
+    ${BigInt("0")}                 | ${BigInt("0")}                     | ${"bigint"}  | ${"@long"}   | ${"0 (Long)"}
+    ${2 ** 31 - 1}                 | ${2 ** 31 - 1}                     | ${"number"}  | ${"@int"}    | ${"2**31 - 1"}
+    ${2 ** 31}                     | ${BigInt(2 ** 31)}                 | ${"bigint"}  | ${"@long"}   | ${"2**31"}
+    ${Number.MAX_SAFE_INTEGER}     | ${BigInt(Number.MAX_SAFE_INTEGER)} | ${"bigint"}  | ${"@long"}   | ${"2**53 - 1"}
+    ${Number.MAX_SAFE_INTEGER + 1} | ${Number.MAX_SAFE_INTEGER + 1}     | ${"number"}  | ${"@double"} | ${"2**53"}
+    ${LONG_MAX}                    | ${LONG_MAX}                        | ${"bigint"}  | ${"@long"}   | ${"2**64 - 1"}
+    ${1.3 ** 63}                   | ${1.3 ** 63}                       | ${"number"}  | ${"@double"} | ${"1.3**63"}
+    ${1.3}                         | ${1.3}                             | ${"number"}  | ${"@double"} | ${"1.3"}
   `(
     "Properly encodes and decodes number $testCase",
-    async ({ input, expected, expectedType, testCase }) => {
+    async ({ input, expected, expectedType, tag, testCase }) => {
       testCase;
+      const encoded = TaggedTypeFormat.encode(input);
+      const encodedKey = Object.keys(encoded)[0];
+      expect(encodedKey).toEqual(tag);
       const result = await client.query(fql`${input}`);
       expect(typeof result.data).toEqual(expectedType);
-      expect(result.data).toEqual(expected);
+      expect(result.data.toString()).toEqual(expected.toString());
     }
   );
+
+  it.each`
+    input                       | testCase
+    ${LONG_MIN - BigInt(1)}     | ${"lower than -(2**63) - 1"}
+    ${LONG_MAX + BigInt(1)}     | ${"greater than 2**63"}
+    ${Number.NEGATIVE_INFINITY} | ${"NEGATIVE_INFINITY"}
+    ${Number.POSITIVE_INFINITY} | ${"POSITIVE_INFINITY"}
+  `("Throws if BigInt value is $testCase", async ({ input }) => {
+    expect.assertions(2);
+    try {
+      const result = await client.query(fql`${input}`);
+      console.log(result);
+    } catch (e) {
+      if (e instanceof ClientError) {
+        expect(e.cause).toBeDefined();
+        expect(e.cause).toBeInstanceOf(TypeError);
+      }
+    }
+  });
 });

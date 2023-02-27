@@ -25,7 +25,7 @@ export class TaggedTypeFormat {
    */
   static decode(input: string): any {
     return JSON.parse(input, (_, value: any) => {
-      if (value == null) return null
+      if (value == null) return null;
       if (value["@mod"]) {
         return value["@mod"] as Module;
       } else if (value["@doc"]) {
@@ -50,36 +50,49 @@ export class TaggedTypeFormat {
 }
 
 type TaggedDate = { "@date": string };
-type TaggedDouble = { "@double": number };
-type TaggedInt = { "@int": number };
+type TaggedDouble = { "@double": string };
+type TaggedInt = { "@int": string };
 type TaggedLong = { "@long": string };
 type TaggedObject = { "@object": Record<string, any> };
 type TaggedTime = { "@time": string };
+
+export const LONG_MIN = BigInt("-9223372036854775808");
+export const LONG_MAX = BigInt("9223372036854775807");
 
 class TaggedTypeEncoded {
   readonly result: any;
 
   readonly #encodeMap = {
     bigint: (value: bigint): TaggedLong => {
-      if (value >= -(2 ** 63) && value <= 2 ** 63 - 1) {
-        return {
-          "@long": value.toString(),
-        };
+      if (value < LONG_MIN || value > LONG_MAX) {
+        throw new TypeError(
+          "Precision loss when converting BigInt to Fauna type"
+        );
       }
-      throw new TypeError("Precision loss when converting int to Fauna type");
+
+      return {
+        "@long": value.toString(),
+      };
     },
     number: (value: number): TaggedDouble | TaggedInt | TaggedLong => {
+      if (
+        value === Number.POSITIVE_INFINITY ||
+        value === Number.NEGATIVE_INFINITY
+      ) {
+        throw new TypeError(`Cannot convert ${value} to a Fauna type`);
+      }
+
       if (`${value}`.includes(".")) {
-        return { "@double": value };
+        return { "@double": value.toString() };
       } else {
         if (value >= -(2 ** 31) && value <= 2 ** 31 - 1) {
-          return { "@int": value };
-        } else if (value >= -(2 ** 63) && value <= 2 ** 63 - 1) {
+          return { "@int": value.toString() };
+        } else if (Number.isSafeInteger(value)) {
           return {
             "@long": value.toString(),
           };
         }
-        return { "@double": value };
+        return { "@double": value.toString() };
       }
     },
     string: (value: string): string => {
@@ -131,8 +144,8 @@ class TaggedTypeEncoded {
         this.result = this.#encodeMap["number"](input);
         break;
       case "object":
-        if(input == null) {
-          this.result = null
+        if (input == null) {
+          this.result = null;
         } else if (Array.isArray(input)) {
           this.result = this.#encodeMap["array"](input);
         } else if (input instanceof Date) {

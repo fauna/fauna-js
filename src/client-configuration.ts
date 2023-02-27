@@ -1,3 +1,5 @@
+import { ValueFormat } from "./wire-protocol";
+
 /**
  * Configuration for a client.
  */
@@ -6,6 +8,24 @@ export interface ClientConfiguration {
    * The {@link URL} of Fauna to call. See {@link endpoints} for some default options.
    */
   endpoint: URL;
+  /**
+   * Determines the encoded format expected for the query `arguments` field, and
+   * the `data` field of a successful response.
+   * @remarks **Note, it is very unlikely you need to change this value from its default.**
+   * By default the driver transmits type information over the wire. Fauna also assumes type information is
+   * transmitted by default and thus leaving this value undefined will allow Fauna and the driver to send and
+   * receive type data.
+   *  Type information allows the driver and Fauna to distinguish between types such as int" and "long" which do not
+   * have a standard way of distinguishing in JSON.
+   * Since Fauna assumes typed information is transmitted by default, clients can leave this value undefined to make
+   * full usage of Fauna's primitive types.
+   * You can also explicitly set this to "tagged" to get the typing data sent.
+   * Rare use cases can also deal with standard JSON by setting the value to "simple". Not that the types
+   * enocodable in standard JSON are a subset of the types encodable in the default "tagged" format.
+   * It is not recommended that users use the "simple" format as you will lose the typing of your data. e.g. a "Date"
+   * will no longer be recognized by the Fauna as a "Date", but will instead be treated as a string.
+   */
+  format?: ValueFormat;
   /**
    * The maximum number of connections to a make to Fauna.
    */

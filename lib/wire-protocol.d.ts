@@ -9,6 +9,11 @@ export interface QueryRequest extends QueryRequestHeaders {
 }
 export interface QueryRequestHeaders {
     /**
+     * Determines the encoded format expected for the query `arguments` field, and
+     * the `data` field of a successful response.
+     */
+    format?: ValueFormat;
+    /**
      * The ISO-8601 timestamp of the last transaction the client has previously observed.
      * This client will track this by default, however, if you wish to override
      * this value for a given request set this value.
@@ -45,6 +50,7 @@ export interface QueryRequestHeaders {
      */
     traceparent?: string;
 }
+export declare type ValueFormat = "simple" | "tagged";
 export declare type QueryStats = {
     /** The amount of Transactional Compute Ops consumed by the query. */
     compute_ops: number;

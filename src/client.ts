@@ -26,10 +26,14 @@ import {
   isHTTPResponse,
   type HTTPClient,
 } from "./http-client";
+import { TaggedTypeFormat } from "./tagged-type";
 
-const defaultClientConfiguration = {
-  max_conns: 10,
+const defaultClientConfiguration: Pick<
+  ClientConfiguration,
+  "endpoint" | "max_conns" | "timeout_ms"
+> = {
   endpoint: endpoints.cloud,
+  max_conns: 10,
   timeout_ms: 60_000,
 };
 
@@ -231,20 +235,22 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         Authorization: `Bearer ${this.#clientConfiguration.secret}`,
         // WIP - typecheck should be user configurable, but hard code for now
         "x-typecheck": "false",
-        // WIP - presently core will default to tagged; hardcode to simple for now
-        // until we get back to work on the JS driver.
-        "x-format": "simple",
-        // include per-request headers
       };
       this.#setHeaders(
         { ...this.clientConfiguration, ...queryRequest },
         headers
       );
 
+      const isTaggedFormat =
+        (this.#clientConfiguration.format ?? "tagged") === "tagged" ||
+        queryRequest.format === "tagged";
+      const queryArgs = isTaggedFormat
+        ? TaggedTypeFormat.encode(queryRequest.arguments)
+        : queryRequest.arguments;
+
       const requestData = {
         query: queryRequest.query,
-        // WIP: encode arguments here
-        arguments: queryRequest.arguments,
+        arguments: queryArgs,
       };
 
       const fetchResponse = await this.#httpClient.request({
@@ -258,8 +264,9 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       try {
         parsedResponse = {
           ...fetchResponse,
-          // WIP: add decoding here
-          body: JSON.parse(fetchResponse.body),
+          body: isTaggedFormat
+            ? TaggedTypeFormat.decode(fetchResponse.body)
+            : JSON.parse(fetchResponse.body),
         };
       } catch (error: unknown) {
         throw new ProtocolError({
@@ -294,6 +301,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     for (const entry of Object.entries(fromObject)) {
       if (
         [
+          "format",
           "last_txn",
           "timeout_ms",
           "linearized",

@@ -30,9 +30,8 @@ import { TaggedTypeFormat } from "./tagged-type";
 
 const defaultClientConfiguration: Pick<
   ClientConfiguration,
-  "format" | "endpoint" | "max_conns" | "timeout_ms"
+  "endpoint" | "max_conns" | "timeout_ms"
 > = {
-  format: "tagged",
   endpoint: endpoints.cloud,
   max_conns: 10,
   timeout_ms: 60_000,
@@ -236,7 +235,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         Authorization: `Bearer ${this.#clientConfiguration.secret}`,
         // WIP - typecheck should be user configurable, but hard code for now
         "x-typecheck": "false",
-        "x-format": this.#clientConfiguration.format,
       };
       this.#setHeaders(
         { ...this.clientConfiguration, ...queryRequest },
@@ -244,7 +242,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       );
 
       const isTaggedFormat =
-        this.#clientConfiguration.format === "tagged" ||
+        (this.#clientConfiguration.format ?? "tagged") === "tagged" ||
         queryRequest.format === "tagged";
       const queryArgs = isTaggedFormat
         ? TaggedTypeFormat.encode(queryRequest.arguments)

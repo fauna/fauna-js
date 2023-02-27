@@ -194,9 +194,11 @@ describe("tagged format", () => {
   );
 
   it.each`
-    input                   | testCase
-    ${LONG_MIN - BigInt(1)} | ${"lower than -(2**63) - 1"}
-    ${LONG_MAX + BigInt(1)} | ${"greater than 2**63"}
+    input                       | testCase
+    ${LONG_MIN - BigInt(1)}     | ${"lower than -(2**63) - 1"}
+    ${LONG_MAX + BigInt(1)}     | ${"greater than 2**63"}
+    ${Number.NEGATIVE_INFINITY} | ${"NEGATIVE_INFINITY"}
+    ${Number.POSITIVE_INFINITY} | ${"POSITIVE_INFINITY"}
   `("Throws if BigInt value is $testCase", async ({ input }) => {
     expect.assertions(2);
     try {

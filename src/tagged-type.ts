@@ -64,14 +64,24 @@ class TaggedTypeEncoded {
 
   readonly #encodeMap = {
     bigint: (value: bigint): TaggedLong => {
-      if (value >= LONG_MIN && value <= LONG_MAX) {
-        return {
-          "@long": value.toString(),
-        };
+      if (value < LONG_MIN || value > LONG_MAX) {
+        throw new TypeError(
+          "Precision loss when converting BigInt to Fauna type"
+        );
       }
-      throw new TypeError("Precision loss when converting int to Fauna type");
+
+      return {
+        "@long": value.toString(),
+      };
     },
     number: (value: number): TaggedDouble | TaggedInt | TaggedLong => {
+      if (
+        value === Number.POSITIVE_INFINITY ||
+        value === Number.NEGATIVE_INFINITY
+      ) {
+        throw new TypeError(`Cannot convert ${value} to a Fauna type`);
+      }
+
       if (`${value}`.includes(".")) {
         return { "@double": value.toString() };
       } else {

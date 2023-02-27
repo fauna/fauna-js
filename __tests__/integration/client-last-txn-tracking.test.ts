@@ -1,11 +1,6 @@
-import { Client } from "../../src/client";
-import { endpoints } from "../../src/client-configuration";
-import { env } from "process";
+import { getClient } from "../client";
 import { fql } from "../../src/query-builder";
-import {
-  HTTPClient,
-  getDefaultHTTPClient,
-} from "../../src/http-client";
+import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
 
 describe("last_txn tracking in client", () => {
   it("Tracks the last_txn datetime and send in the headers", async () => {
@@ -13,19 +8,17 @@ describe("last_txn tracking in client", () => {
     const httpClient: HTTPClient = {
       async request(req) {
         if (expectedLastTxn === undefined) {
-          expect(req.headers["x-last-txn"]).toBeUndefined()
+          expect(req.headers["x-last-txn"]).toBeUndefined();
         } else {
-          expect(req.headers["x-last-txn"]).toEqual(expectedLastTxn)
+          expect(req.headers["x-last-txn"]).toEqual(expectedLastTxn);
         }
         return getDefaultHTTPClient().request(req);
       },
     };
 
-    const myClient = new Client(
+    const myClient = getClient(
       {
-        endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
         max_conns: 5,
-        secret: env["secret"] || "secret",
         timeout_ms: 60_000,
       },
       httpClient
@@ -65,19 +58,17 @@ if (Collection.byName('Products') == null) {\
     const httpClient: HTTPClient = {
       async request(req) {
         if (expectedLastTxn === undefined) {
-          expect(req.headers["x-last-txn"]).toBeUndefined()
+          expect(req.headers["x-last-txn"]).toBeUndefined();
         } else {
-          expect(req.headers["x-last-txn"]).toEqual(expectedLastTxn)
+          expect(req.headers["x-last-txn"]).toEqual(expectedLastTxn);
         }
         return getDefaultHTTPClient().request(req);
       },
     };
 
-    const myClient = new Client(
+    const myClient = getClient(
       {
-        endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
         max_conns: 5,
-        secret: env["secret"] || "secret",
         timeout_ms: 60_000,
       },
       httpClient

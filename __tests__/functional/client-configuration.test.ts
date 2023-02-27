@@ -1,9 +1,13 @@
+import { getClient } from "../client";
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
 import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
 
+// save a copy
+const PROCESS_ENV = { ...process.env };
+
 beforeEach(() => {
-  delete process.env["FAUNA_SECRET"];
+  process.env = { ...PROCESS_ENV };
 });
 
 describe("ClientConfiguration", () => {
@@ -25,6 +29,7 @@ describe("ClientConfiguration", () => {
   it("A ClientConfiguration setting with no secret throws an error on driver construction", () => {
     expect.assertions(1);
     try {
+      delete process.env["FAUNA_SECRET"];
       new Client();
     } catch (e: any) {
       if ("message" in e) {
@@ -45,7 +50,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       localhost: new URL("http://localhost:8443"),
       "my-alternative-port": new URL("http://localhost:7443"),
     });
-    const client = new Client({
+    const client = getClient({
       endpoint: endpoints["my-alternative-port"],
       max_conns: 5,
       secret: "secret",
@@ -57,10 +62,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   });
 
   it("client allows txn time to be set", async () => {
-    const client = new Client({
-      endpoint: endpoints.local,
-      secret: "secret",
-    });
+    const client = getClient();
     expect(client.lastTxnTime).toBeUndefined();
     const expectedTxnTime = new Date(Date.now());
     client.lastTxnTime = expectedTxnTime;
@@ -77,7 +79,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   type HeaderTestInput = {
     fieldName: "linearized" | "max_contention_retries" | "tags" | "traceparent";
     fieldValue: any;
-    expectedHeader: { key: string, value: string};
+    expectedHeader: { key: string; value: string };
   };
 
   it.each`
@@ -93,17 +95,17 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       const httpClient: HTTPClient = {
         async request(req) {
           expect(req.headers["x-timeout-ms"]).toEqual("5000");
-          const _expectedHeader = expectedHeader
-          expect(req.headers[_expectedHeader.key]).toEqual(_expectedHeader.value);
+          const _expectedHeader = expectedHeader;
+          expect(req.headers[_expectedHeader.key]).toEqual(
+            _expectedHeader.value
+          );
           return getDefaultHTTPClient().request(req);
         },
       };
 
-      const client = new Client(
+      const client = getClient(
         {
-          endpoint: endpoints.local,
           max_conns: 5,
-          secret: "secret",
           timeout_ms: 5000,
           [fieldName]: fieldValue,
         },

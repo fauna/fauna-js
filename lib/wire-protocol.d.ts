@@ -50,6 +50,7 @@ export interface QueryRequestHeaders {
      */
     traceparent?: string;
 }
+/** tagged declares that type information is transmitted and received by the driver. "simple" indicates it is not. */
 export declare type ValueFormat = "simple" | "tagged";
 export declare type QueryStats = {
     /** The amount of Transactional Compute Ops consumed by the query. */

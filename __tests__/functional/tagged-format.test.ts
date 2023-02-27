@@ -1,3 +1,4 @@
+import { getClient } from "../client";
 import {
   TaggedTypeFormat,
   DocumentReference,
@@ -5,16 +6,11 @@ import {
   LONG_MIN,
   LONG_MAX,
 } from "../../src/tagged-type";
-import { Client } from "../../src/client";
-import { env } from "process";
-import { endpoints } from "../../src/client-configuration";
 import { fql } from "../../src/query-builder";
 import { ClientError } from "../../src/wire-protocol";
 
-const client = new Client({
-  endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+const client = getClient({
   max_conns: 5,
-  secret: env["secret"] || "secret",
   timeout_ms: 60_000,
 });
 

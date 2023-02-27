@@ -1,8 +1,7 @@
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
 enableFetchMocks();
 
-import { Client } from "../../src/client";
-import { endpoints } from "../../src/client-configuration";
+import { getClient } from "../client";
 import {
   AuthorizationError,
   NetworkError,
@@ -12,26 +11,17 @@ import {
   ServiceTimeoutError,
   ThrottlingError,
 } from "../../src/wire-protocol";
-import { FetchClient, HTTPClient } from "../../src/http-client";
+import { FetchClient } from "../../src/http-client";
 
-let client: Client;
+const client = getClient(
+  {
+    max_conns: 5,
+    timeout_ms: 60,
+  },
+  new FetchClient()
+);
 
 describe("query", () => {
-  beforeAll(() => {
-    // use the FetchClient implementation, so we can mock requests
-    const httpClient = new FetchClient();
-
-    client = new Client(
-      {
-        endpoint: endpoints.local,
-        max_conns: 5,
-        secret: "seekrit",
-        timeout_ms: 60,
-      },
-      httpClient
-    );
-  });
-
   beforeEach(() => {
     fetchMock.resetMocks();
   });

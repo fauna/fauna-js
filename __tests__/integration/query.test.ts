@@ -1,3 +1,4 @@
+import { getClient } from "../client";
 import { Client } from "../../src/client";
 import {
   type ClientConfiguration,
@@ -18,10 +19,8 @@ import { env } from "process";
 import { fql } from "../../src/query-builder";
 import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
 
-const client = new Client({
-  endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+const client = getClient({
   max_conns: 5,
-  secret: env["secret"] || "secret",
   timeout_ms: 60_000,
 });
 
@@ -128,7 +127,7 @@ describe.each`
         tags: { alpha: "beta", gamma: "delta" },
         traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
       };
-      const myClient = new Client(clientConfiguration, httpClient);
+      const myClient = getClient(clientConfiguration, httpClient);
       const headers = { [fieldName]: fieldValue };
       if (queryType === "QueryRequest") {
         const queryRequest: QueryRequest = {
@@ -186,10 +185,8 @@ describe.each`
 
   it("throws a QueryTimeoutError if the query times out", async () => {
     expect.assertions(4);
-    const badClient = new Client({
-      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+    const badClient = getClient({
       max_conns: 5,
-      secret: env["secret"] || "secret",
       timeout_ms: 1,
     });
     try {
@@ -217,8 +214,7 @@ describe.each`
 
   it("throws a AuthenticationError creds are invalid", async () => {
     expect.assertions(4);
-    const badClient = new Client({
-      endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+    const badClient = getClient({
       max_conns: 5,
       secret: "nah",
       timeout_ms: 60,
@@ -246,7 +242,7 @@ describe.each`
 
   it("throws a NetworkError if the connection fails.", async () => {
     expect.assertions(2);
-    const myBadClient = new Client({
+    const myBadClient = getClient({
       endpoint: new URL("http://localhost:1"),
       max_conns: 1,
       secret: "secret",
@@ -276,11 +272,9 @@ describe.each`
         throw new Error("boom!");
       },
     };
-    const myBadClient = new Client(
+    const myBadClient = getClient(
       {
-        endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
         max_conns: 5,
-        secret: env["secret"] || "secret",
         timeout_ms: 60,
       },
       httpClient
@@ -299,7 +293,7 @@ describe.each`
 
   it("throws a ProtocolError if the http fails outside Fauna", async () => {
     expect.assertions(2);
-    const badClient = new Client({
+    const badClient = getClient({
       endpoint: new URL("https://frontdoor.fauna.com/"),
       max_conns: 5,
       secret: "nah",

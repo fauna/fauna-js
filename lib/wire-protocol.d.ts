@@ -67,7 +67,7 @@ export declare type QueryStats = {
     contention_retries: number;
 };
 export declare type QueryInfo = {
-    /** The last transaction timestamp of the query. An Unix epoch in microseconds. */
+    /** The last transaction timestamp of the query. A Unix epoch in microseconds. */
     txn_ts: number;
     /** A readable summary of any warnings or logs emitted by the query. */
     summary?: string;

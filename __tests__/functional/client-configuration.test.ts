@@ -58,7 +58,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     });
     const result = await client.query<number>({ query: '"taco".length' });
     expect(result.data).toEqual(4);
-    // expect(result.txn_ts).toBeDefined(); // WIP - commented out while docker image is updated
+    expect(result.txn_ts).toBeDefined();
   });
 
   it("client allows txn time to be set", async () => {
@@ -67,7 +67,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     const expectedTxnTime = Date.now() * 1000;
     client.lastTxnTs = expectedTxnTime;
     expect(client.lastTxnTs).toBe(expectedTxnTime);
-    const addFiveMinutes = expectedTxnTime + 5 * 60000000;
+    const addFiveMinutes = expectedTxnTime + 5 * 60 * 1000 * 1000;
     client.lastTxnTs = addFiveMinutes;
     expect(client.lastTxnTs).toBe(addFiveMinutes);
     // setting txn time back in history should fail

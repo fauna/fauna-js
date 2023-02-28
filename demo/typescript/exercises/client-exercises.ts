@@ -33,7 +33,9 @@ export function useEndpoints() {
  * or call some other endpoint not supported by default in the driver (such as a local container
  * on a port other than the standatd 8443).
  */
-export function extendEndpoints() {}
+export function extendEndpoints() {
+
+}
 
 /**
  * Your task - you an also configure a client to have default values for the

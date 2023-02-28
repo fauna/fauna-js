@@ -290,7 +290,7 @@ export class ServiceTimeoutError extends ServiceError {
 /**
  * An error representing a failure internal to the client, itself.
  * This indicates Fauna was never called - the client failed internally
- * prior to sending the qreuest.
+ * prior to sending the request.
  */
 export class ClientError extends Error {
   constructor(message: string, options: { cause: any }) {

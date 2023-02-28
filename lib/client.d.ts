@@ -18,7 +18,7 @@ export declare class Client {
      *     endpoint: endpoints.cloud,
      *     max_conns: 10,
      *     secret: "foo",
-     *     timeout_ms: 60_000,
+     *     query_timeout_ms: 60_000,
      *   }
      * );
      * ```
@@ -27,13 +27,13 @@ export declare class Client {
     /**
      * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
      */
-    get lastTxnTime(): Date | undefined;
+    get lastTxnTs(): number | undefined;
     /**
      * Sets the last transaction time of this client.
      * @param time - the last transaction time to set.
-     * @throws Error if lastTxnTime is before the current lastTxn of the driver
+     * @throws Error if lastTxnTs is before the current lastTxn of the driver
      */
-    set lastTxnTime(time: Date);
+    set lastTxnTs(ts: number);
     /**
      * Return the {@link ClientConfiguration} of this client, save for the secret.
      */

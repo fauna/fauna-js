@@ -2,15 +2,15 @@ import { getClient } from "../client";
 import { fql } from "../../src/query-builder";
 import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
 
-describe("last_txn tracking in client", () => {
-  it("Tracks the last_txn datetime and send in the headers", async () => {
-    let expectedLastTxn: string | undefined = undefined;
+describe("last_txn_ts tracking in client", () => {
+  it("Tracks the last_txn_ts datetime and send in the headers", async () => {
+    let expectedLastTxn: number | undefined;
     const httpClient: HTTPClient = {
       async request(req) {
         if (expectedLastTxn === undefined) {
-          expect(req.headers["x-last-txn"]).toBeUndefined();
+          expect(req.headers["x-last-txn-ts"]).toBeUndefined();
         } else {
-          expect(req.headers["x-last-txn"]).toEqual(expectedLastTxn);
+          expect(req.headers["x-last-txn-ts"]).toEqual(expectedLastTxn);
         }
         return getDefaultHTTPClient().request(req);
       },
@@ -19,7 +19,7 @@ describe("last_txn tracking in client", () => {
     const myClient = getClient(
       {
         max_conns: 5,
-        timeout_ms: 60_000,
+        query_timeout_ms: 60_000,
       },
       httpClient
     );
@@ -31,17 +31,17 @@ if (Collection.byName('Customers') == null) {\
   Collection.create({ name: 'Customers' })\
 }",
     });
-    expect(resultOne.txn_time).not.toBeUndefined();
-    expectedLastTxn = resultOne.txn_time;
+    expect(resultOne.txn_ts).not.toBeUndefined();
+    expectedLastTxn = resultOne.txn_ts;
     const resultTwo = await myClient.query(
       fql`
         if (Collection.byName('Orders') == null) {
           Collection.create({ name: 'Orders' })
         }`
     );
-    expect(resultTwo.txn_time).not.toBeUndefined();
-    expect(resultTwo.txn_time).not.toEqual(resultOne.txn_time);
-    expectedLastTxn = resultTwo.txn_time;
+    expect(resultTwo.txn_ts).not.toBeUndefined();
+    expect(resultTwo.txn_ts).not.toEqual(resultOne.txn_ts);
+    expectedLastTxn = resultTwo.txn_ts;
     const resultThree = await myClient.query({
       query:
         "\
@@ -49,18 +49,18 @@ if (Collection.byName('Products') == null) {\
   Collection.create({ name: 'Products' })\
 }",
     });
-    expect(resultThree.txn_time).not.toBeUndefined();
-    expect(resultThree.txn_time).not.toEqual(resultTwo.txn_time);
+    expect(resultThree.txn_ts).not.toBeUndefined();
+    expect(resultThree.txn_ts).not.toEqual(resultTwo.txn_ts);
   });
 
-  it("Accepts an override of the last_txn datetime and sends in the headers", async () => {
-    let expectedLastTxn: string | undefined = undefined;
+  it("Accepts an override of the last_txn_ts datetime and sends in the headers", async () => {
+    let expectedLastTxn: number | undefined;
     const httpClient: HTTPClient = {
       async request(req) {
         if (expectedLastTxn === undefined) {
-          expect(req.headers["x-last-txn"]).toBeUndefined();
+          expect(req.headers["x-last-txn-ts"]).toBeUndefined();
         } else {
-          expect(req.headers["x-last-txn"]).toEqual(expectedLastTxn);
+          expect(req.headers["x-last-txn-ts"]).toEqual(expectedLastTxn);
         }
         return getDefaultHTTPClient().request(req);
       },
@@ -69,7 +69,7 @@ if (Collection.byName('Products') == null) {\
     const myClient = getClient(
       {
         max_conns: 5,
-        timeout_ms: 60_000,
+        query_timeout_ms: 60_000,
       },
       httpClient
     );
@@ -81,8 +81,8 @@ if (Collection.byName('Customers') == null) {\
   Collection.create({ name: 'Customers' })\
 }",
     });
-    expect(resultOne.txn_time).not.toBeUndefined();
-    expectedLastTxn = resultOne.txn_time;
+    expect(resultOne.txn_ts).not.toBeUndefined();
+    expectedLastTxn = resultOne.txn_ts;
     const resultTwo = await myClient.query(
       fql`
         if (Collection.byName('Orders') == null) {\
@@ -90,20 +90,20 @@ if (Collection.byName('Customers') == null) {\
         }
       `,
       {
-        last_txn: resultOne.txn_time,
+        last_txn_ts: resultOne.txn_ts,
       }
     );
-    expect(resultTwo.txn_time).not.toBeUndefined();
-    expect(resultTwo.txn_time).not.toEqual(resultOne.txn_time);
+    expect(resultTwo.txn_ts).not.toBeUndefined();
+    expect(resultTwo.txn_ts).not.toEqual(resultOne.txn_ts);
     const resultThree = await myClient.query({
-      last_txn: resultOne.txn_time,
+      last_txn_ts: resultOne.txn_ts,
       query:
         "\
 if (Collection.byName('Products') == null) {\
   Collection.create({ name: 'Products' })\
 }",
     });
-    expect(resultThree.txn_time).not.toBeUndefined();
-    expect(resultThree.txn_time).not.toEqual(resultTwo.txn_time);
+    expect(resultThree.txn_ts).not.toBeUndefined();
+    expect(resultThree.txn_ts).not.toEqual(resultTwo.txn_ts);
   });
 });

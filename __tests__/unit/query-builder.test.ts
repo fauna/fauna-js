@@ -129,19 +129,19 @@ describe("fql method producing QueryBuilders", () => {
     const innerQueryBuilder = fql`Math.add(${num}, 3)`;
     const queryBuilder = fql`${str}.length == ${innerQueryBuilder}`;
     const queryRequest = queryBuilder.toQuery({
-      last_txn: "2022-01-01T00:00:0Z",
+      last_txn_ts: 1640995200000000,
       linearized: true,
-      timeout_ms: 600,
+      query_timeout_ms: 600,
       max_contention_retries: 4,
-      tags: { a: "tag" },
+      query_tags: { a: "tag" },
       traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00",
     });
     expect(queryRequest).toMatchObject({
-      last_txn: "2022-01-01T00:00:0Z",
+      last_txn_ts: 1640995200000000,
       linearized: true,
-      timeout_ms: 600,
+      query_timeout_ms: 600,
       max_contention_retries: 4,
-      tags: { a: "tag" },
+      query_tags: { a: "tag" },
       traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00",
     });
     expect(queryRequest.query).toBe("arg0.length == Math.add(arg1, 3)");

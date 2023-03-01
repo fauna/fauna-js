@@ -1,7 +1,7 @@
 /** following reference needed to include types for experimental fetch API in Node */
 /// <reference lib="dom" />
 
-import { NetworkError } from "../wire-protocol";
+import { NetworkError } from "../errors";
 import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
 
 /**

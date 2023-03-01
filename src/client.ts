@@ -34,7 +34,6 @@ const defaultClientConfiguration: Pick<
 > = {
   endpoint: endpoints.cloud,
   max_conns: 10,
-  timeout_ms: 60_000,
 };
 
 /**

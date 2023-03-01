@@ -37,8 +37,10 @@ export interface ClientConfiguration {
     /**
      * The timeout of each query, in milliseconds. This controls the maximum amount of
      * time Fauna will execute your query before marking it failed.
+     * Default is undefined which let's Fauna determine the query timeout to apply. This
+     * is recommended for most queries.
      */
-    timeout_ms: number;
+    timeout_ms?: number;
     /**
      * If true, unconditionally run the query as strictly serialized.
      * This affects read-only transactions. Transactions which write

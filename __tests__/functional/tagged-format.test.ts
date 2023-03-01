@@ -7,7 +7,7 @@ import {
   LONG_MAX,
 } from "../../src/tagged-type";
 import { fql } from "../../src/query-builder";
-import { ClientError } from "../../src/wire-protocol";
+import { ClientError } from "../../src/errors";
 
 const client = getClient({
   max_conns: 5,

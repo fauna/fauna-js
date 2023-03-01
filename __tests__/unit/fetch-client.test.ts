@@ -1,6 +1,7 @@
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
 enableFetchMocks();
 
+import {NetworkError} from '../../src/errors'
 import {
   FetchClient,
   HTTPRequest,
@@ -8,7 +9,6 @@ import {
   isHTTPResponse,
 } from "../../src/http-client";
 import {
-  NetworkError,
   QueryFailure,
   QuerySuccess,
 } from "../../src/wire-protocol";

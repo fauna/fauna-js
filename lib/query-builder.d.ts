@@ -1,7 +1,8 @@
 import type { JSONValue, QueryRequest, QueryRequestHeaders } from "./wire-protocol";
 export interface QueryBuilder {
-    toQuery: (headers?: QueryRequestHeaders, intialArgNumber?: number) => QueryRequest;
+    toQuery: (headers?: QueryRequestHeaders) => QueryRequest;
 }
+export declare const isQueryBuilder: (obj: any) => obj is QueryBuilder;
 /**
  * Creates a new QueryBuilder. Accepts template literal inputs.
  * @param queryFragments - a {@link TemplateStringsArray} that constitute
@@ -14,7 +15,7 @@ export interface QueryBuilder {
  * ```typescript
  *  const str = "baz";
  *  const num = 17;
- *  const innerQueryBuilder = fql`Math.add(${num}, 3)`;
+ *  const innerQueryBuilder = fql`${num} + 3)`;
  *  const queryRequestBuilder = fql`${str}.length == ${innerQueryBuilder}`;
  * ```
  */

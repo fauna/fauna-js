@@ -198,7 +198,10 @@ describe("tagged format", () => {
   `("Throws if BigInt value is $testCase", async ({ input }) => {
     expect.assertions(2);
     try {
-      const result = await client.query(fql`${input}`);
+      const result = await client.query({
+        query: "foo",
+        arguments: { foo: input },
+      });
     } catch (e) {
       if (e instanceof ClientError) {
         expect(e.cause).toBeDefined();

@@ -4,7 +4,7 @@ describe("fql method producing QueryBuilders", () => {
   it("parses with no variables", () => {
     const queryBuilder = fql`'foo'.length`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("'foo'.length");
+    expect(queryRequest.query).toEqual({ fql: ["'foo'.length"] });
     expect(queryRequest.arguments).toStrictEqual({});
   });
 
@@ -12,69 +12,72 @@ describe("fql method producing QueryBuilders", () => {
     const str = "foo";
     const queryBuilder = fql`${str}.length`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("arg0.length");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: "foo",
+    expect(queryRequest.query).toEqual({
+      fql: [{ value: "foo" }, ".length"],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses with a number variable", () => {
     const num = 8;
     const queryBuilder = fql`'foo'.length == ${num}`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("'foo'.length == arg0");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: 8,
+    expect(queryRequest.query).toEqual({
+      fql: ["'foo'.length == ", { value: { "@int": "8" } }],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses with a boolean variable", () => {
     const bool = true;
     const queryBuilder = fql`val.enabled == ${bool}`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("val.enabled == arg0");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: true,
+    expect(queryRequest.query).toEqual({
+      fql: ["val.enabled == ", { value: true }],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses with a null variable", () => {
     const queryBuilder = fql`value: ${null}`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("value: arg0");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: null,
+    expect(queryRequest.query).toEqual({
+      fql: ["value: ", { value: null }],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses with an object variable", () => {
     const obj = { foo: "bar", bar: "baz" };
     const queryBuilder = fql`value: ${obj}`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("value: arg0");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: { foo: "bar", bar: "baz" },
+    expect(queryRequest.query).toEqual({
+      fql: ["value: ", { value: { bar: "baz", foo: "bar" } }],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses with an object variable having a toQuery property", () => {
     const obj = { foo: "bar", bar: "baz", toQuery: "hehe" };
     const queryBuilder = fql`value: ${obj}`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("value: arg0");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: { foo: "bar", bar: "baz", toQuery: "hehe" },
+    expect(queryRequest.query).toEqual({
+      fql: ["value: ", { value: { bar: "baz", foo: "bar", toQuery: "hehe" } }],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses with an array variable", () => {
     const arr = [1, 2, 3];
     const queryBuilder = fql`value: ${arr}`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("value: arg0");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: [1, 2, 3],
+    expect(queryRequest.query).toEqual({
+      fql: [
+        "value: ",
+        { value: [{ "@int": "1" }, { "@int": "2" }, { "@int": "3" }] },
+      ],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses with multiple variables", () => {
@@ -82,11 +85,10 @@ describe("fql method producing QueryBuilders", () => {
     const num = 17;
     const queryBuilder = fql`${str}.length == ${num + 3}`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("arg0.length == arg1");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: "bar",
-      arg1: 20,
+    expect(queryRequest.query).toEqual({
+      fql: [{ value: "bar" }, ".length == ", { value: { "@int": "20" } }],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses nested expressions", () => {
@@ -95,11 +97,14 @@ describe("fql method producing QueryBuilders", () => {
     const innerQueryBuilder = fql`Math.add(${num}, 3)`;
     const queryBuilder = fql`${str}.length == ${innerQueryBuilder}`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe("arg0.length == Math.add(arg1, 3)");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: "baz",
-      arg1: 17,
+    expect(queryRequest.query).toEqual({
+      fql: [
+        { value: "baz" },
+        ".length == ",
+        { fql: ["Math.add(", { value: { "@int": "17" } }, ", 3)"] },
+      ],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("parses deep nested expressions", () => {
@@ -112,15 +117,22 @@ describe("fql method producing QueryBuilders", () => {
     const innerQueryBuilder = fql`Math.add(${deeperBuilder}, ${otherNum})`;
     const queryBuilder = fql`${deepFirst}.length == ${innerQueryBuilder}`;
     const queryRequest = queryBuilder.toQuery();
-    expect(queryRequest.query).toBe(
-      "(arg0 + arg1).length == Math.add(Math.add(arg2, 3), arg3)"
-    );
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: "baz",
-      arg1: "bar",
-      arg2: 17,
-      arg3: 3,
+    expect(queryRequest.query).toEqual({
+      fql: [
+        { fql: ["(", { value: "baz" }, " + ", { value: "bar" }, ")"] },
+        ".length == ",
+        {
+          fql: [
+            "Math.add(",
+            { fql: ["Math.add(", { value: { "@int": "17" } }, ", 3)"] },
+            ", ",
+            { value: { "@int": "3" } },
+            ")",
+          ],
+        },
+      ],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 
   it("adds headers if passed in", () => {
@@ -144,10 +156,13 @@ describe("fql method producing QueryBuilders", () => {
       query_tags: { a: "tag" },
       traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00",
     });
-    expect(queryRequest.query).toBe("arg0.length == Math.add(arg1, 3)");
-    expect(queryRequest.arguments).toStrictEqual({
-      arg0: "baz",
-      arg1: 17,
+    expect(queryRequest.query).toEqual({
+      fql: [
+        { value: "baz" },
+        ".length == ",
+        { fql: ["Math.add(", { value: { "@int": "17" } }, ", 3)"] },
+      ],
     });
+    expect(queryRequest.arguments).toStrictEqual({});
   });
 });

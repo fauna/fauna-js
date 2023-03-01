@@ -160,7 +160,7 @@ export type QueryInterpolation = FQLFragment | ValueFragment;
 export type ValueFragment = { value: TaggedTypeEncoded };
 
 /**
- * A piece of an interpolated query. Interpolated Wueries can be safely composed
+ * A piece of an interpolated query. Interpolated Queries can be safely composed
  * together without concern of query string injection.
  * @remarks A FQLFragment is created when calling the {@link fql} tagged
  * template function and can be passed as an argument to other QueryBuilders.

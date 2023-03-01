@@ -10,7 +10,7 @@ import {
   ServiceInternalError,
   ServiceTimeoutError,
   ThrottlingError,
-} from "../../src/wire-protocol";
+} from "../../src/errors";
 import { FetchClient } from "../../src/http-client";
 
 const client = getClient(

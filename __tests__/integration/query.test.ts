@@ -1,3 +1,4 @@
+import { env } from "process";
 import { getClient } from "../client";
 import { Client } from "../../src/client";
 import {
@@ -10,14 +11,12 @@ import {
   NetworkError,
   ProtocolError,
   QueryCheckError,
-  type QueryRequest,
   QueryRuntimeError,
   QueryTimeoutError,
-  QuerySuccess,
-} from "../../src/wire-protocol";
-import { env } from "process";
-import { fql } from "../../src/query-builder";
+} from "../../src/errors";
 import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
+import { fql } from "../../src/query-builder";
+import { type QueryRequest, QuerySuccess } from "../../src/wire-protocol";
 
 const client = getClient({
   max_conns: 5,

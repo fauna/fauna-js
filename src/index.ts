@@ -4,7 +4,6 @@ export {
   type Endpoints,
   endpoints,
 } from "./client-configuration";
-export { type QueryBuilder, fql } from "./query-builder";
 export {
   AuthenticationError,
   AuthorizationError,
@@ -18,7 +17,9 @@ export {
   ServiceInternalError,
   ServiceTimeoutError,
   ThrottlingError,
-  type FQLFragment,
+} from "./errors";
+export { type QueryBuilder, fql } from "./query-builder";
+export {
   type JSONObject,
   type JSONValue,
   type QueryFailure,

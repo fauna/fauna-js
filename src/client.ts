@@ -1,11 +1,8 @@
 import { ClientConfiguration, endpoints } from "./client-configuration";
-import type { QueryBuilder } from "./query-builder";
 import {
   AuthenticationError,
   AuthorizationError,
   ClientError,
-  isQueryFailure,
-  isQuerySuccess,
   NetworkError,
   ProtocolError,
   QueryCheckError,
@@ -15,6 +12,11 @@ import {
   ServiceInternalError,
   ServiceTimeoutError,
   ThrottlingError,
+} from "./errors";
+import type { QueryBuilder } from "./query-builder";
+import {
+  isQueryFailure,
+  isQuerySuccess,
   type QueryFailure,
   type QueryRequest,
   type QueryRequestHeaders,

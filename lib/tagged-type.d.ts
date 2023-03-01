@@ -23,3 +23,8 @@ export declare class TaggedTypeFormat {
 }
 export declare const LONG_MIN: bigint;
 export declare const LONG_MAX: bigint;
+export declare class TaggedTypeEncoded {
+    #private;
+    readonly result: any;
+    constructor(input: any);
+}

@@ -7,6 +7,12 @@ const client = getClient({
 });
 
 describe("query using template format", () => {
+  it("succeeds with no arguments", async () => {
+    const queryBuilder = fql`"hello world"`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toBe("hello world");
+  });
+
   it("succeeds with a string variable", async () => {
     const str = "foo";
     const queryBuilder = fql`${str}.length`;
@@ -96,5 +102,15 @@ describe("query using template format", () => {
     const queryBuilder = fql`${deepFirst}.length == ${innerQueryBuilder}`;
     const response = await client.query(queryBuilder);
     expect(response.data).toBe(true);
+  });
+
+  it("succeeds with FQL string interpolation", async () => {
+    const codeName = "Alice";
+    const queryBuilder = fql`
+      let name = ${codeName}
+      "Hello, #{name}"
+    `;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toBe("Hello, Alice");
   });
 });

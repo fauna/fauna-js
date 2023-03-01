@@ -165,4 +165,21 @@ describe("fql method producing QueryBuilders", () => {
     });
     expect(queryRequest.arguments).toStrictEqual({});
   });
+
+  it("parses with FQL string interpolation", async () => {
+    const codeName = "Alice";
+    const queryBuilder = fql`
+      let name = ${codeName}
+      "Hello, #{name}"
+    `;
+    const queryRequest = queryBuilder.toQuery();
+    expect(queryRequest.query).toEqual({
+      fql: [
+        "\n      let name = ",
+        { value: "Alice" },
+        '\n      "Hello, #{name}"\n    ',
+      ],
+    });
+    expect(queryRequest.arguments).toStrictEqual({});
+  });
 });

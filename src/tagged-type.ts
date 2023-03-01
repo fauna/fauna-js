@@ -59,7 +59,7 @@ type TaggedTime = { "@time": string };
 export const LONG_MIN = BigInt("-9223372036854775808");
 export const LONG_MAX = BigInt("9223372036854775807");
 
-class TaggedTypeEncoded {
+export class TaggedTypeEncoded {
   readonly result: any;
 
   readonly #encodeMap = {

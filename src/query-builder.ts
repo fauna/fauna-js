@@ -102,7 +102,7 @@ class TemplateQueryBuilder implements QueryBuilder {
         } else {
           // arguments in the template format must always be encoded, regardless
           // of the "x-format" request header
-          // TODO: catch and rethrow TypeErrors as Fauna errors
+          // TODO: catch and rethrow TypeErrors as Fauna errors, indicating bad user input
           subQuery = { value: TaggedTypeFormat.encode(arg) };
         }
 

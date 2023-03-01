@@ -117,11 +117,9 @@ describe.each`
           return getDefaultHTTPClient().request(req);
         },
       };
-      const clientConfiguration: ClientConfiguration = {
-        endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
+      const clientConfiguration: Partial<ClientConfiguration> = {
         format: "tagged",
         max_conns: 5,
-        secret: env["secret"] || "secret",
         query_timeout_ms: 60,
         linearized: true,
         max_contention_retries: 7,

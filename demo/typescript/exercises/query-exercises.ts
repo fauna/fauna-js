@@ -5,7 +5,7 @@ const client: Client = new Client({
   max_conns: 10,
   secret: getSecret(),
   endpoint: endpoints.preview,
-  timeout_ms: 60_000,
+  query_timeout_ms: 60_000,
 });
 
 /**
@@ -96,7 +96,9 @@ export async function correctingErrors(): Promise<Array<
        Customers.all.where(${cityLengthFql("5")})
     `);
 
-    const allProducts = await client.query(fql`Product.all`, { timeout_ms: 1 });
+    const allProducts = await client.query(fql`Product.all`, {
+      query_timeout_ms: 1,
+    });
     return [catskillCustomers, customersInLongCityNames, allProducts];
   } catch (e) {
     // UNCOMMENT THIS TO DEBUG!!!

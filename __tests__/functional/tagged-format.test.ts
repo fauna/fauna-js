@@ -11,7 +11,7 @@ import { ClientError } from "../../src/wire-protocol";
 
 const client = getClient({
   max_conns: 5,
-  timeout_ms: 60_000,
+  query_timeout_ms: 60_000,
 });
 
 describe("tagged format", () => {
@@ -199,7 +199,6 @@ describe("tagged format", () => {
     expect.assertions(2);
     try {
       const result = await client.query(fql`${input}`);
-      console.log(result);
     } catch (e) {
       if (e instanceof ClientError) {
         expect(e.cause).toBeDefined();

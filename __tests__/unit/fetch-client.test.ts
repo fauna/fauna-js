@@ -7,7 +7,11 @@ import {
   HTTPResponse,
   isHTTPResponse,
 } from "../../src/http-client";
-import { NetworkError, QueryFailure, QuerySuccess } from "../../src/wire-protocol";
+import {
+  NetworkError,
+  QueryFailure,
+  QuerySuccess,
+} from "../../src/wire-protocol";
 
 let fetchClient: FetchClient;
 
@@ -42,7 +46,7 @@ describe("query", () => {
     const expected: QuerySuccess<{ foo: string }> = {
       data: { foo: "bar" },
       summary: "summary",
-      txn_time: "2023-02-17T19:19:12.887330Z",
+      txn_ts: 1676661552887330,
       query_tags: { "my-tag": "value" },
       stats: dummyStats,
     };
@@ -61,7 +65,7 @@ describe("query", () => {
       const body = JSON.parse(response.body);
       expect(body.data).toEqual(expected.data);
       expect(body.summary).toEqual(expected.summary);
-      expect(body.txn_time).toEqual(expected.txn_time);
+      expect(body.txn_ts).toEqual(expected.txn_ts);
       expect(body.query_tags).toEqual(expected.query_tags);
       expect(body.stats).toEqual(expected.stats);
     }
@@ -75,7 +79,7 @@ describe("query", () => {
         message: "The query failed 1 validation check",
       },
       summary: "summary",
-      txn_time: "2023-02-17T19:19:12.887330Z",
+      txn_ts: 1676661552887330,
       query_tags: {},
       stats: dummyStats,
     };
@@ -95,7 +99,7 @@ describe("query", () => {
       const body = JSON.parse(response.body);
       expect(body.error).toEqual(expected.error);
       expect(body.summary).toEqual(expected.summary);
-      expect(body.txn_time).toEqual(expected.txn_time);
+      expect(body.txn_ts).toEqual(expected.txn_ts);
       expect(body.query_tags).toEqual(expected.query_tags);
       expect(body.stats).toEqual(expected.stats);
     }

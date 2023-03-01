@@ -20,7 +20,7 @@ export interface QueryRequestHeaders {
    * This client will track this by default, however, if you wish to override
    * this value for a given request set this value.
    */
-  last_txn?: string;
+  last_txn_ts?: number;
   /**
    * If true, unconditionally run the query as strictly serialized.
    * This affects read-only transactions. Transactions which write
@@ -32,7 +32,7 @@ export interface QueryRequestHeaders {
    * The timeout to use in this query in milliseconds.
    * Overrides the timeout for the client.
    */
-  timeout_ms?: number;
+  query_timeout_ms?: number;
   /**
    * The max number of times to retry the query if contention is encountered.
    * Overrides the optional setting for the client.
@@ -43,7 +43,7 @@ export interface QueryRequestHeaders {
    * Tags provided back via logging and telemetry.
    * Overrides the optional setting on the client.
    */
-  tags?: { [key: string]: string };
+  query_tags?: Record<string, string>;
   /**
    * A traceparent provided back via logging and telemetry.
    * Must match format: https://www.w3.org/TR/trace-context/#traceparent-header
@@ -73,8 +73,8 @@ export type QueryStats = {
 };
 
 export type QueryInfo = {
-  /** The last transaction time of the query. An ISO-8601 date string. */
-  txn_time: string;
+  /** The last transaction timestamp of the query. A Unix epoch in microseconds. */
+  txn_ts: number;
   /** A readable summary of any warnings or logs emitted by the query. */
   summary?: string;
   /** The value of the x-query-tags header, if it was provided. */
@@ -176,7 +176,7 @@ export class QueryRuntimeError extends ServiceError {
       Error.captureStackTrace(this, QueryRuntimeError);
     }
     this.name = "QueryRuntimeError";
-    // TODO trace, txn_time, and stats not yet returned for QueryRuntimeError
+    // TODO trace, txn_ts, and stats not yet returned for QueryRuntimeError
     // flip to check for those rather than a specific code.
   }
 }

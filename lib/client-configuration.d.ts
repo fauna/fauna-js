@@ -40,7 +40,7 @@ export interface ClientConfiguration {
      * Default is undefined which let's Fauna determine the query timeout to apply. This
      * is recommended for most queries.
      */
-    timeout_ms?: number;
+    query_timeout_ms?: number;
     /**
      * If true, unconditionally run the query as strictly serialized.
      * This affects read-only transactions. Transactions which write
@@ -54,7 +54,7 @@ export interface ClientConfiguration {
     /**
      * Tags provided back via logging and telemetry.
      */
-    tags?: {
+    query_tags?: {
         [key: string]: string;
     };
     /**

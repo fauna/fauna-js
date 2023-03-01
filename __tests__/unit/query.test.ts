@@ -16,8 +16,9 @@ import { FetchClient } from "../../src/http-client";
 const client = getClient(
   {
     max_conns: 5,
-    timeout_ms: 60,
+    query_timeout_ms: 60,
   },
+  // use the FetchClient implementation, so we can mock requests
   new FetchClient()
 );
 

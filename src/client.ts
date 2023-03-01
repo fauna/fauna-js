@@ -30,7 +30,7 @@ import { TaggedTypeFormat } from "./tagged-type";
 
 const defaultClientConfiguration: Pick<
   ClientConfiguration,
-  "endpoint" | "max_conns" | "timeout_ms"
+  "endpoint" | "max_conns"
 > = {
   endpoint: endpoints.cloud,
   max_conns: 10,
@@ -44,8 +44,8 @@ export class Client {
   readonly #clientConfiguration: ClientConfiguration;
   /** The underlying {@link HTTPClient} client. */
   readonly #httpClient: HTTPClient;
-  /** last_txn this client has seen */
-  #lastTxn?: Date;
+  /** The last transaction timestamp this client has seen */
+  #lastTxnTs?: number;
   /** url of Fauna */
   #url: string;
 
@@ -60,7 +60,7 @@ export class Client {
    *     endpoint: endpoints.cloud,
    *     max_conns: 10,
    *     secret: "foo",
-   *     timeout_ms: 60_000,
+   *     query_timeout_ms: 60_000,
    *   }
    * );
    * ```
@@ -87,22 +87,19 @@ export class Client {
    */
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  get lastTxnTime(): Date | undefined {
-    return this.#lastTxn;
+  get lastTxnTs(): number | undefined {
+    return this.#lastTxnTs;
   }
   /**
    * Sets the last transaction time of this client.
    * @param time - the last transaction time to set.
-   * @throws Error if lastTxnTime is before the current lastTxn of the driver
+   * @throws Error if lastTxnTs is before the current lastTxn of the driver
    */
-  set lastTxnTime(time: Date) {
-    if (
-      this.lastTxnTime !== undefined &&
-      time.getTime() < this.lastTxnTime.getTime()
-    ) {
+  set lastTxnTs(ts: number) {
+    if (this.lastTxnTs !== undefined && ts < this.lastTxnTs) {
       throw new Error("Must be greater than current value");
     }
-    this.#lastTxn = time;
+    this.#lastTxnTs = ts;
   }
 
   /**
@@ -279,15 +276,14 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         throw this.#getError(parsedResponse);
       }
 
-      const txn_time = parsedResponse.body.txn_time;
-      const txnDate = new Date(txn_time);
+      const txn_ts = parsedResponse.body.txn_ts;
       if (
-        (this.#lastTxn === undefined && txn_time !== undefined) ||
-        (txn_time !== undefined &&
-          this.#lastTxn !== undefined &&
-          this.#lastTxn < txnDate)
+        (this.#lastTxnTs === undefined && txn_ts !== undefined) ||
+        (txn_ts !== undefined &&
+          this.#lastTxnTs !== undefined &&
+          this.#lastTxnTs < txn_ts)
       ) {
-        this.#lastTxn = txnDate;
+        this.#lastTxnTs = txn_ts;
       }
 
       return parsedResponse.body as QuerySuccess<T>;
@@ -301,21 +297,22 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       if (
         [
           "format",
-          "last_txn",
-          "timeout_ms",
+          "last_txn_ts",
+          "query_timeout_ms",
           "linearized",
           "max_contention_retries",
           "traceparent",
-          "tags",
+          "query_tags",
         ].includes(entry[0])
       ) {
         let headerValue: string;
         let headerKey = `x-${entry[0].replaceAll("_", "-")}`;
-        if ("tags" === entry[0]) {
-          headerKey = "x-fauna-tags";
+        if ("query_tags" === entry[0]) {
           headerValue = Object.entries(entry[1])
             .map((tag) => tag.join("="))
             .join(",");
+        } else if ("last_txn_ts" === entry[0]) {
+          headerValue = entry[1];
         } else {
           if (typeof entry[1] === "string") {
             headerValue = entry[1];
@@ -330,10 +327,10 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       }
     }
     if (
-      headerObject["x-last-txn"] === undefined &&
-      this.#lastTxn !== undefined
+      headerObject["x-last-txn-ts"] === undefined &&
+      this.#lastTxnTs !== undefined
     ) {
-      headerObject["x-last-txn"] = this.#lastTxn.toISOString();
+      headerObject["x-last-txn-ts"] = this.#lastTxnTs;
     }
   }
 }

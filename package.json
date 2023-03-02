@@ -2,6 +2,10 @@
   "name": "@fauna/fauna",
   "version": "0.1.0",
   "description": "A driver to query Fauna databases in browsers, Node.js, and other Javascript runtimes",
+  "homepage": "https://fauna.com",
+  "bugs": {
+    "url": "https://github.com/fauna/fauna-js/issues"
+  },
   "files": [
     "src/",
     "dist/"

@@ -205,7 +205,7 @@ describe("tagged format", () => {
     } catch (e) {
       if (e instanceof ClientError) {
         expect(e.cause).toBeDefined();
-        expect(e.cause).toBeInstanceOf(TypeError);
+        expect(e.cause).toBeInstanceOf(RangeError);
       }
     }
   });

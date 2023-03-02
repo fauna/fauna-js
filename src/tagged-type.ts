@@ -65,7 +65,7 @@ export class TaggedTypeEncoded {
   readonly #encodeMap = {
     bigint: (value: bigint): TaggedLong => {
       if (value < LONG_MIN || value > LONG_MAX) {
-        throw new TypeError(
+        throw new RangeError(
           "Precision loss when converting BigInt to Fauna type"
         );
       }
@@ -79,7 +79,7 @@ export class TaggedTypeEncoded {
         value === Number.POSITIVE_INFINITY ||
         value === Number.NEGATIVE_INFINITY
       ) {
-        throw new TypeError(`Cannot convert ${value} to a Fauna type`);
+        throw new RangeError(`Cannot convert ${value} to a Fauna type.`);
       }
 
       if (`${value}`.includes(".")) {

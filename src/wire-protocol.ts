@@ -132,7 +132,6 @@ export const isQueryResponse = (res: any): res is QueryResponse<any> =>
   isQueryResponse(res) || isQueryFailure(res);
 
 /**
-<<<<<<< HEAD
  * A piece of an interpolated query. Interpolated queries can be safely composed
  * together without concern of query string injection.
  * @see {@link ValueFragment} and {@link FQLFragment} for additional

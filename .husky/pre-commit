@@ -2,5 +2,6 @@
 . "$(dirname "$0")/_/husky.sh"
 
 yarn build
+git add --all ./lib
 yarn lint
 yarn pretty-quick --staged

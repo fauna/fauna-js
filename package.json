@@ -42,7 +42,8 @@
     "fauna-local-alt-port": "docker start faunadb-fql-x-alt-port || docker run --rm -d --name faunadb-fql-x-alt-port -p 7443:8443 -p 7084:8084 fauna/faunadb",
     "prepare": "husky install",
     "test": "yarn fauna-local; yarn fauna-local-alt-port; ./prepare-test-env.sh; jest",
-    "test:ci": "yarn install; jest --ci --reporters=default --reporters=jest-junit"
+    "test:ci": "yarn install; jest --ci --reporters=default --reporters=jest-junit",
+    "test:integration": "yarn install; jest --run-in-band ./__tests__/integration"
   },
   "jest-junit": {
     "outputDirectory": "reports",

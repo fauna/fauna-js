@@ -43,7 +43,6 @@ import { Client, endpoints, fql } from "fauna";
 
 const client = new Client({
   endpoint: endpoints.preview,
-  max_conns: 5, // maximum number of connections to keep alive and awaiting requests to Fauna
   secret: "<my_fauna_secret>",
   query_timeout_ms: 60_000,
 });
@@ -56,7 +55,6 @@ import { Client } from "fauna";
 
 const client = new Client();
 // secret defaults to whatever is stored in a FAUNA_SECRET environmental variable
-// max_conns defaults to 10
 // query_timeout_ms defaults to 60,000
 // endpoint defaults to endpoints.cloud
 ```
@@ -97,7 +95,6 @@ const secret = getSecret();
 
 const client = new Client({
   endpoint: endpoints.preview,
-  max_conns: 5,
   secret,
   query_timeout_ms: 60_000,
 });
@@ -279,12 +276,11 @@ export interface QueryRequestHeaders {
 }
 ```
 
-The following example shows how to set the `linearized` and `max_connection_rertries` headers object to a Client instance:
+The following example shows how to set the `linearized` and `max_contention_rertries` headers object to a Client instance:
 
 ```typescript
 const client = new Client({
   endpoint: endpoints.preview,
-  max_conns: 5,
   secret,
   query_timeout_ms: 60_000,
   linearized: true,

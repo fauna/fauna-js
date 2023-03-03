@@ -2,7 +2,6 @@ import { fql } from "../../src/query-builder";
 import { getClient } from "../client";
 
 const client = getClient({
-  max_conns: 5,
   query_timeout_ms: 60_000,
 });
 

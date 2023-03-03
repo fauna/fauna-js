@@ -27,10 +27,6 @@ export interface ClientConfiguration {
    */
   format?: ValueFormat;
   /**
-   * The maximum number of connections to a make to Fauna.
-   */
-  max_conns: number;
-  /**
    * A secret for your Fauna DB, used to authorize your queries.
    * @see https://docs.fauna.com/fauna/current/security/keys
    */

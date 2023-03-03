@@ -2,7 +2,6 @@ import { Client, endpoints, fql, type QuerySuccess } from "fauna";
 import { getSecret, type PartialCustomer } from "../utils";
 
 const client: Client = new Client({
-  max_conns: 10,
   secret: getSecret(),
   endpoint: endpoints.preview,
   query_timeout_ms: 60_000,

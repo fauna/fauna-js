@@ -3,7 +3,7 @@ import { getSecret } from "../utils";
 
 /**
  * Your task - return a client that talks to Fauna's preview endpoint,
- * has a max_conns to Fauna of 10, and has a query timeout of 60 seconds.
+ * has a query timeout of 60 seconds.
  * You can use the getSecret() function to retrieve your secret from
  * the FAUNA_SECRET environmental variable.
  */
@@ -14,11 +14,10 @@ export function constructingClients(): Client {
   // ClientConfiguration type to the driver.
   const clientConfiguration: ClientConfiguration = {
     // there are required and optional fields in a ClientConfiguration.
-    // Required are the endpoint, the max_conns the client should maintain to Fauna,
-    // the secret you'll use to communicate to Fauna, and the query timeout to use.
+    // Required are the endpoint, the secret you'll use to communicate to Fauna,
+    // and the query timeout to use.
     // Here's a basic settings:
     endpoint: endpoints.preview,
-    max_conns: 10,
     query_timeout_ms: 60_000,
     secret,
   };
@@ -78,7 +77,6 @@ export function defaultHeaders() {
     endpoint: endpoints.preview,
     secret: getSecret(),
     query_timeout_ms: 60_000,
-    max_conns: 10,
     linearized: true,
     max_contention_retries: 5,
   });

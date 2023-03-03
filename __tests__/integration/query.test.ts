@@ -1,10 +1,6 @@
-import { env } from "process";
 import { getClient } from "../client";
 import { Client } from "../../src/client";
-import {
-  type ClientConfiguration,
-  endpoints,
-} from "../../src/client-configuration";
+import { type ClientConfiguration } from "../../src/client-configuration";
 import {
   AuthenticationError,
   ClientError,
@@ -19,7 +15,6 @@ import { fql } from "../../src/query-builder";
 import { type QueryRequest, QuerySuccess } from "../../src/wire-protocol";
 
 const client = getClient({
-  max_conns: 5,
   query_timeout_ms: 60_000,
 });
 
@@ -118,7 +113,6 @@ describe.each`
       };
       const clientConfiguration: Partial<ClientConfiguration> = {
         format: "tagged",
-        max_conns: 5,
         query_timeout_ms: 60,
         linearized: true,
         max_contention_retries: 7,
@@ -184,7 +178,6 @@ describe.each`
   it("throws a QueryTimeoutError if the query times out", async () => {
     expect.assertions(4);
     const badClient = getClient({
-      max_conns: 5,
       query_timeout_ms: 1,
     });
     try {
@@ -213,7 +206,6 @@ describe.each`
   it("throws a AuthenticationError creds are invalid", async () => {
     expect.assertions(4);
     const badClient = getClient({
-      max_conns: 5,
       secret: "nah",
       query_timeout_ms: 60,
     });
@@ -242,7 +234,6 @@ describe.each`
     expect.assertions(2);
     const myBadClient = getClient({
       endpoint: new URL("http://localhost:1"),
-      max_conns: 1,
       secret: "secret",
       query_timeout_ms: 60,
     });
@@ -272,7 +263,6 @@ describe.each`
     };
     const myBadClient = getClient(
       {
-        max_conns: 5,
         query_timeout_ms: 60,
       },
       httpClient
@@ -293,7 +283,6 @@ describe.each`
     expect.assertions(2);
     const badClient = getClient({
       endpoint: new URL("https://frontdoor.fauna.com/"),
-      max_conns: 5,
       secret: "nah",
       query_timeout_ms: 60,
     });

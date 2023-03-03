@@ -30,14 +30,6 @@ import {
 } from "./http-client";
 import { TaggedTypeFormat } from "./tagged-type";
 
-const defaultClientConfiguration: Pick<
-  ClientConfiguration,
-  "endpoint" | "max_conns"
-> = {
-  endpoint: endpoints.cloud,
-  max_conns: 10,
-};
-
 /**
  * Client for calling Fauna.
  */
@@ -60,7 +52,6 @@ export class Client {
    *  const myClient = new Client(
    *   {
    *     endpoint: endpoints.cloud,
-   *     max_conns: 10,
    *     secret: "foo",
    *     query_timeout_ms: 60_000,
    *   }
@@ -72,7 +63,7 @@ export class Client {
     httpClient?: HTTPClient
   ) {
     this.#clientConfiguration = {
-      ...defaultClientConfiguration,
+      endpoint: endpoints.cloud,
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };

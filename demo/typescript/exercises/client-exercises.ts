@@ -4,13 +4,11 @@ import { getSecret } from "../utils";
 
 /**
  * Your task - return a client that talks to Fauna's preview endpoint,
- * has a max_conns to Fauna of 10, and has a query timeout of 60 seconds.
+ * has a query timeout of 60 seconds.
  * You can use the imported getSecret() function to retrieve your secret from
  * the FAUNA_SECRET environmental variable.
  */
-export function constructingClients() {
-
-}
+export function constructingClients() {}
 
 /**
  * Your task - return an array the URLs of the three endpoints that come
@@ -21,9 +19,7 @@ export function constructingClients() {
  * a local container).
  * Hint: the client contains an `endpoints` object you can use for this!
  */
-export function useEndpoints() {
-
-}
+export function useEndpoints() {}
 
 /**
  * Your task - extend endpoints to have new URL endpoint of
@@ -33,9 +29,7 @@ export function useEndpoints() {
  * or call some other endpoint not supported by default in the driver (such as a local container
  * on a port other than the standatd 8443).
  */
-export function extendEndpoints() {
-
-}
+export function extendEndpoints() {}
 
 /**
  * Your task - you an also configure a client to have default values for the
@@ -49,6 +43,4 @@ export function extendEndpoints() {
  * Return a client that has linearized set to true and max_contention_retries set to 5.
  * all other settings do not matter.
  */
-export function defaultHeaders() {
-  
-}
+export function defaultHeaders() {}

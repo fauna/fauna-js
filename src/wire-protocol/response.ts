@@ -6,23 +6,6 @@ import { JSONValue } from ".";
  */
 export type QueryResponse<T extends JSONValue> = QuerySuccess<T> | QueryFailure;
 
-export type QueryStats = {
-  /** The amount of Transactional Compute Ops consumed by the query. */
-  compute_ops: number;
-  /** The amount of Transactional Read Ops consumed by the query. */
-  read_ops: number;
-  /** The amount of Transactional Write Ops consumed by the query. */
-  write_ops: number;
-  /** The query run time in milliseconds. */
-  query_time_ms: number;
-  /** The amount of data read from storage, in bytes. */
-  storage_bytes_read: number;
-  /** The amount of data written to storage, in bytes. */
-  storage_bytes_written: number;
-  /** The number of times the transaction was retried due to write contention. */
-  contention_retries: number;
-};
-
 export type QuerySuccess<T> = QueryInfo & {
   /**
    * The result of a successful query. The data is any valid JSON value.
@@ -79,6 +62,23 @@ export type QueryInfo = {
   query_tags: Record<string, string>;
   /** Stats on query performance and cost */
   stats: QueryStats;
+};
+
+export type QueryStats = {
+  /** The amount of Transactional Compute Ops consumed by the query. */
+  compute_ops: number;
+  /** The amount of Transactional Read Ops consumed by the query. */
+  read_ops: number;
+  /** The amount of Transactional Write Ops consumed by the query. */
+  write_ops: number;
+  /** The query run time in milliseconds. */
+  query_time_ms: number;
+  /** The amount of data read from storage, in bytes. */
+  storage_bytes_read: number;
+  /** The amount of data written to storage, in bytes. */
+  storage_bytes_written: number;
+  /** The number of times the transaction was retried due to write contention. */
+  contention_retries: number;
 };
 
 /**

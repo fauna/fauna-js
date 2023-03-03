@@ -258,7 +258,7 @@ export interface QueryRequestHeaders {
 }
 ```
 
-The following example shows how to set the `linearized` and `max_contention_rertries` headers object to a Client instance:
+The following example shows how to set the `linearized` and `max_contention_retries` headers object to a Client instance:
 
 ```typescript
 const client = new Client({

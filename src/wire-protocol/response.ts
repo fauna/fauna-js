@@ -1,8 +1,10 @@
+import { JSONValue } from ".";
+
 /**
  * The result of a query to Fauna.
  * @see {@link QuerySuccess} and {@link QueryFailure} for additional information.
  */
-export type QueryResponse<T> = QuerySuccess<T> | QueryFailure;
+export type QueryResponse<T extends JSONValue> = QuerySuccess<T> | QueryFailure;
 
 export type QueryStats = {
   /** The amount of Transactional Compute Ops consumed by the query. */

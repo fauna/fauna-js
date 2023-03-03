@@ -1,14 +1,8 @@
-import { Client } from "../../src";
-import { endpoints } from "../../src";
+import { getClient } from "../client";
 import { ServiceError } from "../../src";
-import { env } from "process";
 import { fql } from "../../src";
 
-const client = new Client({
-  endpoint: env["endpoint"] ? new URL(env["endpoint"]) : endpoints.local,
-  max_conns: 5,
-  secret: env["secret"] || "secret",
-});
+const client = getClient();
 
 const authorsData = [
   {

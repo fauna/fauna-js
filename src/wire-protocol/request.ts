@@ -99,14 +99,22 @@ export type ValueFragment = { value: JSONValue };
 export type FQLFragment = { fql: (string | QueryInterpolation)[] };
 
 /**
- * All objects returned from Fauna are valid JSON objects.
+ * A type to describe plain JSON object
+ * @remarks Requiring plain JSON values as request arguments makes it a
+ * Typescript error to provide a Class instance as an argument. This is
+ * necessary because the driver does not have a way to ensure results are
+ * encoded beack into the provided Class.
  */
 export type JSONObject = {
   [key: string]: JSONValue;
 };
 
 /**
- * All values returned from Fauna are valid JSON values.
+ * A type to describe plain JSON values
+ * @remarks Requiring plain JSON values as request arguments makes it a
+ * Typescript error to provide a Class instance as an argument. This is
+ * necessary because the driver does not have a way to ensure results are
+ * encoded beack into the provided Class.
  */
 export type JSONValue =
   | null

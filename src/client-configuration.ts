@@ -1,5 +1,3 @@
-import { ValueFormat } from "./wire-protocol";
-
 /**
  * Configuration for a client.
  */
@@ -63,6 +61,52 @@ export interface ClientConfiguration {
    */
   traceparent?: string;
 }
+
+export interface QueryRequestOptions {
+  /**
+   * Determines the encoded format expected for the query `arguments` field, and
+   * the `data` field of a successful response.
+   */
+  format?: ValueFormat;
+  /**
+   * The ISO-8601 timestamp of the last transaction the client has previously observed.
+   * This client will track this by default, however, if you wish to override
+   * this value for a given request set this value.
+   */
+  last_txn_ts?: number;
+  /**
+   * If true, unconditionally run the query as strictly serialized.
+   * This affects read-only transactions. Transactions which write
+   * will always be strictly serialized.
+   * Overrides the optional setting for the client.
+   */
+  linearized?: boolean;
+  /**
+   * The timeout to use in this query in milliseconds.
+   * Overrides the timeout for the client.
+   */
+  query_timeout_ms?: number;
+  /**
+   * The max number of times to retry the query if contention is encountered.
+   * Overrides the optional setting for the client.
+   */
+  max_contention_retries?: number;
+
+  /**
+   * Tags provided back via logging and telemetry.
+   * Overrides the optional setting on the client.
+   */
+  query_tags?: Record<string, string>;
+  /**
+   * A traceparent provided back via logging and telemetry.
+   * Must match format: https://www.w3.org/TR/trace-context/#traceparent-header
+   * Overrides the optional setting for the client.
+   */
+  traceparent?: string;
+}
+
+/** tagged declares that type information is transmitted and received by the driver. "simple" indicates it is not. */
+export type ValueFormat = "simple" | "tagged";
 
 /**
  * An extensible interface for a set of Fauna endpoints.

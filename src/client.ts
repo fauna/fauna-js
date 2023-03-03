@@ -1,4 +1,8 @@
-import { ClientConfiguration, endpoints } from "./client-configuration";
+import {
+  ClientConfiguration,
+  endpoints,
+  QueryRequestOptions,
+} from "./client-configuration";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -19,7 +23,6 @@ import {
   isQuerySuccess,
   type QueryFailure,
   type QueryRequest,
-  type QueryRequestHeaders,
   type QuerySuccess,
 } from "./wire-protocol";
 import {
@@ -114,13 +117,15 @@ export class Client {
 
   /**
    * Queries Fauna.
-   * @param request - a {@link QueryRequest} or {@link QueryBuilder} to build a request with.
-   *  Note, you can embed header fields in this object; if you do that there's no need to
-   *  pass the headers parameter.
-   * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input.
-   *   Values in this headers parameter take precedence over the same values in the request
-   *   parameter. This field is primarily intended to be used when you pass a QueryBuilder as
-   *   the parameter.
+   * @param request - a {@link QueryRequest} combined with
+   *   {@link QueryRequestOptions} or a {@link QueryBuilder} to build a request
+   *   with. Note, you can embed request options in this object; if you do that
+   *   there's no need to pass the requestOptions parameter.
+   * @param requestOptions - optional {@link QueryRequestOptions} to apply on
+   *   top of the request
+   *   input. Values in this requestOptions parameter take precedence over the
+   *   same values in the request parameter. This field is primarily intended to
+   *   be used when you pass a QueryBuilder as the parameter.
    * @returns Promise&lt;{@link QuerySuccess}&gt;.
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
@@ -137,13 +142,13 @@ export class Client {
    * due to an internal error.
    */
   async query<T = any>(
-    request: QueryRequest | QueryBuilder,
-    headers?: QueryRequestHeaders
+    request: (QueryRequest & QueryRequestOptions) | QueryBuilder,
+    requestOptions?: QueryRequestOptions
   ): Promise<QuerySuccess<T>> {
     if ("query" in request) {
-      return this.#query({ ...request, ...headers });
+      return this.#query({ ...request, ...requestOptions });
     }
-    return this.#query(request.toQuery(headers));
+    return this.#query(request.toQuery(requestOptions));
   }
 
   #getError(e: any): ClientError | NetworkError | ProtocolError | ServiceError {
@@ -226,7 +231,9 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
   }
 
-  async #query<T = any>(queryRequest: QueryRequest): Promise<QuerySuccess<T>> {
+  async #query<T = any>(
+    queryRequest: QueryRequest & QueryRequestOptions
+  ): Promise<QuerySuccess<T>> {
     try {
       const headers = {
         Authorization: `Bearer ${this.#clientConfiguration.secret}`,
@@ -293,7 +300,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
   }
 
-  #setHeaders(fromObject: QueryRequestHeaders, headerObject: any): void {
+  #setHeaders(fromObject: QueryRequestOptions, headerObject: any): void {
     for (const entry of Object.entries(fromObject)) {
       if (
         [

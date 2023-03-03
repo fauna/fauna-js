@@ -3,6 +3,7 @@ export {
   type ClientConfiguration,
   type Endpoints,
   endpoints,
+  type QueryRequestOptions,
 } from "./client-configuration";
 export {
   AuthenticationError,
@@ -26,7 +27,6 @@ export {
   type QueryInfo,
   type QueryInterpolation,
   type QueryRequest,
-  type QueryRequestHeaders,
   type QueryStats,
   type QuerySuccess,
   type Span,

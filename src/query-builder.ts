@@ -1,14 +1,14 @@
+import { QueryRequestOptions } from "./client-configuration";
 import { TaggedTypeFormat } from "./tagged-type";
 import type {
   JSONObject,
   JSONValue,
   QueryInterpolation,
   QueryRequest,
-  QueryRequestHeaders,
 } from "./wire-protocol";
 
 export interface QueryBuilder {
-  toQuery: (headers?: QueryRequestHeaders) => QueryRequest;
+  toQuery: (options?: QueryRequestOptions) => QueryRequest;
 }
 
 export const isQueryBuilder = (obj: any): obj is QueryBuilder =>
@@ -63,7 +63,7 @@ class TemplateQueryBuilder implements QueryBuilder {
   /**
    * Converts this TemplateQueryBuilder to a {@link QueryRequest} you can send
    * to Fauna.
-   * @param requestHeaders - optional {@link QueryRequestHeaders} to include
+   * @param requestOptions - optional {@link QueryRequestOptions} to include
    *   in the request (and thus override the defaults in your {@link ClientConfiguration}.
    *   If not passed in, no headers will be set as overrides.
    * @returns a {@link QueryRequest}.
@@ -76,11 +76,11 @@ class TemplateQueryBuilder implements QueryBuilder {
    *  { query: { fql: ["'foo'.length == ", { value: { "@int": "8" } }, ""] }}
    * ```
    */
-  toQuery(requestHeaders: QueryRequestHeaders = {}): QueryRequest {
-    return { ...this.#render(requestHeaders), ...requestHeaders };
+  toQuery(requestOptions: QueryRequestOptions = {}): QueryRequest {
+    return { ...this.#render(requestOptions), ...requestOptions };
   }
 
-  #render(requestHeaders: QueryRequestHeaders): QueryRequest {
+  #render(requestOptions: QueryRequestOptions): QueryRequest {
     if (this.#queryFragments.length === 1) {
       return { query: { fql: [this.#queryFragments[0]] }, arguments: {} };
     }
@@ -96,7 +96,7 @@ class TemplateQueryBuilder implements QueryBuilder {
         const arg = this.#queryArgs[i];
         let subQuery: string | QueryInterpolation;
         if (isQueryBuilder(arg)) {
-          const request = arg.toQuery(requestHeaders);
+          const request = arg.toQuery(requestOptions);
           subQuery = request.query;
           resultArgs = { ...resultArgs, ...request.arguments };
         } else {

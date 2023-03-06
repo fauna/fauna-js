@@ -39,12 +39,6 @@ export interface HTTPClient {
   request(req: HTTPRequest): Promise<HTTPResponse>;
 }
 
-// The following line is the minimum needed for Node, but requires the
-//   "./node-http2-client" module to be imported, which the browser build cannot
-// export const getDefaultHTTPClient = () => isNode() ? NodeHTTP2Client.getClient() : new FetchClient();
-
-// So here is an attempt at using dynamic imports, but esbuild is not smart
-//   enough to ignore "./node-http2-client"
 export const getDefaultHTTPClient = () => {
   if (isNode()) {
     try {
@@ -58,7 +52,7 @@ export const getDefaultHTTPClient = () => {
       // eslint-disable-next-line no-empty
       while (loading) {}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
+      // @ts-ignore We know the module has successfully loaded at this point.
       return NodeHTTP2Client.getClient();
     } catch (_) {
       return new FetchClient();

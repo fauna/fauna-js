@@ -95,8 +95,9 @@ export class Client {
   }
   /**
    * Sets the last transaction time of this client.
-   * @param time - the last transaction time to set.
-   * @throws Error if lastTxnTs is before the current lastTxn of the driver
+   * @param ts - the last transaction timestamp to set, as microseconds since
+   *   the epoch. If `ts` is less than the existing `#lastTxnTs` value, then no
+   *   change is made.
    */
   set lastTxnTs(ts: number) {
     this.#lastTxnTs = this.#lastTxnTs ? Math.max(ts, this.#lastTxnTs) : ts;

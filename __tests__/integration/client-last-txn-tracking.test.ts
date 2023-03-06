@@ -83,20 +83,19 @@ if (Collection.byName('Customers') == null) {\
     });
     expect(resultOne.txn_ts).not.toBeUndefined();
     expectedLastTxn = resultOne.txn_ts;
+    myClient.lastTxnTs = resultOne.txn_ts;
     const resultTwo = await myClient.query(
       fql`
-        if (Collection.byName('Orders') == null) {\
-          Collection.create({ name: 'Orders' })\
-        }
-      `,
-      {
-        last_txn_ts: resultOne.txn_ts,
+      if (Collection.byName('Orders') == null) {\
+        Collection.create({ name: 'Orders' })\
       }
+      `
     );
     expect(resultTwo.txn_ts).not.toBeUndefined();
     expect(resultTwo.txn_ts).not.toEqual(resultOne.txn_ts);
+    myClient.lastTxnTs = 0;
+    expectedLastTxn = resultTwo.txn_ts;
     const resultThree = await myClient.query({
-      last_txn_ts: resultOne.txn_ts,
       query:
         "\
 if (Collection.byName('Products') == null) {\

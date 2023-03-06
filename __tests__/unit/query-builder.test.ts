@@ -141,7 +141,6 @@ describe("fql method producing QueryBuilders", () => {
     const innerQueryBuilder = fql`Math.add(${num}, 3)`;
     const queryBuilder = fql`${str}.length == ${innerQueryBuilder}`;
     const queryRequest = queryBuilder.toQuery({
-      last_txn_ts: 1640995200000000,
       linearized: true,
       query_timeout_ms: 600,
       max_contention_retries: 4,
@@ -149,7 +148,6 @@ describe("fql method producing QueryBuilders", () => {
       traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00",
     });
     expect(queryRequest).toMatchObject({
-      last_txn_ts: 1640995200000000,
       linearized: true,
       query_timeout_ms: 600,
       max_contention_retries: 4,

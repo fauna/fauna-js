@@ -21,12 +21,6 @@ export interface QueryRequestHeaders {
    */
   format?: ValueFormat;
   /**
-   * The ISO-8601 timestamp of the last transaction the client has previously observed.
-   * This client will track this by default, however, if you wish to override
-   * this value for a given request set this value.
-   */
-  last_txn_ts?: number;
-  /**
    * If true, unconditionally run the query as strictly serialized.
    * This affects read-only transactions. Transactions which write
    * will always be strictly serialized.

@@ -88,7 +88,8 @@ export class Client {
    * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
    */
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  // @ts-ignore it's okay that #lastTxnTs could be undefined on get, but we want
+  //   to enforce that the user never intentionally set it to undefined.
   get lastTxnTs(): number | undefined {
     return this.#lastTxnTs;
   }
@@ -98,10 +99,7 @@ export class Client {
    * @throws Error if lastTxnTs is before the current lastTxn of the driver
    */
   set lastTxnTs(ts: number) {
-    if (this.lastTxnTs !== undefined && ts < this.lastTxnTs) {
-      throw new Error("Must be greater than current value");
-    }
-    this.#lastTxnTs = ts;
+    this.#lastTxnTs = this.#lastTxnTs ? Math.max(ts, this.#lastTxnTs) : ts;
   }
 
   /**
@@ -299,7 +297,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       if (
         [
           "format",
-          "last_txn_ts",
           "query_timeout_ms",
           "linearized",
           "max_contention_retries",
@@ -313,8 +310,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
           headerValue = Object.entries(entry[1])
             .map((tag) => tag.join("="))
             .join(",");
-        } else if ("last_txn_ts" === entry[0]) {
-          headerValue = entry[1];
         } else {
           if (typeof entry[1] === "string") {
             headerValue = entry[1];

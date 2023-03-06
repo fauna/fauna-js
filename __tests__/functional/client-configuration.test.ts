@@ -70,10 +70,9 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     const addFiveMinutes = expectedTxnTime + 5 * 60 * 1000 * 1000;
     client.lastTxnTs = addFiveMinutes;
     expect(client.lastTxnTs).toBe(addFiveMinutes);
-    // setting txn time back in history should fail
-    expect(() => {
-      client.lastTxnTs = expectedTxnTime;
-    }).toThrow();
+    // setting to the past keeps the more recent ts.
+    client.lastTxnTs = expectedTxnTime;
+    expect(client.lastTxnTs).toBe(addFiveMinutes);
   });
 
   type HeaderTestInput = {

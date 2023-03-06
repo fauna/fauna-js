@@ -29,7 +29,7 @@ const dummyStats = {
   contention_retries: 0,
 };
 
-describe("query", () => {
+describe("fetch client", () => {
   beforeAll(() => {
     fetchClient = new FetchClient();
   });

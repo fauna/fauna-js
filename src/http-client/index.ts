@@ -10,7 +10,7 @@ export { FetchClient } from "./fetch-client";
  */
 export type HTTPRequest = {
   data: QueryRequest;
-  headers: Record<string, string>;
+  headers: Record<string, string | undefined>;
   method: string;
   url: string;
 };
@@ -21,7 +21,7 @@ export type HTTPRequest = {
  */
 export type HTTPResponse = {
   body: string;
-  headers: Record<string, string | string[]>;
+  headers: Record<string, string | string[] | undefined>;
   status: number;
 };
 
@@ -39,9 +39,31 @@ export interface HTTPClient {
   request(req: HTTPRequest): Promise<HTTPResponse>;
 }
 
+// The following line is the minimum needed for Node, but requires the
+//   "./node-http2-client" module to be imported, which the browser build cannot
+// export const getDefaultHTTPClient = () => isNode() ? NodeHTTP2Client.getClient() : new FetchClient();
+
+// So here is an attempt at using dynamic imports, but esbuild is not smart
+//   enough to ignore "./node-http2-client"
 export const getDefaultHTTPClient = () => {
-  // WIP: we only have one implementation right now, but should eventually
-  // inspect the environment for the correct implementation
+  if (isNode()) {
+    try {
+      let NodeHTTP2Client;
+      let loading = true;
+      import("./node-http2-client").then((module) => {
+        NodeHTTP2Client = module.NodeHTTP2Client;
+        loading = false;
+      });
+      // spin until module is loaded
+      // eslint-disable-next-line no-empty
+      while (loading) {}
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      return NodeHTTP2Client.getClient();
+    } catch (_) {
+      return new FetchClient();
+    }
+  }
   return new FetchClient();
 };
 
@@ -49,3 +71,5 @@ export const getDefaultHTTPClient = () => {
 
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;
+
+const isNode = () => process instanceof Object && "node" in process;

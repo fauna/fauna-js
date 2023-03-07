@@ -2,6 +2,8 @@
 import type { Client } from "../client";
 import { QueryRequest } from "../wire-protocol";
 import { FetchClient } from "./fetch-client";
+import { NodeHTTP2Client } from "./node-http2-client";
+
 export { FetchClient } from "./fetch-client";
 
 /**
@@ -39,31 +41,15 @@ export interface HTTPClient {
   request(req: HTTPRequest): Promise<HTTPResponse>;
 }
 
-export const getDefaultHTTPClient = () => {
-  if (isNode()) {
-    try {
-      let NodeHTTP2Client;
-      let loading = true;
-      import("./node-http2-client").then((module) => {
-        NodeHTTP2Client = module.NodeHTTP2Client;
-        loading = false;
-      });
-      // spin until module is loaded
-      // eslint-disable-next-line no-empty
-      while (loading) {}
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore We know the module has successfully loaded at this point.
-      return NodeHTTP2Client.getClient();
-    } catch (_) {
-      return new FetchClient();
-    }
-  }
-  return new FetchClient();
-};
+export const getDefaultHTTPClient = () =>
+  isNode() ? NodeHTTP2Client.getClient() : new FetchClient();
 
 // utility functions
 
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;
 
-const isNode = () => process instanceof Object && "node" in process;
+const isNode = () =>
+  Object.prototype.toString.call(
+    typeof process !== "undefined" ? process : 0
+  ) === "[object process]";

@@ -132,8 +132,8 @@ export class TaggedTypeEncoded {
     date: (dateValue: Date): TaggedTime => ({
       "@time": dateValue.toISOString(),
     }),
-    faunadate: (value: DateStub): TaggedDate => ({ "@date": value.value }),
-    faunatime: (value: TimeStub): TaggedTime => ({ "@time": value.value }),
+    faunadate: (value: DateStub): TaggedDate => ({ "@date": value.dateString }),
+    faunatime: (value: TimeStub): TaggedTime => ({ "@time": value.isoString }),
   };
 
   constructor(input: any) {

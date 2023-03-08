@@ -13,13 +13,13 @@
  * TODO: link to beta docs for `Time` type
  */
 export class TimeStub {
-  readonly #value: string;
+  readonly #isoString: string;
 
   /**
    * @remarks constructor is private to enforce using factory functions
    */
   private constructor(isoString: string) {
-    this.#value = isoString;
+    this.#isoString = isoString;
   }
 
   /**
@@ -57,8 +57,8 @@ export class TimeStub {
   /**
    * Get the underlying string value
    */
-  get value(): string {
-    return this.#value;
+  get isoString(): string {
+    return this.#isoString;
   }
 
   /**
@@ -67,7 +67,7 @@ export class TimeStub {
    * @returns A `Date`
    */
   toDate(): Date {
-    return new Date(this.#value);
+    return new Date(this.#isoString);
   }
 
   /**
@@ -75,7 +75,7 @@ export class TimeStub {
    * @returns the string representation of the Fauna Time
    */
   toJSON(): string {
-    return this.#value;
+    return this.#isoString;
   }
 }
 
@@ -93,13 +93,13 @@ export class TimeStub {
  * TODO: link to beta docs for `Date` type
  */
 export class DateStub {
-  readonly #value: string;
+  readonly #dateString: string;
 
   /**
    * @remarks constructor is private to enforce using factory functions
    */
   private constructor(dateString: string) {
-    this.#value = dateString;
+    this.#dateString = dateString;
   }
 
   /**
@@ -143,8 +143,8 @@ export class DateStub {
   /**
    * Get the underlying string value
    */
-  get value(): string {
-    return this.#value;
+  get dateString(): string {
+    return this.#dateString;
   }
 
   /**
@@ -153,7 +153,7 @@ export class DateStub {
    * @returns A `Date`
    */
   toDate(): Date {
-    return new Date(this.#value + "T00:00:00Z");
+    return new Date(this.#dateString + "T00:00:00Z");
   }
 
   /**
@@ -161,6 +161,6 @@ export class DateStub {
    * @returns the string representation of the Fauna Time
    */
   toJSON(): string {
-    return this.#value;
+    return this.#dateString;
   }
 }

@@ -20,7 +20,7 @@ describe("values", () => {
       testCase;
       const value = TimeStub.from(input);
       expect(value).toBeInstanceOf(TimeStub);
-      expect(value.value).toBe(expected);
+      expect(value.isoString).toBe(expected);
     }
   );
 
@@ -37,7 +37,7 @@ describe("values", () => {
       testCase;
       const value = DateStub.from(input);
       expect(value).toBeInstanceOf(DateStub);
-      expect(value.value).toBe(expected);
+      expect(value.dateString).toBe(expected);
     }
   );
 
@@ -54,7 +54,7 @@ describe("values", () => {
       testCase;
       const value = TimeStub.fromDate(input);
       expect(value).toBeInstanceOf(TimeStub);
-      expect(value.value).toBe(expected);
+      expect(value.isoString).toBe(expected);
     }
   );
 
@@ -71,7 +71,7 @@ describe("values", () => {
       testCase;
       const value = DateStub.fromDate(input);
       expect(value).toBeInstanceOf(DateStub);
-      expect(value.value).toBe(expected);
+      expect(value.dateString).toBe(expected);
     }
   );
 

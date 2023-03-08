@@ -1,4 +1,4 @@
-import { FaunaDate, FaunaTime } from "./values";
+import { DateStub, TimeStub } from "./values";
 
 /** A reference to a built in Fauna module; e.g. Date */
 export type Module = string;
@@ -51,9 +51,9 @@ export class TaggedTypeFormat {
       } else if (value["@double"]) {
         return Number(value["@double"]);
       } else if (value["@date"]) {
-        return FaunaDate.from(value["@date"]);
+        return DateStub.from(value["@date"]);
       } else if (value["@time"]) {
-        return FaunaTime.from(value["@time"]);
+        return TimeStub.from(value["@time"]);
       } else if (value["@object"]) {
         return value["@object"];
       }
@@ -132,8 +132,8 @@ export class TaggedTypeEncoded {
     date: (dateValue: Date): TaggedTime => ({
       "@time": dateValue.toISOString(),
     }),
-    faunadate: (value: FaunaDate): TaggedDate => ({ "@date": value.value }),
-    faunatime: (value: FaunaTime): TaggedTime => ({ "@time": value.value }),
+    faunadate: (value: DateStub): TaggedDate => ({ "@date": value.value }),
+    faunatime: (value: TimeStub): TaggedTime => ({ "@time": value.value }),
   };
 
   constructor(input: any) {
@@ -157,9 +157,9 @@ export class TaggedTypeEncoded {
           this.result = this.#encodeMap["array"](input);
         } else if (input instanceof Date) {
           this.result = this.#encodeMap["date"](input);
-        } else if (input instanceof FaunaDate) {
+        } else if (input instanceof DateStub) {
           this.result = this.#encodeMap["faunadate"](input);
-        } else if (input instanceof FaunaTime) {
+        } else if (input instanceof TimeStub) {
           this.result = this.#encodeMap["faunatime"](input);
         } else {
           this.result = this.#encodeMap["object"](input);

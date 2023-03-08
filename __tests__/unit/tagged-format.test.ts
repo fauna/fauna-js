@@ -5,7 +5,7 @@ import {
   LONG_MIN,
   LONG_MAX,
 } from "../../src/tagged-type";
-import { FaunaDate, FaunaTime } from "../../src/values";
+import { DateStub, TimeStub } from "../../src/values";
 
 describe("tagged format", () => {
   it("can be decoded", () => {
@@ -55,18 +55,18 @@ describe("tagged format", () => {
     expect(result.bug_doc).toStrictEqual(bugs_doc);
     expect(result.name).toEqual("fir");
     expect(result.age).toEqual(200);
-    expect(result.birthdate).toBeInstanceOf(FaunaDate);
+    expect(result.birthdate).toBeInstanceOf(DateStub);
     expect(result.circumference).toEqual(3.82);
-    expect(result.created_at).toBeInstanceOf(FaunaTime);
+    expect(result.created_at).toBeInstanceOf(TimeStub);
     expect(result.extras.nest.num_sticks).toEqual(58);
     expect(result.extras.nest["@extras"].egg.fertilized).toBe(false);
     expect(result.measurements).toHaveLength(2);
     expect(result.measurements[0].id).toEqual(1);
     expect(result.measurements[0].employee).toEqual(3);
-    expect(result.measurements[0].time).toBeInstanceOf(FaunaTime);
+    expect(result.measurements[0].time).toBeInstanceOf(TimeStub);
     expect(result.measurements[1].id).toEqual(2);
     expect(result.measurements[1].employee).toEqual(5);
-    expect(result.measurements[1].time).toBeInstanceOf(FaunaTime);
+    expect(result.measurements[1].time).toBeInstanceOf(TimeStub);
     expect(result.molecules).toEqual(BigInt("999999999999999999"));
     expect(result.null).toBeNull();
     expect(result.set).toStrictEqual(set);
@@ -75,14 +75,14 @@ describe("tagged format", () => {
   it("can be encoded", () => {
     let result = JSON.stringify(
       TaggedTypeFormat.encode({
-        child: { more: { itsworking: FaunaDate.from("1983-04-15") } },
-        date: FaunaDate.from("1923-05-13"),
+        child: { more: { itsworking: DateStub.from("1983-04-15") } },
+        date: DateStub.from("1923-05-13"),
         double: 4.14,
         int: 32,
         name: "Hello, World",
         null: null,
         number: 48,
-        time: FaunaTime.from("2023-01-30T16:27:45.204243-05:00"),
+        time: TimeStub.from("2023-01-30T16:27:45.204243-05:00"),
         datetime: new Date("2023-01-30T16:27:45.204243-05:00"),
         extra: [
           {
@@ -95,7 +95,7 @@ describe("tagged format", () => {
           },
         ],
         "@foobar": {
-          date: FaunaDate.from("1888-08-08"),
+          date: DateStub.from("1888-08-08"),
         },
       })
     );
@@ -111,8 +111,8 @@ describe("tagged format", () => {
 
   it("handles conflicts", () => {
     var result = TaggedTypeFormat.encode({
-      date: { "@date": FaunaDate.from("2022-11-01") },
-      time: { "@time": FaunaTime.from("2022-11-02T05:00:00.000Z") },
+      date: { "@date": DateStub.from("2022-11-01") },
+      time: { "@time": TimeStub.from("2022-11-02T05:00:00.000Z") },
       int: { "@int": 1 },
       long: { "@long": BigInt("99999999999999999") },
       double: { "@double": 1.99 },

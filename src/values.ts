@@ -5,14 +5,14 @@
  * @remarks The Javascript `Date` type most closely resembles a Fauna `Time`,
  * not a Fauna `Date`. However, Fauna stores `Time` values with nanosecond
  * precision, while Javascript `Date` values only have millisecond precision.
- * This FaunaTime class preserves precision by storing the original string value
+ * This TimeStub class preserves precision by storing the original string value
  * and should be used whenever possible to pass `Time` values back to Fauna.
  * Converting to a Javascript date before sending to Fauna could result in loss
  * of precision.
  *
  * TODO: link to beta docs for `Time` type
  */
-export class FaunaTime {
+export class TimeStub {
   readonly #value: string;
 
   /**
@@ -23,13 +23,13 @@ export class FaunaTime {
   }
 
   /**
-   * Creates a new {@link FaunaTime} from an ISO date string
+   * Creates a new {@link TimeStub} from an ISO date string
    * @param item - An ISO date string.
-   * @returns A new {@link FaunaTime}
+   * @returns A new {@link TimeStub}
    * @throws TypeError if a string is not provided, or RangeError if item
    * is not a valid date
    */
-  static from(item: string): FaunaTime {
+  static from(item: string): TimeStub {
     if (typeof item !== "string") {
       throw new TypeError(
         `Expected string but received ${typeof item}: ${item}`
@@ -42,16 +42,16 @@ export class FaunaTime {
       );
     }
 
-    return new FaunaTime(item);
+    return new TimeStub(item);
   }
 
   /**
-   * Creates a new {@link FaunaTime} from a Javascript `Date`
+   * Creates a new {@link TimeStub} from a Javascript `Date`
    * @param isoString - A Javascript `Date`
-   * @returns A new {@link FaunaTime}
+   * @returns A new {@link TimeStub}
    */
-  static fromDate(date: Date): FaunaTime {
-    return new FaunaTime(date.toISOString());
+  static fromDate(date: Date): TimeStub {
+    return new TimeStub(date.toISOString());
   }
 
   /**
@@ -62,8 +62,8 @@ export class FaunaTime {
   }
 
   /**
-   * Get a copy of the `FaunaTime` converted to a Javascript `Date`. Does not
-   * mutate the existing `FaunaTime` value.
+   * Get a copy of the `TimeStub` converted to a Javascript `Date`. Does not
+   * mutate the existing `TimeStub` value.
    * @returns A `Date`
    */
   toDate(): Date {
@@ -92,7 +92,7 @@ export class FaunaTime {
  *
  * TODO: link to beta docs for `Date` type
  */
-export class FaunaDate {
+export class DateStub {
   readonly #value: string;
 
   /**
@@ -103,14 +103,14 @@ export class FaunaDate {
   }
 
   /**
-   * Creates a new {@link FaunaDate} from a date string
+   * Creates a new {@link DateStub} from a date string
    * @param item - A date string. The time is converted to UTC before saving the
    * date.
-   * @returns A new {@link FaunaDate}
+   * @returns A new {@link DateStub}
    * @throws TypeError if a string is not provided, or RangeError if item
    * is not a valid date
    */
-  static from(item: string): FaunaDate {
+  static from(item: string): DateStub {
     if (typeof item !== "string") {
       throw new TypeError(
         `Expected string but received ${typeof item}: ${item}`
@@ -123,21 +123,21 @@ export class FaunaDate {
       );
     }
 
-    return new FaunaDate(validatedDate.toISOString().slice(0, 10));
+    return new DateStub(validatedDate.toISOString().slice(0, 10));
   }
 
   /**
-   * Creates a new {@link FaunaDate} from a Javascript `Date`
+   * Creates a new {@link DateStub} from a Javascript `Date`
    * @param isoString - A Javascript `Date`. The time is converted to UTC before
    * saving the date.
-   * @returns A new {@link FaunaDate}
+   * @returns A new {@link DateStub}
    */
-  static fromDate(date: Date): FaunaDate {
+  static fromDate(date: Date): DateStub {
     if (!(date instanceof Date)) {
       throw new TypeError(`Expected Date but received ${typeof date}: ${date}`);
     }
 
-    return new FaunaDate(date.toISOString().slice(0, 10));
+    return new DateStub(date.toISOString().slice(0, 10));
   }
 
   /**
@@ -148,8 +148,8 @@ export class FaunaDate {
   }
 
   /**
-   * Get a copy of the `FaunaTime` converted to a Javascript `Date`. Does not
-   * mutate the existing `FaunaTime` value.
+   * Get a copy of the `TimeStub` converted to a Javascript `Date`. Does not
+   * mutate the existing `TimeStub` value.
    * @returns A `Date`
    */
   toDate(): Date {

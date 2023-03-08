@@ -1,4 +1,4 @@
-import { FaunaDate, FaunaTime } from "../../src/values";
+import { DateStub, TimeStub } from "../../src/values";
 
 type TestCase<I, O> = {
   input: I;
@@ -15,11 +15,11 @@ describe("values", () => {
     ${"2023-03-08T00:00:00"}       | ${"2023-03-08T00:00:00"}       | ${"no timezone"}
     ${"2023-03-08"}                | ${"2023-03-08"}                | ${"no time"}
   `(
-    "can construct FaunaTime from strings: $testCase",
+    "can construct TimeStub from strings: $testCase",
     async ({ input, expected, testCase }: TestCase<string, string>) => {
       testCase;
-      const value = FaunaTime.from(input);
-      expect(value).toBeInstanceOf(FaunaTime);
+      const value = TimeStub.from(input);
+      expect(value).toBeInstanceOf(TimeStub);
       expect(value.value).toBe(expected);
     }
   );
@@ -32,11 +32,11 @@ describe("values", () => {
     ${"2023-03-08T00:00:00"}       | ${"2023-03-08"} | ${"no timezone"}
     ${"2023-03-08"}                | ${"2023-03-08"} | ${"no time"}
   `(
-    "can construct FaunaDate from strings: $testCase",
+    "can construct DateStub from strings: $testCase",
     async ({ input, expected, testCase }: TestCase<string, string>) => {
       testCase;
-      const value = FaunaDate.from(input);
-      expect(value).toBeInstanceOf(FaunaDate);
+      const value = DateStub.from(input);
+      expect(value).toBeInstanceOf(DateStub);
       expect(value.value).toBe(expected);
     }
   );
@@ -49,11 +49,11 @@ describe("values", () => {
     ${new Date("2023-03-08T00:00:00")}       | ${new Date("2023-03-08T00:00:00").toISOString()} | ${"no timezone"}
     ${new Date("2023-03-08")}                | ${"2023-03-08T00:00:00.000Z"}                    | ${"no time"}
   `(
-    "can construct FaunaTime from Date: $testCase",
+    "can construct TimeStub from Date: $testCase",
     async ({ input, expected, testCase }: TestCase<Date, string>) => {
       testCase;
-      const value = FaunaTime.fromDate(input);
-      expect(value).toBeInstanceOf(FaunaTime);
+      const value = TimeStub.fromDate(input);
+      expect(value).toBeInstanceOf(TimeStub);
       expect(value.value).toBe(expected);
     }
   );
@@ -66,25 +66,25 @@ describe("values", () => {
     ${new Date("2023-03-08T00:00:00")}       | ${new Date("2023-03-08T00:00:00").toISOString().slice(0, 10)} | ${"no timezone"}
     ${new Date("2023-03-08")}                | ${"2023-03-08"}                                               | ${"no time"}
   `(
-    "can construct FaunaDate from Date: $testCase",
+    "can construct DateStub from Date: $testCase",
     async ({ input, expected, testCase }: TestCase<Date, string>) => {
       testCase;
-      const value = FaunaDate.fromDate(input);
-      expect(value).toBeInstanceOf(FaunaDate);
+      const value = DateStub.fromDate(input);
+      expect(value).toBeInstanceOf(DateStub);
       expect(value.value).toBe(expected);
     }
   );
 
   it.each`
-    input                                          | expected                                | testCase
-    ${FaunaTime.from("2023-03-08T00:00:00Z")}      | ${new Date("2023-03-08T00:00:00.000Z")} | ${"Z"}
-    ${FaunaTime.from("2023-03-07T16:00:00-08:00")} | ${new Date("2023-03-08T00:00:00.000Z")} | ${"- timezone"}
-    ${FaunaTime.from("2023-03-09T02:00:00+08:00")} | ${new Date("2023-03-08T18:00:00.000Z")} | ${"+ timezone"}
-    ${FaunaTime.from("2023-03-08T00:00:00")}       | ${new Date("2023-03-08T00:00:00")}      | ${"no timezone"}
-    ${FaunaTime.from("2023-03-08")}                | ${new Date("2023-03-08T00:00:00.000Z")} | ${"no time"}
+    input                                         | expected                                | testCase
+    ${TimeStub.from("2023-03-08T00:00:00Z")}      | ${new Date("2023-03-08T00:00:00.000Z")} | ${"Z"}
+    ${TimeStub.from("2023-03-07T16:00:00-08:00")} | ${new Date("2023-03-08T00:00:00.000Z")} | ${"- timezone"}
+    ${TimeStub.from("2023-03-09T02:00:00+08:00")} | ${new Date("2023-03-08T18:00:00.000Z")} | ${"+ timezone"}
+    ${TimeStub.from("2023-03-08T00:00:00")}       | ${new Date("2023-03-08T00:00:00")}      | ${"no timezone"}
+    ${TimeStub.from("2023-03-08")}                | ${new Date("2023-03-08T00:00:00.000Z")} | ${"no time"}
   `(
-    "can deconstruct FaunaTime into a Date: $testCase",
-    async ({ input, expected, testCase }: TestCase<FaunaTime, Date>) => {
+    "can deconstruct TimeStub into a Date: $testCase",
+    async ({ input, expected, testCase }: TestCase<TimeStub, Date>) => {
       testCase;
       const date = input.toDate();
       expect(date).toEqual(expected);
@@ -92,15 +92,15 @@ describe("values", () => {
   );
 
   it.each`
-    input                                          | expected                                | testCase
-    ${FaunaDate.from("2023-03-08T00:00:00Z")}      | ${new Date("2023-03-08T00:00:00.000Z")} | ${"Z"}
-    ${FaunaDate.from("2023-03-07T16:00:00-08:00")} | ${new Date("2023-03-08T00:00:00.000Z")} | ${"- timezone"}
-    ${FaunaDate.from("2023-03-09T02:00:00+08:00")} | ${new Date("2023-03-08T00:00:00.000Z")} | ${"+ timezone"}
-    ${FaunaDate.from("2023-03-08T00:00:00")}       | ${new Date("2023-03-08T00:00:00.000Z")} | ${"no timezone"}
-    ${FaunaDate.from("2023-03-08")}                | ${new Date("2023-03-08T00:00:00.000Z")} | ${"no time"}
+    input                                         | expected                                | testCase
+    ${DateStub.from("2023-03-08T00:00:00Z")}      | ${new Date("2023-03-08T00:00:00.000Z")} | ${"Z"}
+    ${DateStub.from("2023-03-07T16:00:00-08:00")} | ${new Date("2023-03-08T00:00:00.000Z")} | ${"- timezone"}
+    ${DateStub.from("2023-03-09T02:00:00+08:00")} | ${new Date("2023-03-08T00:00:00.000Z")} | ${"+ timezone"}
+    ${DateStub.from("2023-03-08T00:00:00")}       | ${new Date("2023-03-08T00:00:00.000Z")} | ${"no timezone"}
+    ${DateStub.from("2023-03-08")}                | ${new Date("2023-03-08T00:00:00.000Z")} | ${"no time"}
   `(
-    "can deconstruct FaunaDate into a Date: $testCase",
-    async ({ input, expected, testCase }: TestCase<FaunaDate, Date>) => {
+    "can deconstruct DateStub into a Date: $testCase",
+    async ({ input, expected, testCase }: TestCase<DateStub, Date>) => {
       testCase;
       const date = input.toDate();
       expect(date).toEqual(expected);

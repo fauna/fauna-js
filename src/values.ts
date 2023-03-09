@@ -73,7 +73,13 @@ export class TimeStub {
    * @returns A `Date`
    */
   toDate(): Date {
-    return new Date(this.#isoString);
+    const date = new Date(this.#isoString);
+    if (date.toString() === "Invalid Date") {
+      throw new RangeError(
+        "Fauna Date could not be converted to Javascript Date"
+      );
+    }
+    return date;
   }
 
   /**
@@ -169,7 +175,13 @@ export class DateStub {
    * @returns A `Date`
    */
   toDate(): Date {
-    return new Date(this.#dateString + "T00:00:00Z");
+    const date = new Date(this.#dateString + "T00:00:00Z");
+    if (date.toString() === "Invalid Date") {
+      throw new RangeError(
+        "Fauna Date could not be converted to Javascript Date"
+      );
+    }
+    return date;
   }
 
   /**

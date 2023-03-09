@@ -18,7 +18,9 @@ describe("tagged format", () => {
   it("can be decoded", () => {
     const allTypes: string = `{
       "bugs_coll": { "@mod": "Bugs" },
-      "bug": { "@doc": "Bugs:123" },
+      "bug_ref_string": { "@doc": "Bugs:123" },
+      "bug_ref_object": { "@ref": { "coll": "Bugs", "id": "123" } },
+      "bug_doc": { "@doc": { "coll": "Bugs", "id": "123" } },
       "name": "fir",
       "age": { "@int": "200" },
       "birthdate": { "@date": "1823-02-08" },
@@ -45,15 +47,19 @@ describe("tagged format", () => {
         }
       ],
       "molecules": { "@long": "999999999999999999" },
-      "null": null
+      "null": null,
+      "set": { "@set": { "data": ["a", "b"] } }
     }`;
 
     const bugs_mod: Module = "Bugs";
-    const bugs_doc: DocumentReference = "Bugs:123";
+    const bugs_doc: DocumentReference = { coll: "Bugs", id: "123" };
+    const set = { data: ["a", "b"] };
 
     const result = TaggedTypeFormat.decode(allTypes);
     expect(result.bugs_coll).toBe(bugs_mod);
-    expect(result.bug).toBe(bugs_doc);
+    expect(result.bug_ref_string).toStrictEqual(bugs_doc);
+    expect(result.bug_ref_object).toStrictEqual(bugs_doc);
+    expect(result.bug_doc).toStrictEqual(bugs_doc);
     expect(result.name).toEqual("fir");
     expect(result.age).toEqual(200);
     expect(result.birthdate).toBeInstanceOf(Date);
@@ -70,6 +76,7 @@ describe("tagged format", () => {
     expect(result.measurements[1].time).toBeInstanceOf(Date);
     expect(result.molecules).toEqual(BigInt("999999999999999999"));
     expect(result.null).toBeNull();
+    expect(result.set).toStrictEqual(set);
   });
 
   it("can be encoded", () => {

@@ -1,7 +1,10 @@
 /** A reference to a built in Fauna module; e.g. Date */
 export type Module = string;
 /** A reference to a document in Fauna */
-export type DocumentReference = string;
+export type DocumentReference = {
+  coll: Module;
+  id: string;
+};
 
 /**
  * TaggedType provides the encoding/decoding of the Fauna Tagged Type formatting
@@ -29,7 +32,16 @@ export class TaggedTypeFormat {
       if (value["@mod"]) {
         return value["@mod"] as Module;
       } else if (value["@doc"]) {
-        return value["@doc"] as DocumentReference;
+        if (typeof value["@doc"] === "string") {
+          const [modName, id] = value["@doc"].split(":");
+          return { coll: modName, id: id } as DocumentReference;
+        }
+        // if not a docref string, then it is an object.
+        return value["@doc"];
+      } else if (value["@ref"]) {
+        return value["@ref"] as DocumentReference;
+      } else if (value["@set"]) {
+        return value["@set"];
       } else if (value["@int"]) {
         return Number(value["@int"]);
       } else if (value["@long"]) {

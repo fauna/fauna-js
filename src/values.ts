@@ -1,3 +1,6 @@
+import { parse } from "path";
+import { ClientError } from "./errors";
+import * as PARSE from "./regex";
 /**
  * An wrapper around the Fauna `Time` type. It, represents a fixed point in time
  * without regard to calendar or location, e.g. July 20, 1969, at 20:17 UTC.
@@ -24,30 +27,33 @@ export class TimeStub {
 
   /**
    * Creates a new {@link TimeStub} from an ISO date string
-   * @param item - An ISO date string.
+   * @param isoString - An ISO date string.
    * @returns A new {@link TimeStub}
    * @throws TypeError if a string is not provided, or RangeError if item
    * is not a valid date
    */
-  static from(item: string): TimeStub {
-    if (typeof item !== "string") {
+  static from(isoString: string): TimeStub {
+    if (typeof isoString !== "string") {
       throw new TypeError(
-        `Expected string but received ${typeof item}: ${item}`
+        `Expected string but received ${typeof isoString}: ${isoString}`
       );
     }
-    const validatedDate = new Date(item);
-    if (validatedDate.toString() === "Invalid Date") {
+    const matches = PARSE.datetime.exec(isoString);
+    if (matches === null) {
       throw new RangeError(
-        `Expected a valid date string but received '${item}'`
+        `(regex) Expected an ISO date string but received '${isoString}'`
       );
     }
+    // There are some dates that match the regex but are invalid, such as Feb 31.
+    // Javascript does not parse all years that are valid in fauna, so let
+    // Fauna be the final check.
 
-    return new TimeStub(item);
+    return new TimeStub(isoString);
   }
 
   /**
    * Creates a new {@link TimeStub} from a Javascript `Date`
-   * @param isoString - A Javascript `Date`
+   * @param date - A Javascript `Date`
    * @returns A new {@link TimeStub}
    */
   static fromDate(date: Date): TimeStub {
@@ -104,31 +110,34 @@ export class DateStub {
 
   /**
    * Creates a new {@link DateStub} from a date string
-   * @param item - A date string. The time is converted to UTC before saving the
-   * date.
+   * @param dateString - A plain date string. The time is converted to UTC
+   * before saving the date.
    * @returns A new {@link DateStub}
-   * @throws TypeError if a string is not provided, or RangeError if item
+   * @throws TypeError if a string is not provided, or RangeError if dateString
    * is not a valid date
    */
-  static from(item: string): DateStub {
-    if (typeof item !== "string") {
+  static from(dateString: string): DateStub {
+    if (typeof dateString !== "string") {
       throw new TypeError(
-        `Expected string but received ${typeof item}: ${item}`
+        `Expected string but received ${typeof dateString}: ${dateString}`
       );
     }
-    const validatedDate = new Date(item);
-    if (validatedDate.toString() === "Invalid Date") {
+    const matches = PARSE.plaindate.exec(dateString);
+    if (matches === null) {
       throw new RangeError(
-        `Expected a valid date string but received '${item}'`
+        `Expected a plain date string but received '${dateString}'`
       );
     }
+    // There are some dates that match the regex but are invalid, such as Feb 31.
+    // Javascript does not parse all years that are valid in fauna, so let
+    // Fauna be the final check.
 
-    return new DateStub(validatedDate.toISOString().slice(0, 10));
+    return new DateStub(matches[0]);
   }
 
   /**
    * Creates a new {@link DateStub} from a Javascript `Date`
-   * @param isoString - A Javascript `Date`. The time is converted to UTC before
+   * @param date - A Javascript `Date`. The time is converted to UTC before
    * saving the date.
    * @returns A new {@link DateStub}
    */
@@ -136,8 +145,15 @@ export class DateStub {
     if (!(date instanceof Date)) {
       throw new TypeError(`Expected Date but received ${typeof date}: ${date}`);
     }
-
-    return new DateStub(date.toISOString().slice(0, 10));
+    const dateString = date.toISOString();
+    const matches = PARSE.startsWithPlaindate.exec(dateString);
+    if (matches === null) {
+      // Our regex should match any possible date that comes out of
+      // `Date.toISOString()`, so we will only get here if the regex is
+      // incorrect. This is a ClientError since it is our fault.
+      throw new ClientError(`Failed to parse date '${date}'`, { cause: null });
+    }
+    return new DateStub(matches[0]);
   }
 
   /**

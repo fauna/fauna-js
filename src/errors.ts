@@ -167,7 +167,7 @@ export class ServiceTimeoutError extends ServiceError {
  * prior to sending the request.
  */
 export class ClientError extends Error {
-  constructor(message: string, options: { cause: any }) {
+  constructor(message: string, options?: { cause: any }) {
     super(message, options);
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {

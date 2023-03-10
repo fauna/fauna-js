@@ -19,8 +19,8 @@ describe("tagged format", () => {
     const allTypes: string = `{
       "bugs_coll": { "@mod": "Bugs" },
       "bug_ref_string": { "@doc": "Bugs:123" },
-      "bug_ref_object": { "@ref": { "coll": "Bugs", "id": "123" } },
-      "bug_doc": { "@doc": { "coll": "Bugs", "id": "123" } },
+      "bug_ref_object": { "@ref": { "coll": { "@mod": "Bugs" }, "id": "123" } },
+      "bug_doc": { "@doc": { "coll": { "@mod": "Bugs" }, "id": "123" } },
       "name": "fir",
       "age": { "@int": "200" },
       "birthdate": { "@date": "1823-02-08" },

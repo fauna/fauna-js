@@ -17,14 +17,13 @@ export type ClientConfiguration = SharedOptions & {
   secret: string;
 };
 
-export type QueryRequestOptions = SharedOptions & {
-  /**
-   * The ISO-8601 timestamp of the last transaction the client has previously observed.
-   * This client will track this by default, however, if you wish to override
-   * this value for a given request set this value.
-   */
-  last_txn_ts?: number;
-};
+/**
+ * Query options that are not also statically configurable in the client
+ *
+ * TODO: add any other possible configuration options. On possibility is
+ * allowing users to pass in query arguments without using a QueryBuilder here.
+ */
+export type QueryRequestOptions = SharedOptions;
 
 /** tagged declares that type information is transmitted and received by the driver. "simple" indicates it is not. */
 export type ValueFormat = "simple" | "tagged";

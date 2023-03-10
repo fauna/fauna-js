@@ -60,7 +60,7 @@ if (Collection.byName('Products') == null) {\
         if (expectedLastTxn === undefined) {
           expect(req.headers["x-last-txn-ts"]).toBeUndefined();
         } else {
-          expect(req.headers["x-last-txn-ts"]).toEqual(String(expectedLastTxn));
+          expect(req.headers["x-last-txn-ts"]).toEqual(expectedLastTxn);
         }
         return getDefaultHTTPClient().request(req);
       },

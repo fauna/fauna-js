@@ -4,6 +4,10 @@ import * as PARSE from "./regex";
 /**
  * An wrapper around the Fauna `Time` type. It, represents a fixed point in time
  * without regard to calendar or location, e.g. July 20, 1969, at 20:17 UTC.
+ * Convert to and from Javascript Date's with the {@link TimeStub.fromDate} and
+ * {@link TimeStub.toDate} methods.
+ * See remarks for possible precision loss when doing this. If precision loss is
+ * a concern consider using a 3rd party datetime library such as luxon.
  *
  * @remarks The Javascript `Date` type most closely resembles a Fauna `Time`,
  * not a Fauna `Date`. However, Fauna stores `Time` values with nanosecond
@@ -13,16 +17,16 @@ import * as PARSE from "./regex";
  * Converting to a Javascript date before sending to Fauna could result in loss
  * of precision.
  *
- * TODO: link to beta docs for `Time` type
+ * @see {@link https://deploy-preview-1272--fauna-docs.netlify.app/fqlx/beta/reference/builtin_functions/time/time}
  */
 export class TimeStub {
-  readonly #isoString: string;
+  readonly isoString: string;
 
   /**
    * @remarks constructor is private to enforce using factory functions
    */
   private constructor(isoString: string) {
-    this.#isoString = isoString;
+    this.isoString = isoString;
   }
 
   /**
@@ -61,19 +65,12 @@ export class TimeStub {
   }
 
   /**
-   * Get the underlying string value
-   */
-  get isoString(): string {
-    return this.#isoString;
-  }
-
-  /**
    * Get a copy of the `TimeStub` converted to a Javascript `Date`. Does not
    * mutate the existing `TimeStub` value.
    * @returns A `Date`
    */
   toDate(): Date {
-    const date = new Date(this.#isoString);
+    const date = new Date(this.isoString);
     if (date.toString() === "Invalid Date") {
       throw new RangeError(
         "Fauna Date could not be converted to Javascript Date"
@@ -83,17 +80,22 @@ export class TimeStub {
   }
 
   /**
-   * Override default JSON output
-   * @returns the string representation of the Fauna Time
+   * Override default string conversion
+   * @returns the string representation of a `TimeStub`
    */
-  toJSON(): string {
-    return this.#isoString;
+  toString(): string {
+    return `TimeStub("${this.isoString}")`;
   }
 }
 
 /**
  * A wrapper aroud the Fauna `Date` type. It represents a calendar date that is
  * not associated with a particular time or time zone, e.g. August 24th, 2006.
+ * Convert to and from Javascript Date's with the {@link DateStub.fromDate} and
+ * {@link DateStub.toDate} methods. Javascript Dates are rendered in UTC time
+ * before the date part is used.
+ * See remarks for possible precision loss when doing this. If precision loss is
+ * a concern consider using a 3rd party datetime library such as luxon.
  *
  * @remarks The Javascript `Date` type always has a time associated with it, but
  * Fauna's `Date` type does not. When converting from a Fauna `Date` to a
@@ -102,16 +104,16 @@ export class TimeStub {
  * be taken to specify the desired date, since Javascript `Date`s use local
  * timezone info by default.
  *
- * TODO: link to beta docs for `Date` type
+ * @see {@link https://deploy-preview-1272--fauna-docs.netlify.app/fqlx/beta/reference/builtin_functions/date/date}
  */
 export class DateStub {
-  readonly #dateString: string;
+  readonly dateString: string;
 
   /**
    * @remarks constructor is private to enforce using factory functions
    */
   private constructor(dateString: string) {
-    this.#dateString = dateString;
+    this.dateString = dateString;
   }
 
   /**
@@ -148,25 +150,15 @@ export class DateStub {
    * @returns A new {@link DateStub}
    */
   static fromDate(date: Date): DateStub {
-    if (!(date instanceof Date)) {
-      throw new TypeError(`Expected Date but received ${typeof date}: ${date}`);
-    }
     const dateString = date.toISOString();
     const matches = PARSE.startsWithPlaindate.exec(dateString);
     if (matches === null) {
       // Our regex should match any possible date that comes out of
       // `Date.toISOString()`, so we will only get here if the regex is
       // incorrect. This is a ClientError since it is our fault.
-      throw new ClientError(`Failed to parse date '${date}'`, { cause: null });
+      throw new ClientError(`Failed to parse date '${date}'`);
     }
     return new DateStub(matches[0]);
-  }
-
-  /**
-   * Get the underlying string value
-   */
-  get dateString(): string {
-    return this.#dateString;
   }
 
   /**
@@ -175,7 +167,7 @@ export class DateStub {
    * @returns A `Date`
    */
   toDate(): Date {
-    const date = new Date(this.#dateString + "T00:00:00Z");
+    const date = new Date(this.dateString + "T00:00:00Z");
     if (date.toString() === "Invalid Date") {
       throw new RangeError(
         "Fauna Date could not be converted to Javascript Date"
@@ -185,10 +177,10 @@ export class DateStub {
   }
 
   /**
-   * Override default JSON output
-   * @returns the string representation of the Fauna Time
+   * Override default string conversion
+   * @returns the string representation of a `DateStub`
    */
-  toJSON(): string {
-    return this.#dateString;
+  toString(): string {
+    return `DateStub("${this.dateString}")`;
   }
 }

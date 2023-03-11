@@ -1,4 +1,3 @@
-import { getClient } from "../client";
 import {
   TaggedTypeFormat,
   DocumentReference,
@@ -6,13 +5,7 @@ import {
   LONG_MIN,
   LONG_MAX,
 } from "../../src/tagged-type";
-import { fql } from "../../src/query-builder";
-import { ClientError } from "../../src/errors";
-
-const client = getClient({
-  max_conns: 5,
-  query_timeout_ms: 60_000,
-});
+import { DateStub, TimeStub } from "../../src/values";
 
 describe("tagged format", () => {
   it("can be decoded", () => {
@@ -62,18 +55,18 @@ describe("tagged format", () => {
     expect(result.bug_doc).toStrictEqual(bugs_doc);
     expect(result.name).toEqual("fir");
     expect(result.age).toEqual(200);
-    expect(result.birthdate).toBeInstanceOf(Date);
+    expect(result.birthdate).toBeInstanceOf(DateStub);
     expect(result.circumference).toEqual(3.82);
-    expect(result.created_at).toBeInstanceOf(Date);
+    expect(result.created_at).toBeInstanceOf(TimeStub);
     expect(result.extras.nest.num_sticks).toEqual(58);
     expect(result.extras.nest["@extras"].egg.fertilized).toBe(false);
     expect(result.measurements).toHaveLength(2);
     expect(result.measurements[0].id).toEqual(1);
     expect(result.measurements[0].employee).toEqual(3);
-    expect(result.measurements[0].time).toBeInstanceOf(Date);
+    expect(result.measurements[0].time).toBeInstanceOf(TimeStub);
     expect(result.measurements[1].id).toEqual(2);
     expect(result.measurements[1].employee).toEqual(5);
-    expect(result.measurements[1].time).toBeInstanceOf(Date);
+    expect(result.measurements[1].time).toBeInstanceOf(TimeStub);
     expect(result.molecules).toEqual(BigInt("999999999999999999"));
     expect(result.null).toBeNull();
     expect(result.set).toStrictEqual(set);
@@ -82,14 +75,15 @@ describe("tagged format", () => {
   it("can be encoded", () => {
     let result = JSON.stringify(
       TaggedTypeFormat.encode({
-        child: { more: { itsworking: new Date("1983-04-15") } },
-        date: new Date("1923-05-13"),
+        child: { more: { itsworking: DateStub.from("1983-04-15") } },
+        date: DateStub.from("1923-05-13"),
         double: 4.14,
         int: 32,
         name: "Hello, World",
         null: null,
         number: 48,
-        time: new Date("2023-01-30T16:27:45.204243-05:00"),
+        time: TimeStub.from("2023-01-30T16:27:45.204243-05:00"),
+        datetime: new Date("2023-01-30T16:27:45.204243-05:00"),
         extra: [
           {
             id: 1,
@@ -101,7 +95,7 @@ describe("tagged format", () => {
           },
         ],
         "@foobar": {
-          date: new Date("1888-08-08"),
+          date: DateStub.from("1888-08-08"),
         },
       })
     );
@@ -117,8 +111,8 @@ describe("tagged format", () => {
 
   it("handles conflicts", () => {
     var result = TaggedTypeFormat.encode({
-      date: { "@date": new Date("2022-11-01T00:00:00.000Z") },
-      time: { "@time": new Date("2022-11-02T05:00:00.000Z") },
+      date: { "@date": DateStub.from("2022-11-01") },
+      time: { "@time": TimeStub.from("2022-11-02T05:00:00.000Z") },
       int: { "@int": 1 },
       long: { "@long": BigInt("99999999999999999") },
       double: { "@double": 1.99 },
@@ -190,9 +184,9 @@ describe("tagged format", () => {
       const encoded = TaggedTypeFormat.encode(input);
       const encodedKey = Object.keys(encoded)[0];
       expect(encodedKey).toEqual(tag);
-      const result = await client.query(fql`${input}`);
-      expect(typeof result.data).toEqual(expectedType);
-      expect(result.data.toString()).toEqual(expected.toString());
+      const decoded = TaggedTypeFormat.decode(JSON.stringify(encoded));
+      expect(typeof decoded).toBe(expectedType);
+      expect(decoded).toEqual(expected);
     }
   );
 
@@ -203,17 +197,6 @@ describe("tagged format", () => {
     ${Number.NEGATIVE_INFINITY} | ${"NEGATIVE_INFINITY"}
     ${Number.POSITIVE_INFINITY} | ${"POSITIVE_INFINITY"}
   `("Throws if BigInt value is $testCase", async ({ input }) => {
-    expect.assertions(2);
-    try {
-      const result = await client.query({
-        query: "foo",
-        arguments: { foo: input },
-      });
-    } catch (e) {
-      if (e instanceof ClientError) {
-        expect(e.cause).toBeDefined();
-        expect(e.cause).toBeInstanceOf(RangeError);
-      }
-    }
+    expect(() => TaggedTypeFormat.encode(input)).toThrow();
   });
 });

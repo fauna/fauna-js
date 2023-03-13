@@ -1,10 +1,6 @@
-import { env } from "process";
 import { getClient } from "../client";
 import { Client } from "../../src/client";
-import {
-  type ClientConfiguration,
-  endpoints,
-} from "../../src/client-configuration";
+import { type ClientConfiguration } from "../../src/client-configuration";
 import {
   AuthenticationError,
   ClientError,
@@ -177,6 +173,31 @@ describe.each`
         expect(e.httpStatus).toEqual(400);
         expect(e.code).toEqual("invalid_argument");
         expect(e.summary).toBeDefined();
+      }
+    }
+  });
+
+  it("Includes constraint failures when present", async () => {
+    expect.assertions(3);
+    try {
+      await doQuery<number>(
+        queryType,
+        getTsa`Function.create({"name": "double", "body": "x => x * 2"`,
+        'Function.create({"name": "double", "body": "x => x * 2"',
+        client
+      );
+    } catch (e) {
+      if (e instanceof QueryRuntimeError) {
+        expect(e.httpStatus).toEqual(400);
+        expect(e.code).toEqual("constraint_failure");
+        expect(e.summary).toBeDefined();
+        if (e.constraint_failures !== undefined) {
+          expect(e.constraint_failures.length).toEqual(1);
+          for (let constraintFailure of e.constraint_failures) {
+            expect(constraintFailure.message).toBeDefined();
+            expect(constraintFailure.paths).toBeDefined();
+          }
+        }
       }
     }
   });

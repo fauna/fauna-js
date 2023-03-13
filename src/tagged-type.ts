@@ -1,4 +1,5 @@
 import { DateStub, TimeStub } from "./values";
+import { JSONObject, JSONValue } from "./wire-protocol";
 
 /** A reference to a built in Fauna module; e.g. Date */
 export type Module = string;
@@ -19,7 +20,7 @@ export class TaggedTypeFormat {
    * @returns Map of result
    */
   static encode(obj: any): any {
-    return new TaggedTypeEncoded(obj).result;
+    return encode(obj);
   }
 
   /**
@@ -73,98 +74,90 @@ type TaggedTime = { "@time": string };
 export const LONG_MIN = BigInt("-9223372036854775808");
 export const LONG_MAX = BigInt("9223372036854775807");
 
-export class TaggedTypeEncoded {
-  readonly result: any;
-
-  readonly #encodeMap = {
-    bigint: (value: bigint): TaggedLong => {
-      if (value < LONG_MIN || value > LONG_MAX) {
-        throw new RangeError(
-          "Precision loss when converting BigInt to Fauna type"
-        );
-      }
-
-      return {
-        "@long": value.toString(),
-      };
-    },
-    number: (value: number): TaggedDouble | TaggedInt | TaggedLong => {
-      if (
-        value === Number.POSITIVE_INFINITY ||
-        value === Number.NEGATIVE_INFINITY
-      ) {
-        throw new RangeError(`Cannot convert ${value} to a Fauna type.`);
-      }
-
-      if (`${value}`.includes(".")) {
-        return { "@double": value.toString() };
-      } else {
-        if (value >= -(2 ** 31) && value <= 2 ** 31 - 1) {
-          return { "@int": value.toString() };
-        } else if (Number.isSafeInteger(value)) {
-          return {
-            "@long": value.toString(),
-          };
-        }
-        return { "@double": value.toString() };
-      }
-    },
-    string: (value: string): string => {
-      return value;
-    },
-    object: (input: any): TaggedObject | Record<string, any> => {
-      let wrapped = false;
-      const _out: Record<string, any> = {};
-
-      for (const k in input) {
-        if (k.startsWith("@")) {
-          wrapped = true;
-        }
-        _out[k] = TaggedTypeFormat.encode(input[k]);
-      }
-      return wrapped ? { "@object": _out } : _out;
-    },
-    array: (input: Array<any>): Array<any> => {
-      const _out: any = [];
-      for (const i in input) _out.push(TaggedTypeFormat.encode(input[i]));
-      return _out;
-    },
-    date: (dateValue: Date): TaggedTime => ({
-      "@time": dateValue.toISOString(),
-    }),
-    faunadate: (value: DateStub): TaggedDate => ({ "@date": value.dateString }),
-    faunatime: (value: TimeStub): TaggedTime => ({ "@time": value.isoString }),
-  };
-
-  constructor(input: any) {
-    // default to encoding directly as the input
-    this.result = input;
-
-    switch (typeof input) {
-      case "bigint":
-        this.result = this.#encodeMap["bigint"](input);
-        break;
-      case "string":
-        this.result = this.#encodeMap["string"](input);
-        break;
-      case "number":
-        this.result = this.#encodeMap["number"](input);
-        break;
-      case "object":
-        if (input == null) {
-          this.result = null;
-        } else if (Array.isArray(input)) {
-          this.result = this.#encodeMap["array"](input);
-        } else if (input instanceof Date) {
-          this.result = this.#encodeMap["date"](input);
-        } else if (input instanceof DateStub) {
-          this.result = this.#encodeMap["faunadate"](input);
-        } else if (input instanceof TimeStub) {
-          this.result = this.#encodeMap["faunatime"](input);
-        } else {
-          this.result = this.#encodeMap["object"](input);
-        }
-        break;
+const encodeMap = {
+  bigint: (value: bigint): TaggedLong => {
+    if (value < LONG_MIN || value > LONG_MAX) {
+      throw new RangeError(
+        "Precision loss when converting BigInt to Fauna type"
+      );
     }
+
+    return {
+      "@long": value.toString(),
+    };
+  },
+  number: (value: number): TaggedDouble | TaggedInt | TaggedLong => {
+    if (
+      value === Number.POSITIVE_INFINITY ||
+      value === Number.NEGATIVE_INFINITY
+    ) {
+      throw new RangeError(`Cannot convert ${value} to a Fauna type.`);
+    }
+
+    if (`${value}`.includes(".")) {
+      return { "@double": value.toString() };
+    } else {
+      if (value >= -(2 ** 31) && value <= 2 ** 31 - 1) {
+        return { "@int": value.toString() };
+      } else if (Number.isSafeInteger(value)) {
+        return {
+          "@long": value.toString(),
+        };
+      }
+      return { "@double": value.toString() };
+    }
+  },
+  string: (value: string): string => {
+    return value;
+  },
+  object: (input: JSONObject): TaggedObject | JSONObject => {
+    let wrapped = false;
+    const _out: JSONObject = {};
+
+    for (const k in input) {
+      if (k.startsWith("@")) {
+        wrapped = true;
+      }
+      _out[k] = encode(input[k]);
+    }
+    return wrapped ? { "@object": _out } : _out;
+  },
+  array: (input: Array<JSONValue>): Array<JSONValue> => {
+    const _out: JSONValue = [];
+    for (const i in input) _out.push(encode(input[i]));
+    return _out;
+  },
+  date: (dateValue: Date): TaggedTime => ({
+    "@time": dateValue.toISOString(),
+  }),
+  faunadate: (value: DateStub): TaggedDate => ({ "@date": value.dateString }),
+  faunatime: (value: TimeStub): TaggedTime => ({ "@time": value.isoString }),
+};
+
+const encode = (input: JSONValue): JSONValue => {
+  switch (typeof input) {
+    case "bigint":
+      return encodeMap["bigint"](input);
+    case "string":
+      return encodeMap["string"](input);
+    case "number":
+      return encodeMap["number"](input);
+    case "object":
+      if (input == null) {
+        return null;
+      } else if (Array.isArray(input)) {
+        return encodeMap["array"](input);
+      } else if (input instanceof Date) {
+        return encodeMap["date"](input);
+      } else if (input instanceof DateStub) {
+        return encodeMap["faunadate"](input);
+      } else if (input instanceof TimeStub) {
+        return encodeMap["faunatime"](input);
+      } else {
+        return encodeMap["object"](input);
+      }
+      break;
   }
-}
+  // default to encoding directly as the input
+  return input;
+};

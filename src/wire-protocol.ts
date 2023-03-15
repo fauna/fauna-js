@@ -105,9 +105,26 @@ export type QueryFailure = QueryInfo & {
   error: {
     /** A predefined code which indicates the type of error. See XXX for a list of error codes. */
     code: string;
-    /** description: A short, human readable description of the error */
+    /** A short, human readable description of the error */
     message: string;
+    /**
+     * A machine readable description of any constraint failures encountered by the query.
+     * Present only if this query encountered constraint failures.
+     */
+    constraint_failures?: Array<ConstraintFailure>;
   };
+};
+
+/**
+ * A constraint failure triggered by a query.
+ */
+export type ConstraintFailure = {
+  /** Description of the constraint failure */
+  message: string;
+  /** Name of the failed constraint */
+  name?: string;
+  /** Path into the write input data to which the failure applies */
+  paths?: Array<number | string>;
 };
 
 export type QueryResponse<T> = QuerySuccess<T> | QueryFailure;

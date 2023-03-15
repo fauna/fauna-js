@@ -1,7 +1,12 @@
+import { DateStub, TimeStub } from "./values";
+
 /** A reference to a built in Fauna module; e.g. Date */
 export type Module = string;
 /** A reference to a document in Fauna */
-export type DocumentReference = string;
+export type DocumentReference = {
+  coll: Module;
+  id: string;
+};
 
 /**
  * TaggedType provides the encoding/decoding of the Fauna Tagged Type formatting
@@ -29,7 +34,16 @@ export class TaggedTypeFormat {
       if (value["@mod"]) {
         return value["@mod"] as Module;
       } else if (value["@doc"]) {
-        return value["@doc"] as DocumentReference;
+        if (typeof value["@doc"] === "string") {
+          const [modName, id] = value["@doc"].split(":");
+          return { coll: modName, id: id } as DocumentReference;
+        }
+        // if not a docref string, then it is an object.
+        return value["@doc"];
+      } else if (value["@ref"]) {
+        return value["@ref"] as DocumentReference;
+      } else if (value["@set"]) {
+        return value["@set"];
       } else if (value["@int"]) {
         return Number(value["@int"]);
       } else if (value["@long"]) {
@@ -37,9 +51,9 @@ export class TaggedTypeFormat {
       } else if (value["@double"]) {
         return Number(value["@double"]);
       } else if (value["@date"]) {
-        return new Date(value["@date"] + "T00:00:00.000Z");
+        return DateStub.from(value["@date"]);
       } else if (value["@time"]) {
-        return new Date(value["@time"]);
+        return TimeStub.from(value["@time"]);
       } else if (value["@object"]) {
         return value["@object"];
       }
@@ -115,18 +129,11 @@ export class TaggedTypeEncoded {
       for (const i in input) _out.push(TaggedTypeFormat.encode(input[i]));
       return _out;
     },
-    date: (dateValue: Date): TaggedDate | TaggedTime => {
-      if (
-        dateValue.getUTCHours() == 0 &&
-        dateValue.getUTCMinutes() == 0 &&
-        dateValue.getUTCSeconds() == 0 &&
-        dateValue.getUTCMilliseconds() == 0
-      ) {
-        return { "@date": dateValue.toISOString().split("T")[0] };
-      }
-
-      return { "@time": dateValue.toISOString() };
-    },
+    date: (dateValue: Date): TaggedTime => ({
+      "@time": dateValue.toISOString(),
+    }),
+    faunadate: (value: DateStub): TaggedDate => ({ "@date": value.dateString }),
+    faunatime: (value: TimeStub): TaggedTime => ({ "@time": value.isoString }),
   };
 
   constructor(input: any) {
@@ -150,6 +157,10 @@ export class TaggedTypeEncoded {
           this.result = this.#encodeMap["array"](input);
         } else if (input instanceof Date) {
           this.result = this.#encodeMap["date"](input);
+        } else if (input instanceof DateStub) {
+          this.result = this.#encodeMap["faunadate"](input);
+        } else if (input instanceof TimeStub) {
+          this.result = this.#encodeMap["faunatime"](input);
         } else {
           this.result = this.#encodeMap["object"](input);
         }

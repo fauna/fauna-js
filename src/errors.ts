@@ -1,4 +1,4 @@
-import { QueryFailure } from "./wire-protocol";
+import type { ConstraintFailure, QueryFailure } from "./wire-protocol";
 
 /**
  * A common error base class for all other errors.
@@ -28,6 +28,11 @@ export class ServiceError extends FaunaError {
    * where message does not suffice.
    */
   readonly summary?: string;
+  /**
+   * A machine readable description of any constraint failures encountered by the query.
+   * Present only if this query encountered constraint failures.
+   */
+  readonly constraint_failures?: Array<ConstraintFailure>;
 
   constructor(failure: QueryFailure, httpStatus: number) {
     super(failure.error.message);
@@ -42,6 +47,9 @@ export class ServiceError extends FaunaError {
     this.httpStatus = httpStatus;
     if (failure.summary) {
       this.summary = failure.summary;
+    }
+    if (failure.error.constraint_failures !== undefined) {
+      this.constraint_failures = failure.error.constraint_failures;
     }
   }
 }
@@ -176,7 +184,7 @@ export class ServiceTimeoutError extends ServiceError {
  * prior to sending the request.
  */
 export class ClientError extends FaunaError {
-  constructor(message: string, options: { cause: any }) {
+  constructor(message: string, options?: { cause: any }) {
     super(message, options);
     // Maintains proper stack trace for where our error was thrown (only available on V8)
     if (Error.captureStackTrace) {

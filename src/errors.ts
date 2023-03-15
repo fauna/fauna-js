@@ -1,9 +1,18 @@
 import type { ConstraintFailure, QueryFailure } from "./wire-protocol";
 
 /**
+ * A common error base class for all other errors.
+ */
+abstract class FaunaError extends Error {
+  constructor(...args: any[]) {
+    super(...args);
+  }
+}
+
+/**
  * An error representing a query failure returned by Fauna.
  */
-export class ServiceError extends Error {
+export class ServiceError extends FaunaError {
   /**
    * The HTTP Status Code of the error.
    */
@@ -174,7 +183,7 @@ export class ServiceTimeoutError extends ServiceError {
  * This indicates Fauna was never called - the client failed internally
  * prior to sending the request.
  */
-export class ClientError extends Error {
+export class ClientError extends FaunaError {
   constructor(message: string, options?: { cause: any }) {
     super(message, options);
     // Maintains proper stack trace for where our error was thrown (only available on V8)
@@ -189,7 +198,7 @@ export class ClientError extends Error {
  * An error representing a failure due to the network.
  * This indicates Fauna was never reached.
  */
-export class NetworkError extends Error {
+export class NetworkError extends FaunaError {
   constructor(message: string, options: { cause: any }) {
     super(message, options);
     // Maintains proper stack trace for where our error was thrown (only available on V8)
@@ -204,7 +213,7 @@ export class NetworkError extends Error {
  * An error representing a HTTP failure - but one not directly
  * emitted by Fauna.
  */
-export class ProtocolError extends Error {
+export class ProtocolError extends FaunaError {
   /**
    * The HTTP Status Code of the error.
    */

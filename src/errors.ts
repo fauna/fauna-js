@@ -1,4 +1,4 @@
-import { QueryFailure } from "./wire-protocol";
+import type { ConstraintFailure, QueryFailure } from "./wire-protocol";
 
 /**
  * An error representing a query failure returned by Fauna.
@@ -19,6 +19,11 @@ export class ServiceError extends Error {
    * where message does not suffice.
    */
   readonly summary?: string;
+  /**
+   * A machine readable description of any constraint failures encountered by the query.
+   * Present only if this query encountered constraint failures.
+   */
+  readonly constraint_failures?: Array<ConstraintFailure>;
 
   constructor(failure: QueryFailure, httpStatus: number) {
     super(failure.error.message);
@@ -33,6 +38,9 @@ export class ServiceError extends Error {
     this.httpStatus = httpStatus;
     if (failure.summary) {
       this.summary = failure.summary;
+    }
+    if (failure.error.constraint_failures !== undefined) {
+      this.constraint_failures = failure.error.constraint_failures;
     }
   }
 }

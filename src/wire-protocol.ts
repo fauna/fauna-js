@@ -1,5 +1,4 @@
 import { fql } from "./query-builder";
-import { TaggedTypeEncoded } from "./tagged-type";
 
 /**
  * A request to make to Fauna.
@@ -168,7 +167,7 @@ export type QueryInterpolation = FQLFragment | ValueFragment;
  *  { fql: [{ value: { "@int": "17" } }, " + 3"] }
  * ```
  */
-export type ValueFragment = { value: TaggedTypeEncoded };
+export type ValueFragment = { value: JSONValue };
 
 /**
  * A piece of an interpolated query. Interpolated Queries can be safely composed

@@ -146,6 +146,7 @@ describe("fql method producing QueryBuilders", () => {
       max_contention_retries: 4,
       query_tags: { a: "tag" },
       traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00",
+      typecheck: false,
     });
     expect(queryRequest).toMatchObject({
       linearized: true,
@@ -153,6 +154,7 @@ describe("fql method producing QueryBuilders", () => {
       max_contention_retries: 4,
       query_tags: { a: "tag" },
       traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00",
+      typecheck: false,
     });
     expect(queryRequest.query).toEqual({
       fql: [

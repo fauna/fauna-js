@@ -87,6 +87,7 @@ describe.each`
     ${"max_contention_retries"} | ${3}                                                         | ${{ key: "x-max-contention-retries", value: "3" }}
     ${"query_tags"}             | ${{ t1: "v1", t2: "v2" }}                                    | ${{ key: "x-query-tags", value: "t1=v1,t2=v2" }}
     ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${{ key: "traceparent", value: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00" }}
+    ${"typecheck"}              | ${false}                                                     | ${{ key: "x-typecheck", value: "false" }}
   `(
     "respects QueryRequest field $fieldName over ClientConfiguration $fieldName",
     async ({ fieldName, fieldValue, expectedHeader }: HeaderTestInput) => {
@@ -100,6 +101,7 @@ describe.each`
           value: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
         },
         query_timeout_ms: { key: "x-query-timeout-ms", value: "60" },
+        typecheck: { key: "x-typecheck", value: "true" },
       };
       expectedHeaders[fieldName] = expectedHeader;
       const httpClient: HTTPClient = {
@@ -121,6 +123,7 @@ describe.each`
         max_contention_retries: 7,
         query_tags: { alpha: "beta", gamma: "delta" },
         traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
+        typecheck: true,
       };
       const myClient = getClient(clientConfiguration, httpClient);
       const headers = { [fieldName]: fieldValue };

@@ -302,6 +302,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
           "linearized",
           "max_contention_retries",
           "traceparent",
+          "typecheck",
           "query_tags",
         ].includes(entry[0])
       ) {

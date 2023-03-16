@@ -45,7 +45,9 @@ const client = new Client({
   endpoint: endpoints.preview,
   max_conns: 5, // maximum number of connections to keep alive and awaiting requests to Fauna
   secret: "<my_fauna_secret>",
-  query_timeout_ms: 60_000,
+  queryOptions: {
+    query_timeout_ms: 60_000,
+  },
 });
 ```
 
@@ -99,7 +101,9 @@ const client = new Client({
   endpoint: endpoints.preview,
   max_conns: 5,
   secret,
-  query_timeout_ms: 60_000,
+  queryOptions: {
+    query_timeout_ms: 60_000,
+  },
 });
 ```
 
@@ -286,9 +290,11 @@ const client = new Client({
   endpoint: endpoints.preview,
   max_conns: 5,
   secret,
-  query_timeout_ms: 60_000,
-  linearized: true,
-  max_contention_retries: 4,
+  queryOptions: {
+    query_timeout_ms: 60_000,
+    linearized: true,
+    max_contention_retries: 4,
+  },
 });
 ```
 

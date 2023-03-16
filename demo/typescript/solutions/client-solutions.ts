@@ -19,8 +19,10 @@ export function constructingClients(): Client {
     // Here's a basic settings:
     endpoint: endpoints.preview,
     max_conns: 10,
-    query_timeout_ms: 60_000,
     secret,
+    queryOptions: {
+      query_timeout_ms: 60_000,
+    },
   };
   // note, the driver also exposes an "endpoints" constant that embeds certain default
   // endpoints you can configure a client with.
@@ -77,9 +79,11 @@ export function defaultHeaders() {
   return new Client({
     endpoint: endpoints.preview,
     secret: getSecret(),
-    query_timeout_ms: 60_000,
     max_conns: 10,
-    linearized: true,
-    max_contention_retries: 5,
+    queryOptions: {
+      query_timeout_ms: 60_000,
+      linearized: true,
+      max_contention_retries: 5,
+    },
   });
 }

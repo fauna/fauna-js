@@ -6,7 +6,9 @@ const client: Client = new Client({
   max_conns: 10,
   secret: getSecret(),
   endpoint: endpoints.preview,
-  query_timeout_ms: 60_000,
+  queryOptions: {
+    query_timeout_ms: 60_000,
+  },
 });
 
 /**

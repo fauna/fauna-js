@@ -17,7 +17,9 @@ import { type QueryRequest, QuerySuccess } from "../../src/wire-protocol";
 
 const client = getClient({
   max_conns: 5,
-  query_timeout_ms: 60_000,
+  queryOptions: {
+    query_timeout_ms: 60_000,
+  },
 });
 
 function getTsa(tsa: TemplateStringsArray, ..._: any[]) {
@@ -114,13 +116,16 @@ describe.each`
         },
       };
       const clientConfiguration: Partial<ClientConfiguration> = {
-        format: "tagged",
+        queryOptions: {
+          format: "tagged",
+          query_timeout_ms: 60,
+          linearized: true,
+          max_contention_retries: 7,
+          query_tags: { alpha: "beta", gamma: "delta" },
+          traceparent:
+            "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
+        },
         max_conns: 5,
-        query_timeout_ms: 60,
-        linearized: true,
-        max_contention_retries: 7,
-        query_tags: { alpha: "beta", gamma: "delta" },
-        traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
       };
       const myClient = getClient(clientConfiguration, httpClient);
       const headers = { [fieldName]: fieldValue };
@@ -207,7 +212,9 @@ describe.each`
     expect.assertions(4);
     const badClient = getClient({
       max_conns: 5,
-      query_timeout_ms: 1,
+      queryOptions: {
+        query_timeout_ms: 1,
+      },
     });
     try {
       await doQuery<number>(
@@ -237,7 +244,9 @@ describe.each`
     const badClient = getClient({
       max_conns: 5,
       secret: "nah",
-      query_timeout_ms: 60,
+      queryOptions: {
+        query_timeout_ms: 60,
+      },
     });
     try {
       await doQuery<number>(
@@ -266,7 +275,9 @@ describe.each`
       endpoint: new URL("http://localhost:1"),
       max_conns: 1,
       secret: "secret",
-      query_timeout_ms: 60,
+      queryOptions: {
+        query_timeout_ms: 60,
+      },
     });
     try {
       await doQuery<number>(
@@ -295,7 +306,9 @@ describe.each`
     const myBadClient = getClient(
       {
         max_conns: 5,
-        query_timeout_ms: 60,
+        queryOptions: {
+          query_timeout_ms: 60,
+        },
       },
       httpClient
     );
@@ -317,7 +330,9 @@ describe.each`
       endpoint: new URL("https://frontdoor.fauna.com/"),
       max_conns: 5,
       secret: "nah",
-      query_timeout_ms: 60,
+      queryOptions: {
+        query_timeout_ms: 60,
+      },
     });
     try {
       await doQuery<number>(queryType, getTsa`foo`, "foo", badClient);

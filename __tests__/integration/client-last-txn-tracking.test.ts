@@ -19,7 +19,9 @@ describe("last_txn_ts tracking in client", () => {
     const myClient = getClient(
       {
         max_conns: 5,
-        query_timeout_ms: 60_000,
+        queryOptions: {
+          query_timeout_ms: 60_000,
+        },
       },
       httpClient
     );
@@ -69,7 +71,9 @@ if (Collection.byName('Products') == null) {\
     const myClient = getClient(
       {
         max_conns: 5,
-        query_timeout_ms: 60_000,
+        queryOptions: {
+          query_timeout_ms: 60_000,
+        },
       },
       httpClient
     );

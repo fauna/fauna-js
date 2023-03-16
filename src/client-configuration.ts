@@ -1,7 +1,7 @@
 /**
  * Configuration for a client.
  */
-export type ClientConfiguration = SharedOptions & {
+export type ClientConfiguration = {
   /**
    * The {@link URL} of Fauna to call. See {@link endpoints} for some default options.
    */
@@ -15,6 +15,10 @@ export type ClientConfiguration = SharedOptions & {
    * @see https://docs.fauna.com/fauna/current/security/keys
    */
   secret: string;
+  /**
+   * Default query options that should be applied to all queries from this client.
+   */
+  queryOptions?: QueryRequestOptions;
 };
 
 /**
@@ -23,53 +27,7 @@ export type ClientConfiguration = SharedOptions & {
  * TODO: add any other possible configuration options. On possibility is
  * allowing users to pass in query arguments without using a QueryBuilder here.
  */
-export type QueryRequestOptions = SharedOptions;
-
-/** tagged declares that type information is transmitted and received by the driver. "simple" indicates it is not. */
-export type ValueFormat = "simple" | "tagged";
-
-/**
- * An extensible interface for a set of Fauna endpoints.
- * @remarks Leverage the `[key: string]: URL;` field to extend to other endpoints.
- */
-export interface Endpoints {
-  /** Fauna's cloud endpoint. */
-  cloud: URL;
-  /** Fauna's preview endpoint for testing new features - requires beta access. */
-  preview: URL;
-  /**
-   * An endpoint for interacting with local instance of Fauna (e.g. one running in a local docker container).
-   */
-  local: URL;
-  /**
-   * An alias for local.
-   */
-  localhost: URL;
-  /**
-   * Any other endpoint you want your client to support. For example, if you run all requests through a proxy
-   * configure it here. Most clients will not need to leverage this ability.
-   */
-  [key: string]: URL;
-}
-
-/**
- * A extensible set of endpoints for calling Fauna.
- * @remarks Most clients will will not need to extend this set.
- * @example
- * ## To Extend
- * ```typescript
- *   // add to the endpoints constant
- *   endpoints.myProxyEndpoint = new URL("https://my.proxy.url");
- * ```
- */
-export const endpoints: Endpoints = {
-  cloud: new URL("https://db.fauna.com"),
-  preview: new URL("https://db.fauna-preview.com"),
-  local: new URL("http://localhost:8443"),
-  localhost: new URL("http://localhost:8443"),
-};
-
-type SharedOptions = {
+export type QueryRequestOptions = {
   /**
    * Determines the encoded format expected for the query `arguments` field, and
    * the `data` field of a successful response.
@@ -116,4 +74,52 @@ type SharedOptions = {
    * Overrides the optional setting for the client.
    */
   traceparent?: string;
+};
+
+/**
+ * Determines the encoded format expected for the query `arguments` field, and
+ * the `data` field of a successful response. "simple" indicates that type
+ * information is not transmitted and will not be received.
+ */
+export type ValueFormat = "simple" | "tagged";
+
+/**
+ * An extensible interface for a set of Fauna endpoints.
+ * @remarks Leverage the `[key: string]: URL;` field to extend to other endpoints.
+ */
+export interface Endpoints {
+  /** Fauna's cloud endpoint. */
+  cloud: URL;
+  /** Fauna's preview endpoint for testing new features - requires beta access. */
+  preview: URL;
+  /**
+   * An endpoint for interacting with local instance of Fauna (e.g. one running in a local docker container).
+   */
+  local: URL;
+  /**
+   * An alias for local.
+   */
+  localhost: URL;
+  /**
+   * Any other endpoint you want your client to support. For example, if you run all requests through a proxy
+   * configure it here. Most clients will not need to leverage this ability.
+   */
+  [key: string]: URL;
+}
+
+/**
+ * A extensible set of endpoints for calling Fauna.
+ * @remarks Most clients will will not need to extend this set.
+ * @example
+ * ## To Extend
+ * ```typescript
+ *   // add to the endpoints constant
+ *   endpoints.myProxyEndpoint = new URL("https://my.proxy.url");
+ * ```
+ */
+export const endpoints: Endpoints = {
+  cloud: new URL("https://db.fauna.com"),
+  preview: new URL("https://db.fauna-preview.com"),
+  local: new URL("http://localhost:8443"),
+  localhost: new URL("http://localhost:8443"),
 };

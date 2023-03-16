@@ -241,13 +241,13 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         "x-typecheck": "false",
       };
       this.#setHeaders(
-        { ...this.clientConfiguration, ...queryRequest },
+        { ...this.clientConfiguration.queryOptions, ...queryRequest },
         headers
       );
 
       const isTaggedFormat =
-        (this.#clientConfiguration.format ?? "tagged") === "tagged" ||
-        queryRequest.format === "tagged";
+        (this.#clientConfiguration.queryOptions?.format ?? "tagged") ===
+          "tagged" || queryRequest.format === "tagged";
       const queryArgs = isTaggedFormat
         ? TaggedTypeFormat.encode(queryRequest.arguments)
         : queryRequest.arguments;

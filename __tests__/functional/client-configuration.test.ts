@@ -21,7 +21,10 @@ describe("ClientConfiguration", () => {
 
   it("Client respectes passed in client configuration over defaults", () => {
     process.env["FAUNA_SECRET"] = "foo";
-    const client = new Client({ secret: "bar", query_timeout_ms: 10 });
+    const client = new Client({
+      secret: "bar",
+      queryOptions: { query_timeout_ms: 10 },
+    });
     // TODO: when the Client accepts an http client add a mock that validates
     //   the configuration changes were applied.
   });
@@ -54,7 +57,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       endpoint: endpoints["my-alternative-port"],
       max_conns: 5,
       secret: "secret",
-      query_timeout_ms: 60_000,
+      queryOptions: { query_timeout_ms: 60_000 },
     });
     const result = await client.query<number>({ query: '"taco".length' });
     expect(result.data).toEqual(4);
@@ -109,8 +112,10 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       const client = getClient(
         {
           max_conns: 5,
-          query_timeout_ms: 5000,
-          [fieldName]: fieldValue,
+          queryOptions: {
+            query_timeout_ms: 5000,
+            [fieldName]: fieldValue,
+          },
         },
         httpClient
       );

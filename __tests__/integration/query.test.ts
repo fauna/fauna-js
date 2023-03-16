@@ -36,6 +36,25 @@ async function doQuery<T>(
   return client.query(fql(queryTsa));
 }
 
+const dummyResponse = {
+  body: JSON.stringify({
+    data: "",
+    txn_ts: 0,
+    query_tags: {},
+    stats: {
+      compute_ops: 0,
+      read_ops: 0,
+      write_ops: 0,
+      query_time_ms: 0,
+      storage_bytes_read: 0,
+      storage_bytes_written: 0,
+      contention_retries: 0,
+    },
+  }),
+  headers: {},
+  status: 200,
+};
+
 describe.each`
   queryType
   ${"QueryRequest"}
@@ -111,8 +130,7 @@ describe.each`
               expectedHeader.value
             );
           });
-
-          return getDefaultHTTPClient().request(req);
+          return dummyResponse;
         },
       };
       const clientConfiguration: Partial<ClientConfiguration> = {

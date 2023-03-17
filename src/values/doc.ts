@@ -19,9 +19,14 @@ export class DocumentRef {
   readonly coll: Mod;
   readonly id: string;
 
-  constructor({ coll, id }: { coll: Mod; id: string }) {
-    this.coll = coll;
+  constructor({ coll, id }: { coll: Mod | string; id: string }) {
     this.id = id;
+
+    if (typeof coll === "string") {
+      this.coll = new Mod(coll);
+    } else {
+      this.coll = coll;
+    }
   }
 }
 
@@ -47,7 +52,7 @@ export class DocumentRef {
 export class Document extends DocumentRef {
   readonly ts: TimeStub;
 
-  constructor(obj: { coll: Mod; id: string; ts: TimeStub }) {
+  constructor(obj: { coll: Mod | string; id: string; ts: TimeStub }) {
     const { coll, id, ts, ...rest } = obj;
     super({ coll, id });
     this.ts = ts;
@@ -77,9 +82,14 @@ export class NamedDocumentRef {
   readonly coll: Mod;
   readonly name: string;
 
-  constructor({ coll, name }: { coll: Mod; name: string }) {
-    this.coll = coll;
+  constructor({ coll, name }: { coll: Mod | string; name: string }) {
     this.name = name;
+
+    if (typeof coll === "string") {
+      this.coll = new Mod(coll);
+    } else {
+      this.coll = coll;
+    }
   }
 }
 
@@ -117,7 +127,12 @@ export class NamedDocument<
   readonly ts: TimeStub;
   readonly data?: T;
 
-  constructor(obj: { coll: Mod; name: string; ts: TimeStub; data: T }) {
+  constructor(obj: {
+    coll: Mod | string;
+    name: string;
+    ts: TimeStub;
+    data: T;
+  }) {
     const { coll, name, ts, data, ...rest } = obj;
     super({ coll, name });
     this.ts = ts;

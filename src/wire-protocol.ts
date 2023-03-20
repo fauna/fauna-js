@@ -50,7 +50,8 @@ export interface QueryRequestHeaders {
   traceparent?: string;
   /**
    * Enable or disable typechecking of the query before evaluation. If no value
-   * is provided, the database defaults using typechecking.
+   * is provided, the value of `typechecked` in the database configuration will
+   * be used.
    */
   typecheck?: boolean;
 }

@@ -71,13 +71,13 @@ describe.each`
     expect(result.summary).toBeDefined();
     expect(result.txn_ts).toBeDefined();
     expect(result.stats).toBeDefined();
-    expect(result.stats.compute_ops).toBeDefined();
-    expect(result.stats.contention_retries).toBeDefined();
-    expect(result.stats.query_time_ms).toBeDefined();
-    expect(result.stats.read_ops).toBeDefined();
-    expect(result.stats.storage_bytes_read).toBeDefined();
-    expect(result.stats.storage_bytes_write).toBeDefined();
-    expect(result.stats.write_ops).toBeDefined();
+    expect(result.stats?.compute_ops).toBeDefined();
+    expect(result.stats?.contention_retries).toBeDefined();
+    expect(result.stats?.query_time_ms).toBeDefined();
+    expect(result.stats?.read_ops).toBeDefined();
+    expect(result.stats?.storage_bytes_read).toBeDefined();
+    expect(result.stats?.storage_bytes_write).toBeDefined();
+    expect(result.stats?.write_ops).toBeDefined();
   });
 
   it("Can query with arguments", async () => {

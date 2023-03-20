@@ -230,8 +230,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     try {
       const headers = {
         Authorization: `Bearer ${this.#clientConfiguration.secret}`,
-        // WIP - typecheck should be user configurable, but hard code for now
-        "x-typecheck": "false",
       };
       this.#setHeaders(
         { ...this.clientConfiguration, ...queryRequest },
@@ -302,6 +300,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
           "linearized",
           "max_contention_retries",
           "traceparent",
+          "typecheck",
           "query_tags",
         ].includes(entry[0])
       ) {

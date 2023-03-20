@@ -48,6 +48,12 @@ export interface QueryRequestHeaders {
    * Overrides the optional setting for the client.
    */
   traceparent?: string;
+  /**
+   * Enable or disable typechecking of the query before evaluation. If no value
+   * is provided, the value of `typechecked` in the database configuration will
+   * be used.
+   */
+  typecheck?: boolean;
 }
 
 /** tagged declares that type information is transmitted and received by the driver. "simple" indicates it is not. */

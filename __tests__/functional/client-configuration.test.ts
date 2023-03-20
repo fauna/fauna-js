@@ -91,6 +91,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     ${"max_contention_retries"} | ${3}                                                         | ${{ key: "x-max-contention-retries", value: "3" }}
     ${"query_tags"}             | ${{ t1: "v1", t2: "v2" }}                                    | ${{ key: "x-query-tags", value: "t1=v1,t2=v2" }}
     ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${{ key: "traceparent", value: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00" }}
+    ${"typecheck"}              | ${false}                                                     | ${{ key: "x-typecheck", value: "false" }}
   `(
     "Setting clientConfiguration $fieldName leads to it being sent in headers",
     async ({ fieldName, fieldValue, expectedHeader }: HeaderTestInput) => {

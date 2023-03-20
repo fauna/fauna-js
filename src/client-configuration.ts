@@ -62,6 +62,12 @@ export interface ClientConfiguration {
    * Must match format: https://www.w3.org/TR/trace-context/#traceparent-header
    */
   traceparent?: string;
+  /**
+   * Enable or disable typechecking of the query before evaluation. If no value
+   * is provided, the value of `typechecked` in the database configuration will
+   * be used.
+   */
+  typecheck?: boolean;
 }
 
 /**

@@ -4,7 +4,7 @@ import { TimeStub } from "./date-time";
 /**
  * A Reference to a Document with an ID. The Document may or may not exists.
  * References to Keys, Tokens, and Documents in user-defined Collections are
- * decoded into a {@link DocumentRef}.
+ * decoded into a {@link DocumentReference}.
  *
  * @example
  * ```javascript
@@ -15,7 +15,7 @@ import { TimeStub } from "./date-time";
  *  const id = thingRef.id
  * ```
  */
-export class DocumentRef {
+export class DocumentReference {
   readonly coll: Mod;
   readonly id: string;
 
@@ -49,10 +49,15 @@ export class DocumentRef {
  * @remarks The {@link Document} class cannot be generic because classes cannot
  * extend generic type arguments.
  */
-export class Document extends DocumentRef {
+export class Document extends DocumentReference {
   readonly ts: TimeStub;
 
-  constructor(obj: { coll: Mod | string; id: string; ts: TimeStub }) {
+  constructor(obj: {
+    coll: Mod | string;
+    id: string;
+    ts: TimeStub;
+    [key: string]: any;
+  }) {
     const { coll, id, ts, ...rest } = obj;
     super({ coll, id });
     this.ts = ts;
@@ -67,7 +72,7 @@ export class Document extends DocumentRef {
 /**
  * A Reference to a Document with a name. The Document may or may not exists.
  * References to AccessProviders, Collections, Databases, Functions, etc. are
- * decoded into a {@link NamedDocumentRef}.
+ * decoded into a {@link NamedDocumentReference}.
  *
  * @example
  * ```javascript
@@ -78,7 +83,7 @@ export class Document extends DocumentRef {
  *  const id = thingCollection.id
  * ```
  */
-export class NamedDocumentRef {
+export class NamedDocumentReference {
   readonly coll: Mod;
   readonly name: string;
 
@@ -123,20 +128,20 @@ export class NamedDocumentRef {
  */
 export class NamedDocument<
   T extends JSONObject = Record<string, never>
-> extends NamedDocumentRef {
+> extends NamedDocumentReference {
   readonly ts: TimeStub;
-  readonly data?: T;
+  readonly data: T;
 
   constructor(obj: {
     coll: Mod | string;
     name: string;
     ts: TimeStub;
-    data: T;
+    data?: T;
   }) {
     const { coll, name, ts, data, ...rest } = obj;
     super({ coll, name });
     this.ts = ts;
-    this.data = data;
+    this.data = data || ({} as T);
     Object.assign(this, rest);
   }
 

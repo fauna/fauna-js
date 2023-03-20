@@ -16,14 +16,14 @@ import { TimeStub } from "./date-time";
  * ```
  */
 export class DocumentReference {
-  readonly coll: Mod;
+  readonly coll: Module;
   readonly id: string;
 
-  constructor({ coll, id }: { coll: Mod | string; id: string }) {
+  constructor({ coll, id }: { coll: Module | string; id: string }) {
     this.id = id;
 
     if (typeof coll === "string") {
-      this.coll = new Mod(coll);
+      this.coll = new Module(coll);
     } else {
       this.coll = coll;
     }
@@ -53,7 +53,7 @@ export class Document extends DocumentReference {
   readonly ts: TimeStub;
 
   constructor(obj: {
-    coll: Mod | string;
+    coll: Module | string;
     id: string;
     ts: TimeStub;
     [key: string]: any;
@@ -64,8 +64,8 @@ export class Document extends DocumentReference {
     Object.assign(this, rest);
   }
 
-  toObject(): { coll: Mod; id: string; ts: TimeStub } {
-    return { ...this } as { coll: Mod; id: string; ts: TimeStub };
+  toObject(): { coll: Module; id: string; ts: TimeStub } {
+    return { ...this } as { coll: Module; id: string; ts: TimeStub };
   }
 }
 
@@ -84,14 +84,14 @@ export class Document extends DocumentReference {
  * ```
  */
 export class NamedDocumentReference {
-  readonly coll: Mod;
+  readonly coll: Module;
   readonly name: string;
 
-  constructor({ coll, name }: { coll: Mod | string; name: string }) {
+  constructor({ coll, name }: { coll: Module | string; name: string }) {
     this.name = name;
 
     if (typeof coll === "string") {
-      this.coll = new Mod(coll);
+      this.coll = new Module(coll);
     } else {
       this.coll = coll;
     }
@@ -133,7 +133,7 @@ export class NamedDocument<
   readonly data: T;
 
   constructor(obj: {
-    coll: Mod | string;
+    coll: Module | string;
     name: string;
     ts: TimeStub;
     data?: T;
@@ -145,8 +145,8 @@ export class NamedDocument<
     Object.assign(this, rest);
   }
 
-  toObject(): { coll: Mod; name: string; ts: TimeStub; data: T } {
-    return { ...this } as { coll: Mod; name: string; ts: TimeStub; data: T };
+  toObject(): { coll: Module; name: string; ts: TimeStub; data: T } {
+    return { ...this } as { coll: Module; name: string; ts: TimeStub; data: T };
   }
 }
 
@@ -162,7 +162,7 @@ export class NamedDocument<
  *  const name = thingModule.name
  * ```
  */
-export class Mod {
+export class Module {
   readonly name: string;
 
   constructor(name: string) {

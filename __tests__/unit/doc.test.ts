@@ -2,22 +2,22 @@ import {
   Document,
   DocumentT,
   DocumentReference,
-  Mod,
+  Module,
   NamedDocument,
   NamedDocumentReference,
   TimeStub,
 } from "../../src/values";
 
-describe("Mod", () => {
+describe("Module", () => {
   it("can be constructed directly", () => {
-    const mod = new Mod("Thing");
+    const mod = new Module("Thing");
     expect(mod.name).toBe("Thing");
   });
 });
 
 describe("DocumentReference", () => {
   it("can be constructed directly", () => {
-    const mod = new Mod("Thing");
+    const mod = new Module("Thing");
     const ref = new DocumentReference({ id: "101", coll: mod });
     expect(ref.id).toBe("101");
     expect(ref.coll.name).toBe("Thing");
@@ -26,7 +26,7 @@ describe("DocumentReference", () => {
 
 describe("Document", () => {
   it("can be constructed directly", () => {
-    const mod = new Mod("Thing");
+    const mod = new Module("Thing");
     const doc = new Document({
       id: "101",
       coll: mod,
@@ -39,7 +39,7 @@ describe("Document", () => {
 
   it("can access user data", () => {
     const doc = new Document({
-      coll: new Mod("User"),
+      coll: new Module("User"),
       id: "1234",
       ts: TimeStub.from("2023-03-09T00:00:00Z"),
       email: "alice@site.example",
@@ -58,7 +58,7 @@ describe("Document", () => {
 
 describe("NamedDocumentReference", () => {
   it("can be constructed directly", () => {
-    const mod = new Mod("Collection");
+    const mod = new Module("Collection");
     const ref = new NamedDocumentReference({ name: "Thing", coll: mod });
     expect(ref.name).toBe("Thing");
     expect(ref.coll.name).toBe("Collection");
@@ -67,7 +67,7 @@ describe("NamedDocumentReference", () => {
 
 describe("NamedDocument", () => {
   it("can be constructed without data", () => {
-    const mod = new Mod("Collection");
+    const mod = new Module("Collection");
     const doc = new NamedDocument({
       name: "Thing",
       coll: mod,
@@ -80,7 +80,7 @@ describe("NamedDocument", () => {
   });
 
   it("can be constructed without data", () => {
-    const mod = new Mod("Collection");
+    const mod = new Module("Collection");
     const doc = new NamedDocument<{ metadata: string }>({
       name: "Thing",
       coll: mod,

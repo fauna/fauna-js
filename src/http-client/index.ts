@@ -1,4 +1,3 @@
-import type { Client } from "../client";
 import { QueryRequest } from "../wire-protocol";
 import { FetchClient } from "./fetch-client";
 export { FetchClient } from "./fetch-client";

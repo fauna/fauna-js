@@ -1,5 +1,6 @@
 import { ClientError } from "../errors";
 import * as PARSE from "../regex";
+
 /**
  * An wrapper around the Fauna `Time` type. It, represents a fixed point in time
  * without regard to calendar or location, e.g. July 20, 1969, at 20:17 UTC.

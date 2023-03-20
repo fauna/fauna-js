@@ -1,4 +1,3 @@
-import { parse } from "path";
 import { ClientError } from "./errors";
 import * as PARSE from "./regex";
 /**

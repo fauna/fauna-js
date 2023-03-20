@@ -11,7 +11,7 @@ import {
   QueryTimeoutError,
   ServiceError,
 } from "../../src/errors";
-import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
+import { HTTPClient, HTTPResponse } from "../../src/http-client";
 import { fql } from "../../src/query-builder";
 import { type QueryRequest, QuerySuccess } from "../../src/wire-protocol";
 
@@ -36,18 +36,17 @@ async function doQuery<T>(
   return client.query(fql(queryTsa));
 }
 
-const dummyResponse = {
+const dummyResponse: HTTPResponse = {
   body: JSON.stringify({
     data: "",
     txn_ts: 0,
-    query_tags: {},
     stats: {
       compute_ops: 0,
       read_ops: 0,
       write_ops: 0,
       query_time_ms: 0,
       storage_bytes_read: 0,
-      storage_bytes_written: 0,
+      storage_bytes_write: 0,
       contention_retries: 0,
     },
   }),
@@ -69,7 +68,16 @@ describe.each`
     );
 
     expect(result.data).toEqual(4);
+    expect(result.summary).toBeDefined();
     expect(result.txn_ts).toBeDefined();
+    expect(result.stats).toBeDefined();
+    expect(result.stats?.compute_ops).toBeDefined();
+    expect(result.stats?.contention_retries).toBeDefined();
+    expect(result.stats?.query_time_ms).toBeDefined();
+    expect(result.stats?.read_ops).toBeDefined();
+    expect(result.stats?.storage_bytes_read).toBeDefined();
+    expect(result.stats?.storage_bytes_write).toBeDefined();
+    expect(result.stats?.write_ops).toBeDefined();
   });
 
   it("Can query with arguments", async () => {
@@ -85,6 +93,21 @@ describe.each`
     }
     expect(result.data).toEqual(4);
     expect(result.txn_ts).toBeDefined();
+  });
+
+  it("Can query with tags", async () => {
+    let result: QuerySuccess<string>;
+    let query_tags = {
+      project: "teapot",
+      hello: "world",
+      testing: "foobar",
+    };
+    if (queryType === "QueryRequest") {
+      result = await client.query({ query: `"foo"` }, { query_tags });
+    } else {
+      result = await client.query(fql`"foo"`, { query_tags });
+    }
+    expect(result.query_tags).toStrictEqual(query_tags);
   });
 
   type HeaderTestInput = {

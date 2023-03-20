@@ -71,20 +71,20 @@ export type QueryStats = {
   /** The amount of data read from storage, in bytes. */
   storage_bytes_read: number;
   /** The amount of data written to storage, in bytes. */
-  storage_bytes_written: number;
+  storage_bytes_write: number;
   /** The number of times the transaction was retried due to write contention. */
   contention_retries: number;
 };
 
 export type QueryInfo = {
   /** The last transaction timestamp of the query. A Unix epoch in microseconds. */
-  txn_ts: number;
+  txn_ts?: number;
   /** A readable summary of any warnings or logs emitted by the query. */
   summary?: string;
   /** The value of the x-query-tags header, if it was provided. */
-  query_tags: Record<string, string>;
+  query_tags?: Record<string, string>;
   /** Stats on query performance and cost */
-  stats: QueryStats;
+  stats?: QueryStats;
 };
 
 export type QuerySuccess<T> = QueryInfo & {

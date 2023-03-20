@@ -83,7 +83,7 @@ if (Collection.byName('Customers') == null) {\
     });
     expect(resultOne.txn_ts).not.toBeUndefined();
     expectedLastTxn = resultOne.txn_ts;
-    myClient.lastTxnTs = resultOne.txn_ts;
+    myClient.lastTxnTs = resultOne.txn_ts as number;
     const resultTwo = await myClient.query(
       fql`
       if (Collection.byName('Orders') == null) {\

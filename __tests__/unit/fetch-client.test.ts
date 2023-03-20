@@ -1,17 +1,14 @@
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
 enableFetchMocks();
 
-import {NetworkError} from '../../src/errors'
+import { NetworkError } from "../../src/errors";
 import {
   FetchClient,
   HTTPRequest,
   HTTPResponse,
   isHTTPResponse,
 } from "../../src/http-client";
-import {
-  QueryFailure,
-  QuerySuccess,
-} from "../../src/wire-protocol";
+import { QueryFailure, QuerySuccess } from "../../src/wire-protocol";
 
 let fetchClient: FetchClient;
 
@@ -28,7 +25,7 @@ const dummyStats = {
   write_ops: 0,
   query_time_ms: 0,
   storage_bytes_read: 0,
-  storage_bytes_written: 0,
+  storage_bytes_write: 0,
   contention_retries: 0,
 };
 

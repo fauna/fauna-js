@@ -24,7 +24,6 @@ import {
 } from "./wire-protocol";
 import {
   getDefaultHTTPClient,
-  HTTPResponse,
   isHTTPResponse,
   type HTTPClient,
 } from "./http-client";
@@ -255,7 +254,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         data: requestData,
       });
 
-      let parsedResponse: HTTPResponse;
+      let parsedResponse;
       try {
         parsedResponse = {
           ...fetchResponse,
@@ -263,6 +262,12 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
             ? TaggedTypeFormat.decode(fetchResponse.body)
             : JSON.parse(fetchResponse.body),
         };
+        if (parsedResponse.body.query_tags) {
+          const tags_array = (parsedResponse.body.query_tags as string)
+            .split(",")
+            .map((tag) => tag.split("="));
+          parsedResponse.body.query_tags = Object.fromEntries(tags_array);
+        }
       } catch (error: unknown) {
         throw new ProtocolError({
           message: `Error parsing response as JSON: ${error}`,

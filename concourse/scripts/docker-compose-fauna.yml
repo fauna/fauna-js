@@ -1,0 +1,36 @@
+version: "3.3"
+
+services:
+  faunadb:
+    image: fauna/faunadb
+    container_name: faunadb
+    ports:
+      - "8443:8443"
+    healthcheck:
+      test: ["CMD", "curl", "http://faunadb:8443/ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  node-lts:
+    environment:
+    image: node:lts
+    container_name: node-lts
+    depends_on:
+      - faunadb
+    volumes:
+      - "../../:/tmp/app"
+    working_dir: "/tmp/app"
+    command:
+      - concourse/scripts/integration-tests.sh
+
+  node-current:
+    image: node:current
+    container_name: node-current
+    depends_on:
+      - faunadb
+    volumes:
+      - "../../:/tmp/app"
+    working_dir: "/tmp/app"
+    command:
+      - concourse/scripts/integration-tests.sh

@@ -49,7 +49,4 @@ export const getDefaultHTTPClient = () =>
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;
 
-const isNode = () =>
-  Object.prototype.toString.call(
-    typeof process !== "undefined" ? process : 0
-  ) === "[object process]";
+const isNode = () => process !== undefined && process.release?.name === "node";

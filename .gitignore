@@ -4,7 +4,7 @@ yarn-error.log*
 *.log
 
 # Build
-dist/
+# dist/ build for dashboard
 
 # Dependency directories
 node_modules/

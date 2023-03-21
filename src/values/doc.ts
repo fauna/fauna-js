@@ -2,7 +2,7 @@ import { JSONObject } from "../wire-protocol";
 import { TimeStub } from "./date-time";
 
 /**
- * A reference to a Document with an ID. The Document may or may not exists.
+ * A reference to a Document with an ID. The Document may or may not exist.
  * References to Keys, Tokens, and Documents in user-defined Collections are
  * decoded into a {@link DocumentReference}.
  *
@@ -70,7 +70,7 @@ export class Document extends DocumentReference {
 }
 
 /**
- * A reference to a Document with a name. The Document may or may not exists.
+ * A reference to a Document with a name. The Document may or may not exist.
  * References to AccessProviders, Collections, Databases, Functions, etc. are
  * decoded into a {@link NamedDocumentReference}.
  *

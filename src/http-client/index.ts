@@ -1,6 +1,5 @@
-/* eslint-disable */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Client } from "../client";
-/* eslint-enable */
 import { QueryRequest } from "../wire-protocol";
 import { FetchClient } from "./fetch-client";
 export { FetchClient } from "./fetch-client";

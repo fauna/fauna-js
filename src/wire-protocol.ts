@@ -1,6 +1,5 @@
-/* eslint-disable */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { fql } from "./query-builder";
-/* eslint-enable */
 
 /**
  * A request to make to Fauna.

@@ -20,6 +20,9 @@ services:
     volumes:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
+    environment:
+      FAUNA_ENDPOINT: http://faunadb:8443
+      FAUNA_SECRET: secret
     entrypoint: /usr/local/bin/yarn
     command: test:integration
 
@@ -31,5 +34,8 @@ services:
     volumes:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
+    environment:
+      FAUNA_ENDPOINT: http://faunadb:8443
+      FAUNA_SECRET: secret
     entrypoint: /usr/local/bin/yarn
     command: test:integration

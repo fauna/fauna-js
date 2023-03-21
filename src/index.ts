@@ -32,3 +32,14 @@ export {
   type Span,
   type ValueFragment,
 } from "./wire-protocol";
+export {
+  DateStub,
+  Document,
+  DocumentReference,
+  type DocumentT,
+  Module,
+  NamedDocument,
+  NamedDocumentReference,
+  Set,
+  TimeStub,
+} from "./values";

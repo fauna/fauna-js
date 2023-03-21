@@ -2,7 +2,7 @@ import { JSONObject } from "../wire-protocol";
 import { TimeStub } from "./date-time";
 
 /**
- * A Reference to a Document with an ID. The Document may or may not exists.
+ * A reference to a Document with an ID. The Document may or may not exists.
  * References to Keys, Tokens, and Documents in user-defined Collections are
  * decoded into a {@link DocumentReference}.
  *
@@ -31,7 +31,7 @@ export class DocumentReference {
 }
 
 /**
- * A Materialized Document with an ID. Keys, Tokens and Documents in
+ * A materialized Document with an ID. Keys, Tokens and Documents in
  * user-defined Collections are decoded into a {@link Document}. All top level
  * Document fields are added to a {@link Document} instance, but types cannot be
  * provided. Cast the instance to a {@link DocumentT} to have typesafe access to
@@ -70,7 +70,7 @@ export class Document extends DocumentReference {
 }
 
 /**
- * A Reference to a Document with a name. The Document may or may not exists.
+ * A reference to a Document with a name. The Document may or may not exists.
  * References to AccessProviders, Collections, Databases, Functions, etc. are
  * decoded into a {@link NamedDocumentReference}.
  *
@@ -99,7 +99,7 @@ export class NamedDocumentReference {
 }
 
 /**
- * A Materialized Document with a name. AccessProviders, Collections, Databases,
+ * A materialized Document with a name. AccessProviders, Collections, Databases,
  * Functions, etc. are decoded into a {@link NamedDocument}.
  *
  * @example

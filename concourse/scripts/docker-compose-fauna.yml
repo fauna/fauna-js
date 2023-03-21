@@ -21,7 +21,7 @@ services:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
     command:
-      [sh, -c, "npm install -g -s --no-progress yarn && yarn test:integration"]
+      - ./fauna-js-repository/concourse/scripts/integration-tests.sh
 
   node-current:
     image: node:19.8-alpine3.16
@@ -32,4 +32,4 @@ services:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
     command:
-      [sh, -c, "npm install -g -s --no-progress yarn && yarn test:integration"]
+      - ./fauna-js-repository/concourse/scripts/integration-tests.sh

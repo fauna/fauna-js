@@ -1,10 +1,10 @@
-import { JSONObject } from "../wire-protocol";
+import { JSONValue } from "../wire-protocol";
 
-export class Set<T extends JSONObject> {
-  readonly data: T;
+export class Set<T extends JSONValue> {
+  readonly data: T[];
   readonly after?: string;
 
-  constructor({ data, after }: { data: T; after?: string }) {
+  constructor({ data, after }: { data: T[]; after?: string }) {
     this.data = data;
     this.after = after;
   }

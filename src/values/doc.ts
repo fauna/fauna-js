@@ -4,7 +4,7 @@ import { TimeStub } from "./date-time";
 /**
  * A reference to a Document with an ID. The Document may or may not exist.
  * References to Keys, Tokens, and Documents in user-defined Collections are
- * decoded into a {@link DocumentReference}.
+ * modeled with a {@link DocumentReference}.
  *
  * @example
  * ```javascript
@@ -32,7 +32,7 @@ export class DocumentReference {
 
 /**
  * A materialized Document with an ID. Keys, Tokens and Documents in
- * user-defined Collections are decoded into a {@link Document}. All top level
+ * user-defined Collections are modeled with a {@link Document}. All top level
  * Document fields are added to a {@link Document} instance, but types cannot be
  * provided. Cast the instance to a {@link DocumentT} to have typesafe access to
  * all top level fields.
@@ -71,8 +71,8 @@ export class Document extends DocumentReference {
 
 /**
  * A reference to a Document with a name. The Document may or may not exist.
- * References to AccessProviders, Collections, Databases, Functions, etc. are
- * decoded into a {@link NamedDocumentReference}.
+ * References to specific AccessProviders, Collections, Databases, Functions, etc. are
+ * modeled with a {@link NamedDocumentReference}.
  *
  * @example
  * ```javascript
@@ -99,8 +99,8 @@ export class NamedDocumentReference {
 }
 
 /**
- * A materialized Document with a name. AccessProviders, Collections, Databases,
- * Functions, etc. are decoded into a {@link NamedDocument}.
+ * A materialized Document with a name. Specific AccessProviders, Collections, Databases,
+ * Functions, etc. that include user defined data are modeled with a {@link NamedDocument}.
  *
  * @example
  * ```javascript
@@ -171,7 +171,7 @@ export class Module {
 }
 
 /**
- * A Document extended with user-defined data. Typescript users can cast
+ * A Document typed with a user-defined data type. Typescript users can cast
  * instances of {@link Document} to {@link DocumentT} to access user-defined fields with type safety.
  *
  * @example

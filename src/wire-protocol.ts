@@ -1,3 +1,7 @@
+/* eslint-disable */
+import { fql } from "./query-builder";
+/* eslint-enable */
+
 /**
  * A request to make to Fauna.
  */

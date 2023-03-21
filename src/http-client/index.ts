@@ -1,3 +1,6 @@
+/* eslint-disable */
+import type { Client } from "../client";
+/* eslint-enable */
 import { QueryRequest } from "../wire-protocol";
 import { FetchClient } from "./fetch-client";
 export { FetchClient } from "./fetch-client";

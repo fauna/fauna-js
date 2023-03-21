@@ -20,6 +20,7 @@ services:
     volumes:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
+    entrypoint: /bin/sh
     command:
       - ./fauna-js-repository/concourse/scripts/integration-tests.sh
 
@@ -31,5 +32,6 @@ services:
     volumes:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
+    entrypoint: /bin/sh
     command:
       - ./fauna-js-repository/concourse/scripts/integration-tests.sh

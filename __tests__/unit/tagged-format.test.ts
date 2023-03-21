@@ -1,19 +1,19 @@
+import { TaggedTypeFormat, LONG_MIN, LONG_MAX } from "../../src/tagged-type";
 import {
-  TaggedTypeFormat,
+  DateStub,
+  Document,
   DocumentReference,
   Module,
-  LONG_MIN,
-  LONG_MAX,
-} from "../../src/tagged-type";
-import { DateStub, TimeStub } from "../../src/values";
+  Set,
+  TimeStub,
+} from "../../src/values";
 
 describe("tagged format", () => {
   it("can be decoded", () => {
     const allTypes: string = `{
       "bugs_coll": { "@mod": "Bugs" },
-      "bug_ref_string": { "@doc": "Bugs:123" },
-      "bug_ref_object": { "@ref": { "coll": { "@mod": "Bugs" }, "id": "123" } },
-      "bug_doc": { "@doc": { "coll": { "@mod": "Bugs" }, "id": "123" } },
+      "bug_ref": { "@ref": { "coll": { "@mod": "Bugs" }, "id": "123" } },
+      "bug_doc": { "@doc": { "coll": { "@mod": "Bugs" }, "id": "123", "ts": { "@time": "2023-03-20T00:00:00Z" } } },
       "name": "fir",
       "age": { "@int": "200" },
       "birthdate": { "@date": "1823-02-08" },
@@ -44,14 +44,22 @@ describe("tagged format", () => {
       "set": { "@set": { "data": ["a", "b"] } }
     }`;
 
-    const bugs_mod: Module = "Bugs";
-    const bugs_doc: DocumentReference = { coll: "Bugs", id: "123" };
-    const set = { data: ["a", "b"] };
+    const bugs_mod: Module = new Module("Bugs");
+    const bugs_ref: DocumentReference = new DocumentReference({
+      coll: bugs_mod,
+      id: "123",
+    });
+    const doc_ts = TimeStub.from("2023-03-20T00:00:00Z");
+    const bugs_doc: Document = new Document({
+      coll: bugs_mod,
+      id: "123",
+      ts: doc_ts,
+    });
+    const set = new Set({ data: ["a", "b"] });
 
     const result = TaggedTypeFormat.decode(allTypes);
-    expect(result.bugs_coll).toBe(bugs_mod);
-    expect(result.bug_ref_string).toStrictEqual(bugs_doc);
-    expect(result.bug_ref_object).toStrictEqual(bugs_doc);
+    expect(result.bugs_coll).toStrictEqual(bugs_mod);
+    expect(result.bug_ref).toStrictEqual(bugs_ref);
     expect(result.bug_doc).toStrictEqual(bugs_doc);
     expect(result.name).toEqual("fir");
     expect(result.age).toEqual(200);

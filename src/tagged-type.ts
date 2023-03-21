@@ -1,13 +1,14 @@
-import { DateStub, TimeStub } from "./values";
+import {
+  DateStub,
+  Document,
+  DocumentReference,
+  Module,
+  NamedDocument,
+  NamedDocumentReference,
+  TimeStub,
+  Set,
+} from "./values";
 import { JSONObject, JSONValue } from "./wire-protocol";
-
-/** A reference to a built in Fauna module; e.g. Date */
-export type Module = string;
-/** A reference to a document in Fauna */
-export type DocumentReference = {
-  coll: Module;
-  id: string;
-};
 
 /**
  * TaggedType provides the encoding/decoding of the Fauna Tagged Type formatting
@@ -33,18 +34,29 @@ export class TaggedTypeFormat {
     return JSON.parse(input, (_, value: any) => {
       if (value == null) return null;
       if (value["@mod"]) {
-        return value["@mod"] as Module;
+        return new Module(value["@mod"]);
       } else if (value["@doc"]) {
+        // WIP: The string-based ref is being removed from the API
         if (typeof value["@doc"] === "string") {
           const [modName, id] = value["@doc"].split(":");
-          return { coll: modName, id: id } as DocumentReference;
+          return new DocumentReference({ coll: modName, id: id });
         }
         // if not a docref string, then it is an object.
-        return value["@doc"];
+        const obj = value["@doc"];
+        if (obj.id) {
+          return new Document(obj);
+        } else {
+          return new NamedDocument(obj);
+        }
       } else if (value["@ref"]) {
-        return value["@ref"] as DocumentReference;
+        const obj = value["@ref"];
+        if (obj.id) {
+          return new DocumentReference(obj);
+        } else {
+          return new NamedDocumentReference(obj);
+        }
       } else if (value["@set"]) {
-        return value["@set"];
+        return new Set(value["@set"]);
       } else if (value["@int"]) {
         return Number(value["@int"]);
       } else if (value["@long"]) {
@@ -68,7 +80,12 @@ type TaggedDate = { "@date": string };
 type TaggedDouble = { "@double": string };
 type TaggedInt = { "@int": string };
 type TaggedLong = { "@long": string };
-type TaggedObject = { "@object": Record<string, any> };
+type TaggedMod = { "@mod": string };
+type TaggedObject = { "@object": JSONObject };
+type TaggedRef = {
+  "@ref": { id: string; coll: TaggedMod } | { name: string; coll: TaggedMod };
+};
+type TaggedSet = { "@set": { data: JSONValue[]; after?: string } };
 type TaggedTime = { "@time": string };
 
 export const LONG_MIN = BigInt("-9223372036854775808");
@@ -132,6 +149,22 @@ const encodeMap = {
   }),
   faunadate: (value: DateStub): TaggedDate => ({ "@date": value.dateString }),
   faunatime: (value: TimeStub): TaggedTime => ({ "@time": value.isoString }),
+  module: (value: Module): TaggedMod => ({ "@mod": value.name }),
+  documentReference: (value: DocumentReference): TaggedRef => ({
+    "@ref": { id: value.id, coll: { "@mod": value.coll.name } },
+  }),
+  document: (value: Document): TaggedRef => ({
+    "@ref": { id: value.id, coll: { "@mod": value.coll.name } },
+  }),
+  namedDocumentReference: (value: NamedDocumentReference): TaggedRef => ({
+    "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
+  }),
+  namedDocument: (value: NamedDocument): TaggedRef => ({
+    "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
+  }),
+  set: (value: Set<any>): TaggedSet => ({
+    "@set": { data: encodeMap["array"](value.data), after: value.after },
+  }),
 };
 
 const encode = (input: JSONValue): JSONValue => {
@@ -153,6 +186,18 @@ const encode = (input: JSONValue): JSONValue => {
         return encodeMap["faunadate"](input);
       } else if (input instanceof TimeStub) {
         return encodeMap["faunatime"](input);
+      } else if (input instanceof Module) {
+        return encodeMap["module"](input);
+      } else if (input instanceof DocumentReference) {
+        return encodeMap["documentReference"](input);
+      } else if (input instanceof Document) {
+        return encodeMap["document"](input);
+      } else if (input instanceof NamedDocumentReference) {
+        return encodeMap["namedDocumentReference"](input);
+      } else if (input instanceof NamedDocument) {
+        return encodeMap["namedDocument"](input);
+      } else if (input instanceof Set) {
+        return encodeMap["set"](input);
       } else {
         return encodeMap["object"](input);
       }

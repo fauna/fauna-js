@@ -13,7 +13,6 @@ services:
       retries: 30
 
   node-lts:
-    environment:
     image: node:lts
     container_name: node-lts
     depends_on:

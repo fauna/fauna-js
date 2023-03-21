@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { fql } from "./query-builder";
 
 /**
@@ -56,8 +57,19 @@ export interface QueryRequestHeaders {
   typecheck?: boolean;
 }
 
-/** tagged declares that type information is transmitted and received by the driver. "simple" indicates it is not. */
-export declare type ValueFormat = "simple" | "tagged";
+/**
+ * tagged declares that type information is transmitted and received by the driver.
+ * "simple" indicates it is not - pure JSON is used.
+ * "decorated" will cause the service output to be shown in FQL syntax that could
+ * hypothetically be used to query Fauna. This is intended to support CLI and
+ * REPL like tools.
+ * @example
+ * ```typescript
+ * // example of decorated output
+ * { time: Time("2012-01-01T00:00:00Z") }
+ * ```
+ */
+export declare type ValueFormat = "simple" | "tagged" | "decorated";
 
 export type QueryStats = {
   /** The amount of Transactional Compute Ops consumed by the query. */

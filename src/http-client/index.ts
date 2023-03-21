@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Client } from "../client";
 import { QueryRequest } from "../wire-protocol";
 import { FetchClient } from "./fetch-client";

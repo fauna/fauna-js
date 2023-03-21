@@ -20,7 +20,8 @@ services:
     volumes:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
-    command: [sh, -c, "npm install && npm test"]
+    command:
+      [sh, -c, "npm install -g -s --no-progress yarn && yarn test:integration"]
 
   node-current:
     image: node:current
@@ -30,4 +31,5 @@ services:
     volumes:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
-    command: [sh, -c, "npm install && npm test"]
+    command:
+      [sh, -c, "npm install -g -s --no-progress yarn && yarn test:integration"]

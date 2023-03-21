@@ -20,9 +20,8 @@ services:
     volumes:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
-    entrypoint: /bin/sh
-    command:
-      - concourse/scripts/integration-tests.sh
+    entrypoint: /usr/local/bin/yarn
+    command: test:integration
 
   node-current:
     image: node:19.8-alpine3.16
@@ -32,6 +31,5 @@ services:
     volumes:
       - "../../:/tmp/app"
     working_dir: "/tmp/app"
-    entrypoint: /bin/sh
-    command:
-      - concourse/scripts/integration-tests.sh
+    entrypoint: /usr/local/bin/yarn
+    command: test:integration

@@ -76,15 +76,18 @@ export class TaggedTypeFormat {
   }
 }
 
+type TaggedRefBase =
+  | { id: string; coll: TaggedMod }
+  | { name: string; coll: TaggedMod };
+
+type TaggedDoc = { "@doc": TaggedRefBase };
 type TaggedDate = { "@date": string };
 type TaggedDouble = { "@double": string };
 type TaggedInt = { "@int": string };
 type TaggedLong = { "@long": string };
 type TaggedMod = { "@mod": string };
 type TaggedObject = { "@object": JSONObject };
-type TaggedRef = {
-  "@ref": { id: string; coll: TaggedMod } | { name: string; coll: TaggedMod };
-};
+type TaggedRef = { "@ref": TaggedRefBase };
 type TaggedSet = { "@set": { data: JSONValue[]; after?: string } };
 type TaggedTime = { "@time": string };
 
@@ -153,14 +156,14 @@ const encodeMap = {
   documentReference: (value: DocumentReference): TaggedRef => ({
     "@ref": { id: value.id, coll: { "@mod": value.coll.name } },
   }),
-  document: (value: Document): TaggedRef => ({
-    "@ref": { id: value.id, coll: { "@mod": value.coll.name } },
+  document: (value: Document): TaggedDoc => ({
+    "@doc": { id: value.id, coll: { "@mod": value.coll.name } },
   }),
   namedDocumentReference: (value: NamedDocumentReference): TaggedRef => ({
     "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
-  namedDocument: (value: NamedDocument): TaggedRef => ({
-    "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
+  namedDocument: (value: NamedDocument): TaggedDoc => ({
+    "@doc": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
   set: (value: Set<any>): TaggedSet => ({
     "@set": { data: encodeMap["array"](value.data), after: value.after },
@@ -188,14 +191,16 @@ const encode = (input: JSONValue): JSONValue => {
         return encodeMap["faunatime"](input);
       } else if (input instanceof Module) {
         return encodeMap["module"](input);
+      } else if (input instanceof Document) {
+        // Document extends DocumentReference, so order is important here
+        return encodeMap["document"](input);
       } else if (input instanceof DocumentReference) {
         return encodeMap["documentReference"](input);
-      } else if (input instanceof Document) {
-        return encodeMap["document"](input);
+      } else if (input instanceof NamedDocument) {
+        // NamedDocument extends NamedDocumentReference, so order is important here
+        return encodeMap["namedDocument"](input);
       } else if (input instanceof NamedDocumentReference) {
         return encodeMap["namedDocumentReference"](input);
-      } else if (input instanceof NamedDocument) {
-        return encodeMap["namedDocument"](input);
       } else if (input instanceof Set) {
         return encodeMap["set"](input);
       } else {

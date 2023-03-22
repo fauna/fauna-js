@@ -88,7 +88,8 @@ type TaggedLong = { "@long": string };
 type TaggedMod = { "@mod": string };
 type TaggedObject = { "@object": JSONObject };
 type TaggedRef = { "@ref": TaggedRefBase };
-type TaggedSet = { "@set": { data: JSONValue[]; after?: string } };
+// WIP: core does not accept `@set` tagged values
+// type TaggedSet = { "@set": { data: JSONValue[]; after?: string } };
 type TaggedTime = { "@time": string };
 
 export const LONG_MIN = BigInt("-9223372036854775808");
@@ -165,8 +166,11 @@ const encodeMap = {
   namedDocument: (value: NamedDocument): TaggedDoc => ({
     "@doc": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
-  set: (value: Set<any>): TaggedSet => ({
-    "@set": { data: encodeMap["array"](value.data), after: value.after },
+  set: (value: Set<any>) => ({
+    // WIP: core does not accept `@set` tagged values, yet, so just unwrap
+    // "@set": { data: encodeMap["array"](value.data), after: value.after },
+    data: encodeMap["array"](value.data),
+    after: value.after,
   }),
 };
 

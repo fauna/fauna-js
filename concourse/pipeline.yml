@@ -18,7 +18,7 @@ resources:
     icon: github
     source:
       uri: git@github.com:fauna/fauna-js.git
-      branch: concourse
+      branch: main
       private_key: ((github-ssh-key))
 
 groups:

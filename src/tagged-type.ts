@@ -85,7 +85,8 @@ type TaggedObject = { "@object": JSONObject };
 type TaggedRef = {
   "@ref": { id: string; coll: TaggedMod } | { name: string; coll: TaggedMod };
 };
-type TaggedSet = { "@set": { data: JSONValue[]; after?: string } };
+// WIP: core does not accept `@set` tagged values
+// type TaggedSet = { "@set": { data: JSONValue[]; after?: string } };
 type TaggedTime = { "@time": string };
 
 export const LONG_MIN = BigInt("-9223372036854775808");
@@ -162,8 +163,11 @@ const encodeMap = {
   namedDocument: (value: NamedDocument): TaggedRef => ({
     "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
-  set: (value: Set<any>): TaggedSet => ({
-    "@set": { data: encodeMap["array"](value.data), after: value.after },
+  set: (value: Set<any>) => ({
+    // WIP: core does not accept `@set` tagged values, yet, so just unwrap
+    // "@set": { data: encodeMap["array"](value.data), after: value.after },
+    data: encodeMap["array"](value.data),
+    after: value.after,
   }),
 };
 
@@ -188,14 +192,16 @@ const encode = (input: JSONValue): JSONValue => {
         return encodeMap["faunatime"](input);
       } else if (input instanceof Module) {
         return encodeMap["module"](input);
+      } else if (input instanceof Document) {
+        // Document extends DocumentReference, so order is important here
+        return encodeMap["document"](input);
       } else if (input instanceof DocumentReference) {
         return encodeMap["documentReference"](input);
-      } else if (input instanceof Document) {
-        return encodeMap["document"](input);
+      } else if (input instanceof NamedDocument) {
+        // NamedDocument extends NamedDocumentReference, so order is important here
+        return encodeMap["namedDocument"](input);
       } else if (input instanceof NamedDocumentReference) {
         return encodeMap["namedDocumentReference"](input);
-      } else if (input instanceof NamedDocument) {
-        return encodeMap["namedDocument"](input);
       } else if (input instanceof Set) {
         return encodeMap["set"](input);
       } else {

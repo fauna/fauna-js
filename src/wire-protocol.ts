@@ -1,5 +1,15 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { fql } from "./query-builder";
+import {
+  DateStub,
+  Document,
+  DocumentReference,
+  Module,
+  NamedDocument,
+  NamedDocumentReference,
+  Set,
+  TimeStub,
+} from "./values";
 
 /**
  * A request to make to Fauna.
@@ -237,10 +247,20 @@ export type JSONObject = {
  * All values returned from Fauna are valid JSON values.
  */
 export type JSONValue =
+  // plain javascript values
   | null
   | string
   | number
   | bigint
   | boolean
   | JSONObject
-  | Array<JSONValue>;
+  | Array<JSONValue>
+  // fauna-provided classes
+  | DateStub
+  | TimeStub
+  | Module
+  | Document
+  | DocumentReference
+  | NamedDocument
+  | NamedDocumentReference
+  | Set<JSONValue>;

@@ -31,7 +31,7 @@ export const isQueryBuilder = (obj: any): obj is QueryBuilder =>
  * ```
  */
 export function fql(
-  queryFragments: TemplateStringsArray,
+  queryFragments: ReadonlyArray<string>,
   ...queryArgs: (JSONValue | QueryBuilder)[]
 ): QueryBuilder {
   return new TemplateQueryBuilder(queryFragments, ...queryArgs);
@@ -43,11 +43,11 @@ export function fql(
  * function
  */
 class TemplateQueryBuilder implements QueryBuilder {
-  readonly #queryFragments: TemplateStringsArray;
+  readonly #queryFragments: ReadonlyArray<string>;
   readonly #queryArgs: (JSONValue | QueryBuilder)[];
 
   constructor(
-    queryFragments: TemplateStringsArray,
+    queryFragments: ReadonlyArray<string>,
     ...queryArgs: (JSONValue | QueryBuilder)[]
   ) {
     if (

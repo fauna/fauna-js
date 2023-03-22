@@ -44,7 +44,7 @@ describe("querying for doc types", () => {
     expect(result.data.name).toBe("DocTest");
   });
 
-  it("can round-trip DocumentReference", async () => {
+  it("can round-trip DocumentReference to a non-existent doc", async () => {
     const mod = new Module("DocTest");
     const ref = new DocumentReference({ id: "101", coll: mod });
 
@@ -52,8 +52,21 @@ describe("querying for doc types", () => {
     const result = await client.query<DocumentReference>(queryBuilder);
 
     expect(result.data).toBeInstanceOf(DocumentReference);
+    expect(result.data).not.toBeInstanceOf(Document);
     expect(result.data.id).toBe("101");
     expect(result.data.coll.name).toBe("DocTest");
+  });
+
+  it("can round-trip DocumentReference to an existent doc", async () => {
+    const ref = new DocumentReference(testDoc);
+
+    const queryBuilder = fql`${ref}`;
+    const result = await client.query<Document>(queryBuilder);
+
+    expect(result.data).toBeInstanceOf(Document);
+    expect(result.data.id).toBe(testDoc.id);
+    expect(result.data.coll.name).toBe(testDoc.coll.name);
+    expect(result.data.ts.isoString).toBe(testDoc.ts.isoString);
   });
 
   it("can round-trip Document", async () => {

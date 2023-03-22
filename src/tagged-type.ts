@@ -76,18 +76,15 @@ export class TaggedTypeFormat {
   }
 }
 
-type TaggedRefBase =
-  | { id: string; coll: TaggedMod }
-  | { name: string; coll: TaggedMod };
-
-type TaggedDoc = { "@doc": TaggedRefBase };
 type TaggedDate = { "@date": string };
 type TaggedDouble = { "@double": string };
 type TaggedInt = { "@int": string };
 type TaggedLong = { "@long": string };
 type TaggedMod = { "@mod": string };
 type TaggedObject = { "@object": JSONObject };
-type TaggedRef = { "@ref": TaggedRefBase };
+type TaggedRef = {
+  "@ref": { id: string; coll: TaggedMod } | { name: string; coll: TaggedMod };
+};
 // WIP: core does not accept `@set` tagged values
 // type TaggedSet = { "@set": { data: JSONValue[]; after?: string } };
 type TaggedTime = { "@time": string };
@@ -157,14 +154,14 @@ const encodeMap = {
   documentReference: (value: DocumentReference): TaggedRef => ({
     "@ref": { id: value.id, coll: { "@mod": value.coll.name } },
   }),
-  document: (value: Document): TaggedDoc => ({
-    "@doc": { id: value.id, coll: { "@mod": value.coll.name } },
+  document: (value: Document): TaggedRef => ({
+    "@ref": { id: value.id, coll: { "@mod": value.coll.name } },
   }),
   namedDocumentReference: (value: NamedDocumentReference): TaggedRef => ({
     "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
-  namedDocument: (value: NamedDocument): TaggedDoc => ({
-    "@doc": { name: value.name, coll: { "@mod": value.coll.name } },
+  namedDocument: (value: NamedDocument): TaggedRef => ({
+    "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
   set: (value: Set<any>) => ({
     // WIP: core does not accept `@set` tagged values, yet, so just unwrap

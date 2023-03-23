@@ -38,25 +38,10 @@ export class NodeHTTP2Client implements HTTPClient {
       const result = await session.request(httpRequest);
       return result;
     } catch (error) {
-      // We do this cleanup in v4 driver. Does it risk killing other open requests
-      // that we want to let go, or if we are in this catch block are we actually
-      // safe to do this?
-      this.#cleanupSession(httpRequest.url);
-
       // TODO: be more discernable about error types
       throw new NetworkError("The network connection encountered a problem.", {
         cause: error,
       });
-    }
-  }
-
-  #cleanupSession(url: string) {
-    const sessionKey = url; // WIP: need to account for streaming
-
-    const session = this.#sessionMap.get(sessionKey);
-    if (session) {
-      session.close();
-      this.#sessionMap.delete(sessionKey);
     }
   }
 
@@ -77,8 +62,8 @@ export class NodeHTTP2Client implements HTTPClient {
 
     const session = new SessionWrapper(sessionKey);
     session.internal
-      .once("error", () => this.#cleanupSession(url))
-      .once("goaway", () => this.#cleanupSession(url));
+      .once("error", () => session.close())
+      .once("goaway", () => session.close());
     this.#sessionMap.set(sessionKey, session);
 
     return session;
@@ -93,7 +78,7 @@ type SessionWrapperOptions = {
 type SessionRequestOptions = {
   data: QueryRequest;
   headers: Record<string, string | undefined>;
-  method: "POST" | "GET";
+  method: "POST";
   // WIP: stream-consumer callbacks like onData should go here
 };
 

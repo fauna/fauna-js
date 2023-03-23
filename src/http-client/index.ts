@@ -13,7 +13,7 @@ export { FetchClient } from "./fetch-client";
 export type HTTPRequest = {
   data: QueryRequest;
   headers: Record<string, string | undefined>;
-  method: "POST" | "GET";
+  method: "POST";
   url: string;
 };
 

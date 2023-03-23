@@ -25,6 +25,8 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
   - [Querying with FQL X](#querying-with-fql-x)
   - [Query Composition](#query-composition)
   - [Typescript Support](#typescript-support)
+  - [Query Options](#query-options)
+  - [Client Configuration](#client-configuration)
   - [Query Statistics](#query-statistics)
 - [Contributing](#contributing)
   - [Setting up this Repo](#setting-up-this-repo)
@@ -221,6 +223,54 @@ console.assert(user_doc.id);
 console.assert(user_doc.ts);
 console.assert(user_doc.name === "Alice");
 console.assert(user_doc.email === "alice@site.example");
+```
+
+## Query Options
+
+Options are available to configure queries on each request.
+
+```typescript
+import { Client, type QueryRequestHeaders } from "fauna";
+
+const client = new Client();
+
+const options: QueryRequestHeaders = {
+  format: "tagged",
+  linearized: false,
+  query_timeout_ms: 60_000,
+  max_contention_retries: 5,
+  query_tags: { name: "readme query" },
+  traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
+  typecheck: true,
+};
+
+const result = await client.query(SOME_QUERY, options);
+```
+
+## Client Configuration
+
+The client can be configured for your specific environment. You can also provide query options that will be sent by default with every request
+
+```typescript
+import { Client, type ClientConfiguration } from "fauna";
+
+const config: ClientConfiguration = {
+  // configure client
+  secret: YOUR_FAUNA_SECRET,
+  endpoint: new URL("https://db.fauna.com"),
+  max_conns: 10,
+
+  // set default query options
+  format: "tagged",
+  linearized: false,
+  query_timeout_ms: 60_000,
+  max_contention_retries: 5,
+  query_tags: { name: "readme query" },
+  traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
+  typecheck: true,
+};
+
+const client = new Client(config);
 ```
 
 ## Query Statistics

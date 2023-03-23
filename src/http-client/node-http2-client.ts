@@ -1,7 +1,7 @@
 import http2 from "http2";
 
 import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
-import { NetworkError, ProtocolError } from "../errors";
+import { NetworkError } from "../errors";
 import { QueryRequest } from "../wire-protocol";
 
 const { HTTP2_HEADER_PATH, HTTP2_HEADER_METHOD, HTTP2_HEADER_STATUS } =
@@ -91,16 +91,12 @@ class SessionWrapper {
   readonly #idleTime: number;
   // WIP: should be set to something different for streaming
   readonly #pathName: "/query/1";
-  #ongoingRequests: number;
-  #timerId: NodeJS.Timeout | null;
 
   constructor(url: string, options?: Partial<SessionWrapperOptions>) {
     const _options: SessionWrapperOptions = {
       ...DEFAULT_SESSION_OPTIONS,
       ...options,
     };
-    this.#ongoingRequests = 0;
-    this.#timerId = null;
     // TODO: put a cap on lax idle time
     this.#idleTime = _options.idleTime;
     // WIP: should be set to something different for streaming
@@ -108,13 +104,15 @@ class SessionWrapper {
 
     try {
       this.internal = http2.connect(url);
+      this.internal.setTimeout(this.#idleTime, () => {
+        this.close();
+      });
     } catch (error) {
-      throw new NetworkError(`Could not connect to ${url}`, { cause: error });
+      throw new NetworkError(`Could not connect to Fauna`, { cause: error });
     }
   }
 
   close() {
-    this.#clearInactivityTimeout();
     this.internal.close();
   }
 
@@ -141,8 +139,6 @@ class SessionWrapper {
 
         // Once the response is finished, resolve the promise
         req.on("end", () => {
-          // #onRequestStart must be called to decrease the reference count
-          this.#onRequestEnd();
           resolvePromise({
             status,
             body: responseData,
@@ -163,45 +159,11 @@ class SessionWrapper {
           .setEncoding("utf8")
           .on("error", (error) => rejectPromise(error))
           .on("response", onResponse);
-        // #onRequestStart must be called to increase the reference count
-        this.#onRequestStart();
         req.write(JSON.stringify(requestData), "utf8");
         req.end();
       } catch (error) {
         rejectPromise(error);
       }
     });
-  }
-
-  #clearInactivityTimeout() {
-    if (this.#timerId) {
-      clearTimeout(this.#timerId);
-      this.#timerId = null;
-    }
-  }
-
-  #onRequestEnd() {
-    --this.#ongoingRequests;
-    const noOngoingRequests = this.#ongoingRequests === 0;
-    const isSessionClosed = this.internal.closed || this.internal.destroyed;
-    if (noOngoingRequests && !isSessionClosed) {
-      this.#setInactivityTimeout();
-    }
-  }
-
-  #onRequestStart() {
-    ++this.#ongoingRequests;
-    this.#clearInactivityTimeout();
-  }
-
-  #setInactivityTimeout() {
-    this.#clearInactivityTimeout();
-    const onTimeout = () => {
-      this.#timerId = null;
-      if (this.#ongoingRequests === 0) {
-        this.close();
-      }
-    };
-    this.#timerId = setTimeout(onTimeout, this.#idleTime);
   }
 }

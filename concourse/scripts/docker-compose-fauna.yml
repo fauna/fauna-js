@@ -6,11 +6,6 @@ services:
     container_name: faunadb
     ports:
       - "8443:8443"
-    healthcheck:
-      test: ["CMD", "curl", "http://faunadb:8443/ping"]
-      interval: 1s
-      timeout: 3s
-      retries: 30
 
   node-lts:
     image: node:18.15-alpine3.16
@@ -23,8 +18,13 @@ services:
     environment:
       FAUNA_ENDPOINT: http://faunadb:8443
       FAUNA_SECRET: secret
-    entrypoint: /usr/local/bin/yarn
-    command: test:integration
+    command:
+      - /bin/sh
+      - -cxe
+      - |
+        apk add --no-cache curl
+        ./wait-for-it.sh http://faunadb:8443/ping
+        yarn test:integration
 
   node-current:
     image: node:19.8-alpine3.16
@@ -37,5 +37,10 @@ services:
     environment:
       FAUNA_ENDPOINT: http://faunadb:8443
       FAUNA_SECRET: secret
-    entrypoint: /usr/local/bin/yarn
-    command: test:integration
+    command:
+      - /bin/sh
+      - -cxe
+      - |
+        apk add --no-cache curl
+        ./wait-for-it.sh http://faunadb:8443/ping
+        yarn test:integration

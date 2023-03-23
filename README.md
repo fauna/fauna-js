@@ -27,6 +27,7 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
   - [Typescript Support](#typescript-support)
   - [Query Options](#query-options)
   - [Client Configuration](#client-configuration)
+    - [Using environment variables](#using-environment-variables)
   - [Query Statistics](#query-statistics)
 - [Contributing](#contributing)
   - [Setting up this Repo](#setting-up-this-repo)
@@ -271,6 +272,23 @@ const config: ClientConfiguration = {
 };
 
 const client = new Client(config);
+```
+
+### Using environment variables
+
+The driver will default to configuring your client with the values of the `FAUNA_SECRET` and `FAUNA_ENDPOINT` environment variable.
+
+For example, if you set the following environment variables:
+
+```shell
+export FAUNA_SECRET=YOUR_FAUNA_SECRET
+export FAUNA_ENDPOINT=https://db.fauna.com/
+```
+
+you can create a client without additional options
+
+```
+const client = new Client()
 ```
 
 ## Query Statistics

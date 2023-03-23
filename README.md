@@ -68,7 +68,7 @@ The driver is built as a JS module for browsers and is available via CDN:
 
 ```html
 <script type="module">
-  import * as fauna from "http://cdn.jsdelivr.net/npm/fauna@latest/dist/browser/index.js";
+  import * as fauna from "https://cdn.jsdelivr.net/npm/fauna@latest/dist/browser/index.js";
 </script>
 ```
 
@@ -83,7 +83,7 @@ The driver is built as a JS module for browsers and is available via CDN:
     <h1>Test</h1>
   </body>
   <script type="module">
-    import * as fauna from "http://cdn.jsdelivr.net/npm/fauna@latest/dist/browser/index.js";
+    import * as fauna from "https://cdn.jsdelivr.net/npm/fauna@latest/dist/browser/index.js";
 
     /* ... */
   </script>

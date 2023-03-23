@@ -3,47 +3,25 @@
 
 ## Table of Contents
 
-1. [Development](#development)
 1. [Quick Start](#quick-start-for-the-fql-x-driver)
 1. [Learning how to use the Driver](#learning-how-to-use-the-fql-x-driver)
 1. [Understanding the wire protocol](#understanding-the-fql-x-wire-protocol)
-
-# Development
-
-## Goals
-
-1. Vend a Fauna client user's of Fauna can use on the server or the browser.
-2. Vend Typescript for those who want it; plain javascript for those who don't.
-
-## Setting up this Repo
-
-1. Clone the repository; e.g. `gh repo clone fauna/fauna-js` if you use the GitHub CLI
-2. Install dependencies via `yarn install`
-
-## Running tests
-
-1. Start a docker desktop or other docker platform.
-2. Run `yarn test`. This will start local fauna containers, verify they're up and run all tests.
-
-## Linting your code
-
-Linting runs automatically on each commit.
-
-If you wish to run on-demand run `yarn lint`.
+1. [Development](#development)
 
 # Usage
 
 The FQL X JS driver uses a template-based approach to composing queries and operations. The advantage of this design is that you can prototype and test your queries in the Fauna dashboard shell, and then cut-and-paste those queries as templates in your client, which are executed in Fauna via this driver. You can parameterize your query by adding placeholders to the template, and then pass a set of arguments to the query() method, or resolve the placeholders with string interpolation.
 
-This driver can only be used with FQL X, and is not compatible with earlier versions of FQL. At time of alpha, FQL X is currently only served in Fauna's preview environment. This README contains detailed instructions on how to use the driver, split into the following sections .
+This driver can only be used with FQL X, and is not compatible with earlier versions of FQL. This README contains detailed instructions on how to use the driver, split into the following sections .
 
 # Quick Start for the FQL X driver
 
 ## Set-up and Dependencies
 
-This driver is not yet hosted on npm. To use it in a toy app clone this repo and add a file system dependency from a node application.
+This driver is on NPM.
 
-For example: `yarn add file://path-to-your-clone`
+You can install with npm with `npm install fauna`.
+You can install with yarn with `yarn add fauna`
 
 ## Pre-requisites
 
@@ -58,9 +36,7 @@ import { Client, endpoints, fql } from "fauna";
 
 const client = new Client({
   endpoint: endpoints.preview,
-  max_conns: 5, // maximum number of connections to keep alive and awaiting requests to Fauna
   secret: "<my_fauna_secret>",
-  query_timeout_ms: 60_000,
 });
 ```
 
@@ -71,17 +47,8 @@ import { Client } from "fauna";
 
 const client = new Client();
 // secret defaults to whatever is stored in a FAUNA_SECRET environmental variable
-// max_conns defaults to 10
-// query_timeout_ms defaults to 60,000
+// query_timeout_ms defaults to letting Fauna's service control the query timeout (maintained to meet typical customer workloads).
 // endpoint defaults to endpoints.cloud
-```
-
-Since you'll be running this demo against the Preview environment you'll need to at least override the endpoint:
-
-```typescript
-import { Client } from "fauna";
-
-const client = new Client({ endpoint: endpoints.preview });
 ```
 
 The following snippet uses the client object, just created in the previous example, to execute queries in Fauna.
@@ -105,7 +72,7 @@ Rather than hard coding your secret into your code, the driver can load your sec
 
 # Learning how to use the FQL X Driver
 
-You can familiarize yourself with the driver by completing the exercises included in the demo directory of this repo. Additionally, the **Getting Started With the Driver** section of this README provides driver documentation, and the driver code itself is heavily documented. Information about Fauna service and the v10 API is available in the [FQL X alpha documentation](https://deploy-preview-1220--fauna-docs.netlify.app/fqlx/alpha/). So, feel free to proceed as works bests for you!
+You can familiarize yourself with the driver by completing the exercises included in the demo directory of this repo. Additionally, the **Getting Started With the Driver** section of this README provides driver documentation, and the driver code itself is heavily documented. Information about Fauna service and the v10 API is available in the [FQL X beta documentation](https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/). So, feel free to proceed as works bests for you!
 
 ## Querying with your client
 
@@ -343,3 +310,26 @@ try {
 ```
 
 See the driver code and documentation for more detailed information about errors.
+
+# Development
+
+## Goals
+
+1. Vend a Fauna client user's of Fauna can use on the server or the browser.
+2. Vend Typescript for those who want it; plain javascript for those who don't.
+
+## Setting up this Repo
+
+1. Clone the repository; e.g. `gh repo clone fauna/fauna-js` if you use the GitHub CLI
+2. Install dependencies via `yarn install`
+
+## Running tests
+
+1. Start a docker desktop or other docker platform.
+2. Run `yarn test`. This will start local fauna containers, verify they're up and run all tests.
+
+## Linting your code
+
+Linting runs automatically on each commit.
+
+If you wish to run on-demand run `yarn lint`.

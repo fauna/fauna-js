@@ -10,7 +10,7 @@ See the [Fauna Documentation](https://fqlx-beta--fauna-docs.netlify.app/fqlx/bet
 
 This driver can only be used with FQL X, and is not compatible with earlier versions of FQL. To query your databases with earlier API versions, see the [faunadb](https://www.npmjs.com/package/faunadb) package.
 
-</details>
+<details>
 <summary>Table of Contents</summary>
 
 - [A JavaScript driver for Fauna.](#a-javascript-driver-for-fauna)

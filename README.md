@@ -3,33 +3,11 @@
 
 ## Table of Contents
 
-1. [Development](#development)
 1. [Quick Start](#quick-start-for-the-fql-x-driver)
 1. [Learning how to use the Driver](#learning-how-to-use-the-fql-x-driver)
 1. [Understanding the wire protocol](#understanding-the-fql-x-wire-protocol)
+2. 1. [Development](#development)
 
-# Development
-
-## Goals
-
-1. Vend a Fauna client user's of Fauna can use on the server or the browser.
-2. Vend Typescript for those who want it; plain javascript for those who don't.
-
-## Setting up this Repo
-
-1. Clone the repository; e.g. `gh repo clone fauna/fauna-js` if you use the GitHub CLI
-2. Install dependencies via `yarn install`
-
-## Running tests
-
-1. Start a docker desktop or other docker platform.
-2. Run `yarn test`. This will start local fauna containers, verify they're up and run all tests.
-
-## Linting your code
-
-Linting runs automatically on each commit.
-
-If you wish to run on-demand run `yarn lint`.
 
 # Usage
 
@@ -41,9 +19,10 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
 
 ## Set-up and Dependencies
 
-This driver is not yet hosted on npm. To use it in a toy app clone this repo and add a file system dependency from a node application.
+This driver is on NPM.
 
-For example: `yarn add file://path-to-your-clone`
+You can install with npm with `npm install fauna`.
+You can install with yarn with `yarn add fauna`
 
 ## Pre-requisites
 
@@ -58,9 +37,7 @@ import { Client, endpoints, fql } from "fauna";
 
 const client = new Client({
   endpoint: endpoints.preview,
-  max_conns: 5, // maximum number of connections to keep alive and awaiting requests to Fauna
   secret: "<my_fauna_secret>",
-  query_timeout_ms: 60_000,
 });
 ```
 
@@ -71,8 +48,7 @@ import { Client } from "fauna";
 
 const client = new Client();
 // secret defaults to whatever is stored in a FAUNA_SECRET environmental variable
-// max_conns defaults to 10
-// query_timeout_ms defaults to 60,000
+// query_timeout_ms defaults to letting Fauna's service control the query timeout (maintained to meet typical customer workloads).
 // endpoint defaults to endpoints.cloud
 ```
 
@@ -343,3 +319,26 @@ try {
 ```
 
 See the driver code and documentation for more detailed information about errors.
+
+# Development
+
+## Goals
+
+1. Vend a Fauna client user's of Fauna can use on the server or the browser.
+2. Vend Typescript for those who want it; plain javascript for those who don't.
+
+## Setting up this Repo
+
+1. Clone the repository; e.g. `gh repo clone fauna/fauna-js` if you use the GitHub CLI
+2. Install dependencies via `yarn install`
+
+## Running tests
+
+1. Start a docker desktop or other docker platform.
+2. Run `yarn test`. This will start local fauna containers, verify they're up and run all tests.
+
+## Linting your code
+
+Linting runs automatically on each commit.
+
+If you wish to run on-demand run `yarn lint`.

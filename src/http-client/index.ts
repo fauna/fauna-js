@@ -2,6 +2,8 @@
 import type { Client } from "../client";
 import { QueryRequest } from "../wire-protocol";
 import { FetchClient } from "./fetch-client";
+import { NodeHTTP2Client } from "./node-http2-client";
+
 export { FetchClient } from "./fetch-client";
 
 /**
@@ -10,8 +12,8 @@ export { FetchClient } from "./fetch-client";
  */
 export type HTTPRequest = {
   data: QueryRequest;
-  headers: Record<string, string>;
-  method: string;
+  headers: Record<string, string | undefined>;
+  method: "POST";
   url: string;
 };
 
@@ -21,7 +23,7 @@ export type HTTPRequest = {
  */
 export type HTTPResponse = {
   body: string;
-  headers: Record<string, string | string[]>;
+  headers: Record<string, string | string[] | undefined>;
   status: number;
 };
 
@@ -39,13 +41,12 @@ export interface HTTPClient {
   request(req: HTTPRequest): Promise<HTTPResponse>;
 }
 
-export const getDefaultHTTPClient = () => {
-  // WIP: we only have one implementation right now, but should eventually
-  // inspect the environment for the correct implementation
-  return new FetchClient();
-};
+export const getDefaultHTTPClient = () =>
+  isNode() ? NodeHTTP2Client.getClient() : new FetchClient();
 
 // utility functions
 
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;
+
+const isNode = () => process !== undefined && process.release?.name === "node";

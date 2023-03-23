@@ -37,7 +37,7 @@
   },
   "scripts": {
     "build": "rm -rf dist; yarn build:node; yarn build:browser; yarn build:types",
-    "build:browser": "esbuild src/index.ts --bundle --platform=browser --minify --sourcemap --format=esm --outfile=dist/browser/index.js",
+    "build:browser": "esbuild src/index.ts --bundle --platform=browser --minify --sourcemap --format=esm --outfile=dist/browser/index.js --external:./src/http-client/node-http2-client",
     "build:node": "esbuild src/index.ts --bundle --sourcemap --platform=node --outfile=dist/node/index.js",
     "build:types": "tsc -emitDeclarationOnly --declaration true",
     "lint": "eslint -f unix \"src/**/*.{ts,tsx}\"",

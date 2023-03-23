@@ -6,7 +6,7 @@
 1. [Quick Start](#quick-start-for-the-fql-x-driver)
 1. [Learning how to use the Driver](#learning-how-to-use-the-fql-x-driver)
 1. [Understanding the wire protocol](#understanding-the-fql-x-wire-protocol)
-2. 1. [Development](#development)
+1. [Development](#development)
 
 
 # Usage

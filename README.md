@@ -8,12 +8,11 @@
 1. [Understanding the wire protocol](#understanding-the-fql-x-wire-protocol)
 1. [Development](#development)
 
-
 # Usage
 
 The FQL X JS driver uses a template-based approach to composing queries and operations. The advantage of this design is that you can prototype and test your queries in the Fauna dashboard shell, and then cut-and-paste those queries as templates in your client, which are executed in Fauna via this driver. You can parameterize your query by adding placeholders to the template, and then pass a set of arguments to the query() method, or resolve the placeholders with string interpolation.
 
-This driver can only be used with FQL X, and is not compatible with earlier versions of FQL. At time of alpha, FQL X is currently only served in Fauna's preview environment. This README contains detailed instructions on how to use the driver, split into the following sections .
+This driver can only be used with FQL X, and is not compatible with earlier versions of FQL. This README contains detailed instructions on how to use the driver, split into the following sections .
 
 # Quick Start for the FQL X driver
 
@@ -52,14 +51,6 @@ const client = new Client();
 // endpoint defaults to endpoints.cloud
 ```
 
-Since you'll be running this demo against the Preview environment you'll need to at least override the endpoint:
-
-```typescript
-import { Client } from "fauna";
-
-const client = new Client({ endpoint: endpoints.preview });
-```
-
 The following snippet uses the client object, just created in the previous example, to execute queries in Fauna.
 
 ```typescript
@@ -81,7 +72,7 @@ Rather than hard coding your secret into your code, the driver can load your sec
 
 # Learning how to use the FQL X Driver
 
-You can familiarize yourself with the driver by completing the exercises included in the demo directory of this repo. Additionally, the **Getting Started With the Driver** section of this README provides driver documentation, and the driver code itself is heavily documented. Information about Fauna service and the v10 API is available in the [FQL X alpha documentation](https://deploy-preview-1220--fauna-docs.netlify.app/fqlx/alpha/). So, feel free to proceed as works bests for you!
+You can familiarize yourself with the driver by completing the exercises included in the demo directory of this repo. Additionally, the **Getting Started With the Driver** section of this README provides driver documentation, and the driver code itself is heavily documented. Information about Fauna service and the v10 API is available in the [FQL X beta documentation](https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/). So, feel free to proceed as works bests for you!
 
 ## Querying with your client
 

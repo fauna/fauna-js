@@ -2,6 +2,7 @@ import { getClient } from "../client";
 import { Client } from "../../src/client";
 import { endpoints } from "../../src/client-configuration";
 import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
+import { fql } from "../../src/query-builder";
 
 // save a copy
 const PROCESS_ENV = { ...process.env };
@@ -55,7 +56,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       secret: "secret",
       query_timeout_ms: 60_000,
     });
-    const result = await client.query<number>({ query: '"taco".length' });
+    const result = await client.query<number>(fql`"taco".length`);
     expect(result.data).toEqual(4);
     expect(result.txn_ts).toBeDefined();
   });
@@ -114,7 +115,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
         },
         httpClient
       );
-      await client.query<number>({ query: '"taco".length' });
+      await client.query<number>(fql`"taco".length`);
     }
   );
 });

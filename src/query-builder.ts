@@ -7,18 +7,11 @@ import type {
   QueryRequestHeaders,
 } from "./wire-protocol";
 
-export interface QueryBuilder {
-  toQuery: (headers?: QueryRequestHeaders) => QueryRequest;
-}
-
-export const isQueryBuilder = (obj: any): obj is QueryBuilder =>
-  obj instanceof Object && typeof obj.toQuery === "function";
-
 /**
- * Creates a new QueryBuilder. Accepts template literal inputs.
+ * Creates a new Query. Accepts template literal inputs.
  * @param queryFragments - a {@link TemplateStringsArray} that constitute
  *   the strings that are the basis of the query.
- * @param queryArgs - an Array\<JSONValue | QueryBuilder\> that
+ * @param queryArgs - an Array\<JSONValue | Query\> that
  *   constitute the arguments to inject between the queryFragments.
  * @throws Error - if you call this method directly (not using template
  *   literals) and pass invalid construction parameters
@@ -26,15 +19,15 @@ export const isQueryBuilder = (obj: any): obj is QueryBuilder =>
  * ```typescript
  *  const str = "baz";
  *  const num = 17;
- *  const innerQueryBuilder = fql`${num} + 3)`;
- *  const queryRequestBuilder = fql`${str}.length == ${innerQueryBuilder}`;
+ *  const innerQuery = fql`${num} + 3)`;
+ *  const queryRequestBuilder = fql`${str}.length == ${innerQuery}`;
  * ```
  */
 export function fql(
   queryFragments: ReadonlyArray<string>,
-  ...queryArgs: (JSONValue | QueryBuilder)[]
-): QueryBuilder {
-  return new TemplateQueryBuilder(queryFragments, ...queryArgs);
+  ...queryArgs: (JSONValue | Query)[]
+): Query {
+  return new Query(queryFragments, ...queryArgs);
 }
 
 /**
@@ -42,13 +35,13 @@ export function fql(
  * A builder for composing queries using the {@link fql} tagged template
  * function
  */
-class TemplateQueryBuilder implements QueryBuilder {
+export class Query {
   readonly #queryFragments: ReadonlyArray<string>;
-  readonly #queryArgs: (JSONValue | QueryBuilder)[];
+  readonly #queryArgs: (JSONValue | Query)[];
 
   constructor(
     queryFragments: ReadonlyArray<string>,
-    ...queryArgs: (JSONValue | QueryBuilder)[]
+    ...queryArgs: (JSONValue | Query)[]
   ) {
     if (
       queryFragments.length === 0 ||
@@ -61,7 +54,7 @@ class TemplateQueryBuilder implements QueryBuilder {
   }
 
   /**
-   * Converts this TemplateQueryBuilder to a {@link QueryRequest} you can send
+   * Converts this Query to a {@link QueryRequest} you can send
    * to Fauna.
    * @param requestHeaders - optional {@link QueryRequestHeaders} to include
    *   in the request (and thus override the defaults in your {@link ClientConfiguration}.
@@ -95,7 +88,7 @@ class TemplateQueryBuilder implements QueryBuilder {
 
         const arg = this.#queryArgs[i];
         let subQuery: string | QueryInterpolation;
-        if (isQueryBuilder(arg)) {
+        if (arg instanceof Query) {
           const request = arg.toQuery(requestHeaders);
           subQuery = request.query;
           resultArgs = { ...resultArgs, ...request.arguments };

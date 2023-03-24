@@ -12,6 +12,7 @@ import {
   ThrottlingError,
 } from "../../src/errors";
 import { FetchClient } from "../../src/http-client";
+import { fql } from "../../src/query-builder";
 
 const client = getClient(
   {
@@ -44,7 +45,7 @@ describe("query", () => {
         status: httpStatus,
       });
       try {
-        await client.query({ query: "'foo'.length" });
+        await client.query(fql`'foo'.length`);
       } catch (e) {
         if (e instanceof ServiceError) {
           expect(e).toBeInstanceOf(expectedErrorType);
@@ -82,7 +83,7 @@ describe("query", () => {
         }
       );
       try {
-        await client.query({ query: "'foo'.length" });
+        await client.query(fql`'foo'.length`);
       } catch (e) {
         if (e instanceof ServiceError) {
           expect(e).toBeInstanceOf(expectedErrorType);
@@ -118,7 +119,7 @@ describe("query", () => {
       );
 
       try {
-        await client.query({ query: "'foo'.length" });
+        await client.query(fql`'foo'.length`);
       } catch (e) {
         if (e instanceof ServiceError) {
           expect(e).toBeInstanceOf(expectedErrorType);
@@ -135,7 +136,7 @@ describe("query", () => {
     // axios mock adapater currently has a bug that cannot match
     // routes on clients using a baseURL. As such we use onAny() in these tests.
     fetchMock.mockResponse(JSON.stringify({ data: 3, summary: "the summary" }));
-    const actual = await client.query({ query: "'foo'.length" });
+    const actual = await client.query(fql`'foo'.length`);
     expect(actual.data).toEqual(3);
     expect(actual.summary).toEqual("the summary");
   });
@@ -147,7 +148,7 @@ describe("query", () => {
   //   mockAxios.onAny().timeout();
 
   //   try {
-  //     await client.query({ query: "'foo'.length" });
+  //     await client.query(fql`'foo'.length`);
   //   } catch (e) {
   //     if (e instanceof NetworkError) {
   //       expect(e.message).toEqual(
@@ -165,7 +166,7 @@ describe("query", () => {
   //   // routes on clients using a baseURL. As such we use onAny() in these tests.
   //   mockAxios.onAny().networkError();
   //   try {
-  //     await client.query({ query: "'foo'.length" });
+  //     await client.query(fql`'foo'.length`);
   //   } catch (e) {
   //     if (e instanceof NetworkError) {
   //       expect(e.message).toEqual(
@@ -200,7 +201,7 @@ describe("query", () => {
   //       throw { code: errorCode };
   //     });
   //     try {
-  //       await client.query({ query: "'foo'.length" });
+  //       await client.query(fql`'foo'.length`);
   //     } catch (e) {
   //       if (e instanceof NetworkError) {
   //         expect(e.message).toEqual(
@@ -220,7 +221,7 @@ describe("query", () => {
   //     throw { request: { status: 0 } };
   //   });
   //   try {
-  //     await client.query({ query: "'foo'.length" });
+  //     await client.query(fql`'foo'.length`);
   //   } catch (e) {
   //     if (e instanceof NetworkError) {
   //       expect(e.message).toEqual(

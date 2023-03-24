@@ -89,7 +89,7 @@ describe("query", () => {
           expect(e.message).toEqual(expectedErrorFields.message);
           expect(e.httpStatus).toEqual(httpStatus);
           expect(e.code).toEqual(expectedErrorFields.code);
-          expect(e.summary).toEqual(expectedErrorFields.summary);
+          expect(e.queryInfo?.summary).toEqual(expectedErrorFields.summary);
         }
       }
     }
@@ -125,7 +125,7 @@ describe("query", () => {
           expect(e.message).toEqual(expectedErrorFields.message);
           expect(e.httpStatus).toEqual(httpStatus);
           expect(e.code).toEqual(expectedErrorFields.code);
-          expect(e.summary).toEqual("the summary");
+          expect(e.queryInfo?.summary).toEqual("the summary");
         }
       }
     }

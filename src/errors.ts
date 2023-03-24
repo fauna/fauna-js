@@ -1,4 +1,8 @@
-import type { ConstraintFailure, QueryFailure } from "./wire-protocol";
+import type {
+  ConstraintFailure,
+  QueryFailure,
+  QueryInfo,
+} from "./wire-protocol";
 
 /**
  * A common error base class for all other errors.
@@ -24,10 +28,9 @@ export class ServiceError extends FaunaError {
    */
   readonly code: string;
   /**
-   * A summary of the error in a human readable form. Only present
-   * where message does not suffice.
+   * Details about the query sent along with the response
    */
-  readonly summary?: string;
+  readonly queryInfo?: QueryInfo;
   /**
    * A machine readable description of any constraint failures encountered by the query.
    * Present only if this query encountered constraint failures.
@@ -45,12 +48,16 @@ export class ServiceError extends FaunaError {
     this.name = "ServiceError";
     this.code = failure.error.code;
     this.httpStatus = httpStatus;
-    if (failure.summary) {
-      this.summary = failure.summary;
-    }
-    if (failure.error.constraint_failures !== undefined) {
-      this.constraint_failures = failure.error.constraint_failures;
-    }
+
+    const info: QueryInfo = {
+      txn_ts: failure.txn_ts,
+      summary: failure.summary,
+      query_tags: failure.query_tags,
+      stats: failure.stats,
+    };
+    this.queryInfo = info;
+
+    this.constraint_failures = failure.error.constraint_failures;
   }
 }
 

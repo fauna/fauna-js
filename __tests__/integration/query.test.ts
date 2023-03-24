@@ -199,7 +199,7 @@ describe.each`
         expect(e.httpStatus).toEqual(400);
         expect(e.message).toBeDefined();
         expect(e.code).toBeDefined();
-        expect(e.summary).toBeDefined();
+        expect(e.queryInfo?.summary).toBeDefined();
       }
     }
   });
@@ -217,7 +217,7 @@ describe.each`
       if (e instanceof QueryRuntimeError) {
         expect(e.httpStatus).toEqual(400);
         expect(e.code).toEqual("invalid_argument");
-        expect(e.summary).toBeDefined();
+        expect(e.queryInfo?.summary).toBeDefined();
       }
     }
   });
@@ -235,7 +235,7 @@ describe.each`
       if (e instanceof ServiceError) {
         expect(e.httpStatus).toEqual(400);
         expect(e.code).toEqual("constraint_failure");
-        expect(e.summary).toBeDefined();
+        expect(e.queryInfo?.summary).toBeDefined();
         if (e.constraint_failures !== undefined) {
           expect(e.constraint_failures.length).toEqual(1);
           for (let constraintFailure of e.constraint_failures) {
@@ -295,7 +295,7 @@ describe.each`
         expect(e.message).toBeDefined();
         expect(e.code).toEqual("unauthorized");
         expect(e.httpStatus).toEqual(401);
-        expect(e.summary).toBeUndefined();
+        expect(e.queryInfo?.summary).toBeUndefined();
       }
     }
   });

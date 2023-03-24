@@ -1,6 +1,6 @@
 import { fql } from "../../src/query-builder";
 
-describe("fql method producing QueryBuilders", () => {
+describe("fql method producing Querys", () => {
   it("parses with no variables", () => {
     const queryBuilder = fql`'foo'.length`;
     const queryRequest = queryBuilder.toQuery();
@@ -94,8 +94,8 @@ describe("fql method producing QueryBuilders", () => {
   it("parses nested expressions", () => {
     const str = "baz";
     const num = 17;
-    const innerQueryBuilder = fql`Math.add(${num}, 3)`;
-    const queryBuilder = fql`${str}.length == ${innerQueryBuilder}`;
+    const innerQuery = fql`Math.add(${num}, 3)`;
+    const queryBuilder = fql`${str}.length == ${innerQuery}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toEqual({
       fql: [
@@ -114,8 +114,8 @@ describe("fql method producing QueryBuilders", () => {
     const otherNum = 3;
     const deepFirst = fql`(${str} + ${otherStr})`;
     const deeperBuilder = fql`Math.add(${num}, 3)`;
-    const innerQueryBuilder = fql`Math.add(${deeperBuilder}, ${otherNum})`;
-    const queryBuilder = fql`${deepFirst}.length == ${innerQueryBuilder}`;
+    const innerQuery = fql`Math.add(${deeperBuilder}, ${otherNum})`;
+    const queryBuilder = fql`${deepFirst}.length == ${innerQuery}`;
     const queryRequest = queryBuilder.toQuery();
     expect(queryRequest.query).toEqual({
       fql: [
@@ -138,8 +138,8 @@ describe("fql method producing QueryBuilders", () => {
   it("adds headers if passed in", () => {
     const str = "baz";
     const num = 17;
-    const innerQueryBuilder = fql`Math.add(${num}, 3)`;
-    const queryBuilder = fql`${str}.length == ${innerQueryBuilder}`;
+    const innerQuery = fql`Math.add(${num}, 3)`;
+    const queryBuilder = fql`${str}.length == ${innerQuery}`;
     const queryRequest = queryBuilder.toQuery({
       linearized: true,
       query_timeout_ms: 600,

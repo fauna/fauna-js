@@ -24,13 +24,11 @@ describe("last_txn_ts tracking in client", () => {
       httpClient
     );
 
-    const resultOne = await myClient.query({
-      query:
-        "\
-if (Collection.byName('Customers') == null) {\
-  Collection.create({ name: 'Customers' })\
-}",
-    });
+    const resultOne = await myClient.query(fql`
+      if (Collection.byName('Customers') == null) {
+        Collection.create({ name: 'Customers' })
+      }
+    `);
     expect(resultOne.txn_ts).not.toBeUndefined();
     expectedLastTxn = resultOne.txn_ts;
     const resultTwo = await myClient.query(
@@ -42,13 +40,11 @@ if (Collection.byName('Customers') == null) {\
     expect(resultTwo.txn_ts).not.toBeUndefined();
     expect(resultTwo.txn_ts).not.toEqual(resultOne.txn_ts);
     expectedLastTxn = resultTwo.txn_ts;
-    const resultThree = await myClient.query({
-      query:
-        "\
-if (Collection.byName('Products') == null) {\
-  Collection.create({ name: 'Products' })\
-}",
-    });
+    const resultThree = await myClient.query(fql`
+      if (Collection.byName('Products') == null) {
+        Collection.create({ name: 'Products' })
+      }
+    `);
     expect(resultThree.txn_ts).not.toBeUndefined();
     expect(resultThree.txn_ts).not.toEqual(resultTwo.txn_ts);
   });
@@ -74,13 +70,11 @@ if (Collection.byName('Products') == null) {\
       httpClient
     );
 
-    const resultOne = await myClient.query({
-      query:
-        "\
-if (Collection.byName('Customers') == null) {\
-  Collection.create({ name: 'Customers' })\
-}",
-    });
+    const resultOne = await myClient.query(fql`
+      if (Collection.byName('Customers') == null) {\
+        Collection.create({ name: 'Customers' })\
+      }
+    `);
     expect(resultOne.txn_ts).not.toBeUndefined();
     expectedLastTxn = resultOne.txn_ts;
     myClient.lastTxnTs = resultOne.txn_ts as number;
@@ -89,19 +83,17 @@ if (Collection.byName('Customers') == null) {\
       if (Collection.byName('Orders') == null) {\
         Collection.create({ name: 'Orders' })\
       }
-      `
+    `
     );
     expect(resultTwo.txn_ts).not.toBeUndefined();
     expect(resultTwo.txn_ts).not.toEqual(resultOne.txn_ts);
     myClient.lastTxnTs = 0;
     expectedLastTxn = resultTwo.txn_ts;
-    const resultThree = await myClient.query({
-      query:
-        "\
-if (Collection.byName('Products') == null) {\
-  Collection.create({ name: 'Products' })\
-}",
-    });
+    const resultThree = await myClient.query(fql`
+      if (Collection.byName('Products') == null) {\
+        Collection.create({ name: 'Products' })\
+      }
+    `);
     expect(resultThree.txn_ts).not.toBeUndefined();
     expect(resultThree.txn_ts).not.toEqual(resultTwo.txn_ts);
   });

@@ -20,22 +20,6 @@ const client = getClient({
   query_timeout_ms: 60_000,
 });
 
-function getTsa(tsa: TemplateStringsArray, ..._: any[]) {
-  return tsa;
-}
-
-async function doQuery<T>(
-  queryType: string,
-  queryTsa: TemplateStringsArray,
-  queryString: string,
-  client: Client
-): Promise<QuerySuccess<T>> {
-  if (queryType === "QueryRequest") {
-    return client.query({ query: queryString });
-  }
-  return client.query(fql(queryTsa));
-}
-
 const dummyResponse: HTTPResponse = {
   body: JSON.stringify({
     data: "",
@@ -54,18 +38,9 @@ const dummyResponse: HTTPResponse = {
   status: 200,
 };
 
-describe.each`
-  queryType
-  ${"QueryRequest"}
-  ${"QueryBuilder"}
-`("query with $queryType", ({ queryType }) => {
+describe("query with $queryType", () => {
   it("Can query an FQL-x endpoint", async () => {
-    const result = await doQuery<number>(
-      queryType,
-      getTsa`"taco".length`,
-      `"taco".length`,
-      client
-    );
+    const result = await client.query<number>(fql`"taco".length`);
 
     expect(result.data).toEqual(4);
     expect(result.summary).toBeDefined();
@@ -81,32 +56,19 @@ describe.each`
   });
 
   it("Can query with arguments", async () => {
-    let result;
-    if (queryType === "QueryRequest") {
-      result = await client.query({
-        query: "myArg.length",
-        arguments: { myArg: "taco" },
-      });
-    } else {
-      const str = "taco";
-      result = await client.query(fql`${str}.length`);
-    }
+    const str = "taco";
+    const result = await client.query(fql`${str}.length`);
     expect(result.data).toEqual(4);
     expect(result.txn_ts).toBeDefined();
   });
 
   it("Can query with tags", async () => {
-    let result: QuerySuccess<string>;
     let query_tags = {
       project: "teapot",
       hello: "world",
       testing: "foobar",
     };
-    if (queryType === "QueryRequest") {
-      result = await client.query({ query: `"foo"` }, { query_tags });
-    } else {
-      result = await client.query(fql`"foo"`, { query_tags });
-    }
+    const result = await client.query<string>(fql`"foo"`, { query_tags });
     expect(result.query_tags).toStrictEqual(query_tags);
   });
 
@@ -168,32 +130,14 @@ describe.each`
       };
       const myClient = getClient(clientConfiguration, httpClient);
       const headers = { [fieldName]: fieldValue };
-      if (queryType === "QueryRequest") {
-        const queryRequest: QueryRequest = {
-          query: '"taco".length',
-        };
-        await myClient.query<number>({ ...queryRequest, ...headers });
-        // headers object wins if present
-        await myClient.query<number>(
-          { ...queryRequest, [fieldName]: "crap" },
-          headers
-        );
-        await myClient.query<number>(queryRequest, headers);
-      } else {
-        await myClient.query<number>(fql`"taco".length`, headers);
-      }
+      await myClient.query<number>(fql`"taco".length`, headers);
     }
   );
 
   it("throws a QueryCheckError if the query is invalid", async () => {
     expect.assertions(4);
     try {
-      await doQuery<number>(
-        queryType,
-        getTsa`happy little fox`,
-        "happy little fox",
-        client
-      );
+      await client.query<number>(fql`happy little fox`);
     } catch (e) {
       if (e instanceof QueryCheckError) {
         expect(e.httpStatus).toEqual(400);
@@ -207,12 +151,7 @@ describe.each`
   it("throws a QueryRuntimeError if the query hits a runtime error", async () => {
     expect.assertions(3);
     try {
-      await doQuery<number>(
-        queryType,
-        getTsa`"taco".length + "taco"`,
-        '"taco".length + "taco"',
-        client
-      );
+      await client.query<number>(fql`"taco".length + "taco"`);
     } catch (e) {
       if (e instanceof QueryRuntimeError) {
         expect(e.httpStatus).toEqual(400);
@@ -225,11 +164,8 @@ describe.each`
   it("Includes constraint failures when present", async () => {
     expect.assertions(6);
     try {
-      await doQuery<number>(
-        queryType,
-        getTsa`Function.create({"name": "double", "body": "x => x * 2"})`,
-        'Function.create({"name": "double", "body": "x => x * 2"})',
-        client
+      await client.query<number>(
+        fql`Function.create({"name": "double", "body": "x => x * 2"})`
       );
     } catch (e) {
       if (e instanceof ServiceError) {
@@ -254,12 +190,7 @@ describe.each`
       query_timeout_ms: 1,
     });
     try {
-      await doQuery<number>(
-        queryType,
-        getTsa`Collection.create({ name: 'Wah' })`,
-        "Collection.create({ name: 'Wah' })",
-        badClient
-      );
+      await badClient.query<number>(fql`Collection.create({ name: 'Wah' })`);
     } catch (e) {
       if (e instanceof QueryTimeoutError) {
         expect(e.message).toEqual(
@@ -269,8 +200,8 @@ describe.each`
         expect(e.code).toEqual("time_out");
       }
     }
-    const actual = await client.query({
-      query: "Collection.byName('Wah')",
+
+    const actual = await client.query(fql`Collection.byName('Wah')`, {
       query_timeout_ms: 60_000,
     });
     expect(actual.data).toBeDefined();
@@ -284,12 +215,7 @@ describe.each`
       query_timeout_ms: 60,
     });
     try {
-      await doQuery<number>(
-        queryType,
-        getTsa`Collection.create({ name: 'Wah' })`,
-        "Collection.create({ name: 'Wah' })",
-        badClient
-      );
+      await badClient.query<number>(fql`Collection.create({ name: 'Wah' })`);
     } catch (e) {
       if (e instanceof AuthenticationError) {
         expect(e.message).toBeDefined();
@@ -306,19 +232,14 @@ describe.each`
 
   it("throws a NetworkError if the connection fails.", async () => {
     expect.assertions(2);
-    const myBadClient = getClient({
+    const badClient = getClient({
       endpoint: new URL("http://localhost:1"),
       max_conns: 1,
       secret: "secret",
       query_timeout_ms: 60,
     });
     try {
-      await doQuery<number>(
-        queryType,
-        getTsa`"taco".length;`,
-        '"taco".length;',
-        myBadClient
-      );
+      await badClient.query<number>(fql`"taco".length;`);
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(
@@ -336,7 +257,7 @@ describe.each`
         throw new Error("boom!");
       },
     };
-    const myBadClient = getClient(
+    const badClient = getClient(
       {
         max_conns: 5,
         query_timeout_ms: 60,
@@ -344,7 +265,7 @@ describe.each`
       httpClient
     );
     try {
-      await doQuery<number>(queryType, getTsa`foo`, "foo", myBadClient);
+      await badClient.query<number>(fql`foo`);
     } catch (e) {
       if (e instanceof ClientError) {
         expect(e.cause).toBeDefined();
@@ -364,7 +285,7 @@ describe.each`
       query_timeout_ms: 60,
     });
     try {
-      await doQuery<number>(queryType, getTsa`foo`, "foo", badClient);
+      await badClient.query<number>(fql`foo`);
     } catch (e) {
       if (e instanceof ProtocolError) {
         expect(e.httpStatus).toBeGreaterThanOrEqual(400);

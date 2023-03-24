@@ -85,8 +85,8 @@ describe("query using template format", () => {
   it("succeeds with nested expressions", async () => {
     const str = "foo";
     const num = 6;
-    const innerQueryBuilder = fql`(${num} - 3)`;
-    const queryBuilder = fql`${str}.length == ${innerQueryBuilder}`;
+    const innerQuery = fql`(${num} - 3)`;
+    const queryBuilder = fql`${str}.length == ${innerQuery}`;
     const response = await client.query(queryBuilder);
     expect(response.data).toBe(true);
   });
@@ -98,8 +98,8 @@ describe("query using template format", () => {
     const otherNum = 3;
     const deepFirst = fql`(${str} + ${otherStr})`;
     const deeperBuilder = fql`(${num} + 3)`;
-    const innerQueryBuilder = fql`(${deeperBuilder} - ${otherNum})`;
-    const queryBuilder = fql`${deepFirst}.length == ${innerQueryBuilder}`;
+    const innerQuery = fql`(${deeperBuilder} - ${otherNum})`;
+    const queryBuilder = fql`${deepFirst}.length == ${innerQuery}`;
     const response = await client.query(queryBuilder);
     expect(response.data).toBe(true);
   });

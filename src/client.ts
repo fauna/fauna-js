@@ -33,7 +33,7 @@ const defaultClientConfiguration: Pick<
   ClientConfiguration,
   "endpoint" | "max_conns"
 > = {
-  endpoint: endpoints.cloud,
+  endpoint: endpoints.default,
   max_conns: 10,
 };
 

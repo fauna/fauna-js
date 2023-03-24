@@ -16,9 +16,9 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
 - [A JavaScript driver for Fauna.](#a-javascript-driver-for-fauna)
 - [Quick-Start](#quick-start)
 - [Supported Runtimes](#supported-runtimes)
-- [Installation](#installation)
-  - [Node.js](#nodejs)
-  - [Browsers](#browsers)
+- [Installing](#installing)
+  - [Package Manager](#package-manager)
+  - [Via CDN](#via-cdn)
 - [Usage](#usage)
   - [Connecting from the browser](#connecting-from-the-browser)
   - [Importing into a bundled project](#importing-into-a-bundled-project)
@@ -88,9 +88,11 @@ This Driver supports and is tested on:
 - Netlify
 - Vercel
 
-# Installation
+# Installing
 
-## Node.js
+## Package Manager
+
+The fauna-js driver is available on npm. You can install with your package manager of choice:
 
 ```shell
 npm install fauna
@@ -102,9 +104,9 @@ or
 yarn add fauna
 ```
 
-## Browsers
+## Via CDN
 
-The driver is built as a JS module for browsers and is available via CDN:
+The driver is additionally made available to browsers via CDN:
 
 ```html
 <script type="module">

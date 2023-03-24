@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -eou
+set -eou pipefail
 
 cd ./fauna-js-repository
 

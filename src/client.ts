@@ -113,7 +113,7 @@ export class Client {
 
   /**
    * Queries Fauna.
-   * @param request - a {@link QueryRequest} or {@link Query} to build a request with.
+   * @param request - a {@link Query} to execute in Fauna.
    *  Note, you can embed header fields in this object; if you do that there's no need to
    *  pass the headers parameter.
    * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input.

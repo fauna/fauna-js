@@ -134,7 +134,6 @@ let collectionName = "Pets";
 let collectionExists = fql`Collection.byName(${collectionName}) != null`;
 
 client.query(fql`
-  // use the sub query we defined elsewhere
   if (${collectionExists}) {
     "Collection exists!"
   } else {

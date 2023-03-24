@@ -117,7 +117,7 @@ export class Client {
    *  Note, you can embed header fields in this object; if you do that there's no need to
    *  pass the headers parameter.
    * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input.
-   *   Values in this headers parameter take precedence over the same values in the request
+   *   Values in this headers parameter take precedence over the same values in the {@link ClientConfiguration}.
    *   parameter. This field is primarily intended to be used when you pass a Query as
    *   the parameter.
    * @returns Promise&lt;{@link QuerySuccess}&gt;.

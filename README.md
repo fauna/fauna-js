@@ -264,12 +264,12 @@ console.log(stats);
 /* example output
  * ```
  *  {
- *    compute_ops: 1
- *    read_ops: 0
- *    write_ops: 0
- *    query_time_ms: 0
- *    storage_bytes_read: 0
- *    storage_bytes_write: 0
+ *    compute_ops: 1,
+ *    read_ops: 0,
+ *    write_ops: 0,
+ *    query_time_ms: 15,
+ *    storage_bytes_read: 0,
+ *    storage_bytes_write: 0,
  *    contention_retries: 0
  *  }
  * ```

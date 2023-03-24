@@ -44,8 +44,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   it("endpoints is extensible", async () => {
     endpoints["my-alternative-port"] = new URL("http://localhost:7443");
     expect(endpoints).toEqual({
-      cloud: new URL("https://db.fauna.com"),
-      preview: new URL("https://db.fauna-preview.com"),
+      default: new URL("https://db.fauna.com"),
       local: new URL("http://localhost:8443"),
       localhost: new URL("http://localhost:8443"),
       "my-alternative-port": new URL("http://localhost:7443"),

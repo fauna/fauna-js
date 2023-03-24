@@ -48,18 +48,16 @@ export class ServiceError extends FaunaError {
     this.name = "ServiceError";
     this.code = failure.error.code;
     this.httpStatus = httpStatus;
-    if (failure.summary) {
-      const info: QueryInfo = {
-        txn_ts: failure.txn_ts,
-        summary: failure.summary,
-        query_tags: failure.query_tags,
-        stats: failure.stats,
-      };
-      this.queryInfo = info;
-    }
-    if (failure.error.constraint_failures !== undefined) {
-      this.constraint_failures = failure.error.constraint_failures;
-    }
+
+    const info: QueryInfo = {
+      txn_ts: failure.txn_ts,
+      summary: failure.summary,
+      query_tags: failure.query_tags,
+      stats: failure.stats,
+    };
+    this.queryInfo = info;
+
+    this.constraint_failures = failure.error.constraint_failures;
   }
 }
 

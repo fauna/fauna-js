@@ -18,7 +18,7 @@ export {
   ServiceTimeoutError,
   ThrottlingError,
 } from "./errors";
-export { type QueryBuilder, fql } from "./query-builder";
+export { type Query, fql } from "./query-builder";
 export {
   type JSONObject,
   type JSONValue,

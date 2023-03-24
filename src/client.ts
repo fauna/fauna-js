@@ -13,7 +13,7 @@ import {
   ServiceTimeoutError,
   ThrottlingError,
 } from "./errors";
-import type { QueryBuilder } from "./query-builder";
+import type { Query } from "./query-builder";
 import {
   isQueryFailure,
   isQuerySuccess,
@@ -113,12 +113,12 @@ export class Client {
 
   /**
    * Queries Fauna.
-   * @param request - a {@link QueryRequest} or {@link QueryBuilder} to build a request with.
+   * @param request - a {@link QueryRequest} or {@link Query} to build a request with.
    *  Note, you can embed header fields in this object; if you do that there's no need to
    *  pass the headers parameter.
    * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input.
    *   Values in this headers parameter take precedence over the same values in the request
-   *   parameter. This field is primarily intended to be used when you pass a QueryBuilder as
+   *   parameter. This field is primarily intended to be used when you pass a Query as
    *   the parameter.
    * @returns Promise&lt;{@link QuerySuccess}&gt;.
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
@@ -136,12 +136,9 @@ export class Client {
    * due to an internal error.
    */
   async query<T = any>(
-    request: QueryRequest | QueryBuilder,
+    request: Query,
     headers?: QueryRequestHeaders
   ): Promise<QuerySuccess<T>> {
-    if ("query" in request) {
-      return this.#query({ ...request, ...headers });
-    }
     return this.#query(request.toQuery(headers));
   }
 

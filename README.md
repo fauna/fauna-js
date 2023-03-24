@@ -240,13 +240,25 @@ const client = new Client()
 
 ## Query Statistics
 
-Query statistics are returned with successful query responses.
+Query statistics are returned with successful query responses and `ServiceError`s.
 
 ````typescript
-import { type QueryStats, type QuerySuccess } from "fauna";
+import {
+  ServiceError,
+  type QueryInfo,
+  type QueryStats,
+  type QuerySuccess,
+} from "fauna";
 
-const result: QuerySuccess<string> = await client.query(fql`"Hello world"`);
-const stats: QueryStats | undefined = result.stats;
+try {
+  const result: QuerySuccess<string> = await client.query(fql`"Hello world"`);
+  const stats: QueryStats | undefined = result.stats;
+} catch (error: any) {
+  if (error instanceof ServiceError) {
+    const info: QueryInfo = error.queryInfo;
+    const stats: QueryStats | undefined = info.stats;
+  }
+}
 
 console.log(stats);
 /* example output

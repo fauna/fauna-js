@@ -22,13 +22,14 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
 - [Usage](#usage)
   - [Connecting from the browser](#connecting-from-the-browser)
   - [Importing into a bundled project](#importing-into-a-bundled-project)
-  - [Querying with FQL X](#querying-with-fql-x)
-  - [Query Composition](#query-composition)
   - [Typescript Support](#typescript-support)
   - [Query Options](#query-options)
   - [Client Configuration](#client-configuration)
     - [Using environment variables](#using-environment-variables)
   - [Query Statistics](#query-statistics)
+  - [Advanced example](#advanced-example)
+    - [Querying with FQL X](#querying-with-fql-x)
+    - [Composition Using the Driver](#composition-using-the-driver)
 - [Contributing](#contributing)
   - [Setting up this Repo](#setting-up-this-repo)
   - [Running tests](#running-tests)
@@ -142,70 +143,6 @@ or using `require` for CommonJS files
 
 ```javascript
 const fauna = require("fauna");
-```
-
-## Querying with FQL X
-
-This driver uses a template-based approach to composing queries and operations. The advantage of this design is that you can prototype and test your queries in the Fauna dashboard shell, and then cut-and-paste those queries as templates in your client, which are executed in Fauna via this driver. You can parameterize your query by adding placeholders to the template, and then pass a set of arguments to the query() method, or resolve the placeholders with string interpolation.
-
-You can write a query in pure FQL X using the driver's `fql` tag template function. Each FQL X language driver exposes the raw FQL X language - there is no need to learn a new framework for each language.
-
-Here's an example in pure FQL X:
-
-```javascript
-const result = await client.query(fql`
-  let create_user = (params) => if (params.email != null) {
-    User.create(params)
-  } else {
-    null
-  }
-
-  let u = create_user({
-    name: "Alice",
-    email: "alice@site.example",
-  })
-
-  u {
-    id,
-    ts,
-    name,
-    email
-  }
-`);
-```
-
-## Query Composition
-
-Template literals in Javascript make it easy to pass in variables to your query and create reusable pieces of FQL.
-
-```javascript
-// a reusable anonymous function to create Users with validated parameters
-const create_user = fql`
-  (params) => if (params.email != null) {
-    User.create(params)
-  } else {
-    null
-  }
-`;
-
-// a reusable projection to format User documents
-const user_projection = fql`{ id, ts, name, email }`;
-
-// an object to pass to the query
-const user_params = {
-  name: "Alice",
-  email: "alice@site.example",
-};
-
-// put everything together
-const composed_query = fql`
-  let create_user = ${create_user}
-  
-  let u = create_user(${user_params})
-
-  u ${user_projection}
-`;
-const result2 = await client.query(composed_query);
 ```
 
 ## Typescript Support
@@ -326,6 +263,72 @@ console.log(stats);
  * ```
  */
 ````
+
+## Advanced example
+
+### Querying with FQL X
+
+This driver uses a template-based approach to composing queries and operations. The advantage of this design is that you can prototype and test your queries in the Fauna dashboard shell, and then cut-and-paste those queries as templates in your client, which are executed in Fauna via this driver. You can parameterize your query by adding placeholders to the template, and then pass a set of arguments to the query() method, or resolve the placeholders with string interpolation.
+
+You can write a query in pure FQL X using the driver's `fql` tag template function. Each FQL X language driver exposes the raw FQL X language - there is no need to learn a new framework for each language.
+
+Here's an example in pure FQL X:
+
+```javascript
+const result = await client.query(fql`
+  let create_user = (params) => if (params.email != null) {
+    User.create(params)
+  } else {
+    null
+  }
+
+  let u = create_user({
+    name: "Alice",
+    email: "alice@site.example",
+  })
+
+  u {
+    id,
+    ts,
+    name,
+    email
+  }
+`);
+```
+
+### Composition Using the Driver
+
+Template literals in Javascript make it easy to pass in variables to your query and create reusable pieces of FQL.
+
+```javascript
+// a reusable anonymous function to create Users with validated parameters
+const create_user = fql`
+  (params) => if (params.email != null) {
+    User.create(params)
+  } else {
+    null
+  }
+`;
+
+// a reusable projection to format User documents
+const user_projection = fql`{ id, ts, name, email }`;
+
+// an object to pass to the query
+const user_params = {
+  name: "Alice",
+  email: "alice@site.example",
+};
+
+// put everything together
+const composed_query = fql`
+  let create_user = ${create_user}
+  
+  let u = create_user(${user_params})
+
+  u ${user_projection}
+`;
+const result2 = await client.query(composed_query);
+```
 
 # Contributing
 

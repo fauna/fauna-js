@@ -1,6 +1,6 @@
 import { JSONValue } from "../wire-protocol";
 
-export class Set<T extends JSONValue> {
+export class Page<T extends JSONValue> {
   readonly data: T[];
   readonly after?: string;
 

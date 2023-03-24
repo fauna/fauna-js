@@ -6,7 +6,7 @@ import {
   NamedDocument,
   NamedDocumentReference,
   TimeStub,
-  Set,
+  Page,
 } from "./values";
 import { JSONObject, JSONValue } from "./wire-protocol";
 
@@ -56,7 +56,7 @@ export class TaggedTypeFormat {
           return new NamedDocumentReference(obj);
         }
       } else if (value["@set"]) {
-        return new Set(value["@set"]);
+        return new Page(value["@set"]);
       } else if (value["@int"]) {
         return Number(value["@int"]);
       } else if (value["@long"]) {
@@ -163,7 +163,7 @@ const encodeMap = {
   namedDocument: (value: NamedDocument): TaggedRef => ({
     "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
-  set: (value: Set<any>) => ({
+  set: (value: Page<any>) => ({
     // WIP: core does not accept `@set` tagged values, yet, so just unwrap
     // "@set": { data: encodeMap["array"](value.data), after: value.after },
     data: encodeMap["array"](value.data),
@@ -202,7 +202,7 @@ const encode = (input: JSONValue): JSONValue => {
         return encodeMap["namedDocument"](input);
       } else if (input instanceof NamedDocumentReference) {
         return encodeMap["namedDocumentReference"](input);
-      } else if (input instanceof Set) {
+      } else if (input instanceof Page) {
         return encodeMap["set"](input);
       } else {
         return encodeMap["object"](input);

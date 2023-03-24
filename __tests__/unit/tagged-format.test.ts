@@ -4,7 +4,7 @@ import {
   Document,
   DocumentReference,
   Module,
-  Set,
+  Page,
   TimeStub,
 } from "../../src/values";
 
@@ -55,7 +55,7 @@ describe("tagged format", () => {
       id: "123",
       ts: doc_ts,
     });
-    const set = new Set({ data: ["a", "b"] });
+    const set = new Page({ data: ["a", "b"] });
 
     const result = TaggedTypeFormat.decode(allTypes);
     expect(result.bugs_coll).toStrictEqual(bugs_mod);

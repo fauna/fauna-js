@@ -75,13 +75,18 @@ try {
 
 This Driver supports and is tested on:
 
-- Node.js [Current and Active LTS](https://nodejs.org/en/about/releases/)
+- Browsers - Stable versions of
+  - Chrome
+  - Firefox
+  - Safari
+  - Edge
+- Node.js - [Current and Active LTS](https://nodejs.org/en/about/releases/)
   - Current - v19
   - Active LTS - v18
-- Chrome
-- Firefox
-- Safari
-- Edge
+- Cloudflare Workers
+- AWS Lambda
+- Netlify
+- Vercel
 
 # Installation
 

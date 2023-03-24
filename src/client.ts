@@ -75,7 +75,10 @@ export class Client {
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
-    this.#url = `${this.clientConfiguration.endpoint.toString()}query/1`;
+    this.#url = new URL(
+      "/query/1",
+      this.clientConfiguration.endpoint
+    ).toString();
     if (!httpClient) {
       this.#httpClient = getDefaultHTTPClient();
     } else {

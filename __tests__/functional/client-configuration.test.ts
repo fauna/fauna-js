@@ -118,4 +118,26 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       await client.query<number>(fql`"taco".length`);
     }
   );
+
+  it("can accept endpoints with or without a trailing slash.", async () => {
+    expect.assertions(2);
+    const httpClient: HTTPClient = {
+      async request(req) {
+        expect(req.url).toBe("http://localhost:8443/query/1");
+        return getDefaultHTTPClient().request(req);
+      },
+    };
+
+    const client1 = getClient(
+      { endpoint: new URL("http://localhost:8443/") },
+      httpClient
+    );
+    await client1.query<number>(fql`"taco".length`);
+
+    const client2 = getClient(
+      { endpoint: new URL("http://localhost:8443") },
+      httpClient
+    );
+    await client2.query<number>(fql`"taco".length`);
+  });
 });

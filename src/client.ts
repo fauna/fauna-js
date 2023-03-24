@@ -118,8 +118,6 @@ export class Client {
    *  pass the headers parameter.
    * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input.
    *   Values in this headers parameter take precedence over the same values in the {@link ClientConfiguration}.
-   *   parameter. This field is primarily intended to be used when you pass a Query as
-   *   the parameter.
    * @returns Promise&lt;{@link QuerySuccess}&gt;.
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,

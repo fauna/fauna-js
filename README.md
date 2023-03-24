@@ -263,12 +263,12 @@ const result = await client.query(SOME_QUERY, options);
 The client can be configured for your specific environment. You can also provide query options that will be sent by default with every request
 
 ```typescript
-import { Client, type ClientConfiguration } from "fauna";
+import { Client, endpoints, type ClientConfiguration } from "fauna";
 
 const config: ClientConfiguration = {
   // configure client
   secret: YOUR_FAUNA_SECRET,
-  endpoint: new URL("https://db.fauna.com"),
+  endpoint: endpoints.default,
   max_conns: 10,
 
   // set default query options

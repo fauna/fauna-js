@@ -110,7 +110,7 @@ const { Client, fql } = fauna;
 
 // configure your client
 const client = new Client({
-  secret: YOUR_FAUNA_SECRET
+  secret: YOUR_FAUNA_SECRET,
 });
 
 try {
@@ -127,7 +127,7 @@ try {
     }
   `;
   const document_result = await client.query(document_query);
-} catch (error: any) {
+} catch (error) {
   if (error instanceof fauna.FaunaError) {
     // handle errors
   }

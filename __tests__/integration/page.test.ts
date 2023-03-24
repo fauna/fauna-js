@@ -1,6 +1,6 @@
 import { getClient } from "../client";
 import { fql } from "../../src/query-builder";
-import { Set } from "../../src/values";
+import { Page } from "../../src/values";
 
 const client = getClient({
   max_conns: 5,
@@ -21,18 +21,18 @@ describe("querying for set", () => {
     testDoc = result.data;
   });
 
-  it("can round-trip Set", async () => {
-    const set = new Set<number>({ data: [1, 2, 3], after: "1234" });
+  it("can round-trip Page", async () => {
+    const set = new Page<number>({ data: [1, 2, 3], after: "1234" });
 
     const queryBuilder = fql`${set}`;
     // WIP: core does not accept `@set` tagged values
-    // const result = await client.query<Set<number>>(queryBuilder);
+    // const result = await client.query<Page<number>>(queryBuilder);
     const result = await client.query<{ data: number[]; after: string }>(
       queryBuilder
     );
 
     // WIP: core does not accept `@set` tagged values
-    // expect(result.data).toBeInstanceOf(Set);
+    // expect(result.data).toBeInstanceOf(Page);
     expect(result.data.data).toStrictEqual([1, 2, 3]);
     expect(result.data.after).toBe("1234");
   });

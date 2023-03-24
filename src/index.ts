@@ -40,6 +40,6 @@ export {
   Module,
   NamedDocument,
   NamedDocumentReference,
-  Set,
+  Page,
   TimeStub,
 } from "./values";

@@ -7,7 +7,7 @@ import {
   Module,
   NamedDocument,
   NamedDocumentReference,
-  Set,
+  Page,
   TimeStub,
 } from "./values";
 
@@ -263,4 +263,4 @@ export type JSONValue =
   | DocumentReference
   | NamedDocument
   | NamedDocumentReference
-  | Set<JSONValue>;
+  | Page<JSONValue>;

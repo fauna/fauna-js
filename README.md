@@ -14,14 +14,14 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
 <summary>Table of Contents</summary>
 
 - [A JavaScript driver for Fauna.](#a-javascript-driver-for-fauna)
-- [Compatibility](#compatibility)
+- [Quick-Start](#quick-start)
+- [Supported Runtimes](#supported-runtimes)
 - [Installation](#installation)
   - [Node.js](#nodejs)
   - [Browsers](#browsers)
 - [Usage](#usage)
   - [Connecting from the browser](#connecting-from-the-browser)
   - [Importing into a bundled project](#importing-into-a-bundled-project)
-  - [Quick-Start](#quick-start)
   - [Querying with FQL X](#querying-with-fql-x)
   - [Query Composition](#query-composition)
   - [Typescript Support](#typescript-support)
@@ -37,7 +37,41 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
 
 </details>
 
-# Compatibility
+# Quick-Start
+
+```javascript
+import { Client, fql } from "fauna";
+
+// configure your client
+const client = new Client({
+  secret: YOUR_FAUNA_SECRET,
+});
+
+try {
+  // create a Collection
+  const collection_query = fql`Collection.create({ name: "Dogs" })`;
+  const collection_result = await client.query(collection_query);
+
+  // define some data
+  const dog = { name: "Scout" };
+
+  // create a Document
+  const document_query = fql`
+    Dogs.create(${dog}) {
+      id,
+      ts,
+      name
+    }
+  `;
+  const document_result = await client.query(document_query);
+} catch (error) {
+  if (error instanceof fauna.FaunaError) {
+    // handle errors
+  }
+}
+```
+
+# Supported Runtimes
 
 This Driver supports and is tested on:
 
@@ -101,37 +135,6 @@ or using `require` for CommonJS files
 
 ```javascript
 const fauna = require("fauna");
-```
-
-## Quick-Start
-
-```javascript
-const { Client, fql } = fauna;
-
-// configure your client
-const client = new Client({
-  secret: YOUR_FAUNA_SECRET,
-});
-
-try {
-  // create a Collection
-  const collection_query = fql`Collection.create({ name: "Dogs" })`;
-  const collection_result = await client.query(collection_query);
-
-  // create a Document
-  const document_query = fql`
-    Dogs.create({ name: "Scout" }) {
-      id,
-      ts,
-      name
-    }
-  `;
-  const document_result = await client.query(document_query);
-} catch (error) {
-  if (error instanceof fauna.FaunaError) {
-    // handle errors
-  }
-}
 ```
 
 ## Querying with FQL X

@@ -146,7 +146,7 @@ This has several advantages:
 
 - You can use `fql` to build a library of subqueries applicable to your domain - and combinable in whatever way you need
 - injection attacks are not possible if you pass input variables into the interpolated (`${i'm interpoloated}`) parts of the query.
-- the driver speaks "pure FQL X" - you can try out some FQL X on the dashboard's terminal and paste it directly into your app like fql``copied from terminal...`` and the query will work as is.
+- the driver speaks "pure FQL X" - you can try out some FQL X on the dashboard's terminal and paste it directly into your app like fql\`copied from terminal...\` and the query will work as is.
 
 The following subsections show some further examples.
 

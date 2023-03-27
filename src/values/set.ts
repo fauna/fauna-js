@@ -1,6 +1,6 @@
-import { JSONValue } from "../wire-protocol";
+import { QueryValue } from "../wire-protocol";
 
-export class Page<T extends JSONValue> {
+export class Page<T extends QueryValue> {
   readonly data: T[];
   readonly after?: string;
 

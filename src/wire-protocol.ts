@@ -21,7 +21,7 @@ export interface QueryRequest extends QueryRequestHeaders {
   /** Optional arguments. Variables in the query will be initialized to the
    * value associated with an argument key.
    */
-  arguments?: JSONObject;
+  arguments?: QueryValueObject;
 }
 
 export interface QueryRequestHeaders {
@@ -195,7 +195,7 @@ export type QueryInterpolation = FQLFragment | ValueFragment;
  *  { fql: [{ value: { "@int": "17" } }, " + 3"] }
  * ```
  */
-export type ValueFragment = { value: JSONValue };
+export type ValueFragment = { value: QueryValue };
 
 /**
  * A piece of an interpolated query. Interpolated Queries can be safely composed
@@ -237,25 +237,33 @@ export interface Span {
 }
 
 /**
- * All objects returned from Fauna are valid JSON objects.
+ * A QueryValueObject is a plain javascript object where
+ * each value is a QueryValue.
+ * i.e. these objects can be sent as values
+ * in the {@link fql} query creation function and are
+ * returned in {@link QuerySuccess}.
  */
-export type JSONObject = {
-  [key: string]: JSONValue;
+export type QueryValueObject = {
+  [key: string]: QueryValue;
 };
 
 /**
- * All values returned from Fauna are valid JSON values.
+ * A QueryValue can be sent as a value in a query,
+ * and received from query output.
+ * i.e. these are the types you can send as values
+ * in the {@link fql} query creation function and are
+ * returned in {@link QuerySuccess}.
  */
-export type JSONValue =
+export type QueryValue =
   // plain javascript values
   | null
   | string
   | number
   | bigint
   | boolean
-  | JSONObject
-  | Array<JSONValue>
-  // fauna-provided classes
+  | QueryValueObject
+  | Array<QueryValue>
+  // client-provided classes
   | DateStub
   | TimeStub
   | Module
@@ -263,4 +271,4 @@ export type JSONValue =
   | DocumentReference
   | NamedDocument
   | NamedDocumentReference
-  | Page<JSONValue>;
+  | Page<QueryValue>;

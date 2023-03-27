@@ -8,7 +8,7 @@ import {
   TimeStub,
   Page,
 } from "./values";
-import { JSONObject, JSONValue } from "./wire-protocol";
+import { QueryValueObject, QueryValue } from "./wire-protocol";
 
 /**
  * TaggedType provides the encoding/decoding of the Fauna Tagged Type formatting
@@ -81,12 +81,12 @@ type TaggedDouble = { "@double": string };
 type TaggedInt = { "@int": string };
 type TaggedLong = { "@long": string };
 type TaggedMod = { "@mod": string };
-type TaggedObject = { "@object": JSONObject };
+type TaggedObject = { "@object": QueryValueObject };
 type TaggedRef = {
   "@ref": { id: string; coll: TaggedMod } | { name: string; coll: TaggedMod };
 };
 // WIP: core does not accept `@set` tagged values
-// type TaggedSet = { "@set": { data: JSONValue[]; after?: string } };
+// type TaggedSet = { "@set": { data: QueryValue[]; after?: string } };
 type TaggedTime = { "@time": string };
 
 export const LONG_MIN = BigInt("-9223372036854775808");
@@ -128,9 +128,9 @@ const encodeMap = {
   string: (value: string): string => {
     return value;
   },
-  object: (input: JSONObject): TaggedObject | JSONObject => {
+  object: (input: QueryValueObject): TaggedObject | QueryValueObject => {
     let wrapped = false;
-    const _out: JSONObject = {};
+    const _out: QueryValueObject = {};
 
     for (const k in input) {
       if (k.startsWith("@")) {
@@ -140,8 +140,8 @@ const encodeMap = {
     }
     return wrapped ? { "@object": _out } : _out;
   },
-  array: (input: Array<JSONValue>): Array<JSONValue> => {
-    const _out: JSONValue = [];
+  array: (input: Array<QueryValue>): Array<QueryValue> => {
+    const _out: QueryValue = [];
     for (const i in input) _out.push(encode(input[i]));
     return _out;
   },
@@ -171,7 +171,7 @@ const encodeMap = {
   }),
 };
 
-const encode = (input: JSONValue): JSONValue => {
+const encode = (input: QueryValue): QueryValue => {
   switch (typeof input) {
     case "bigint":
       return encodeMap["bigint"](input);

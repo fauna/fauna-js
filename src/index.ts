@@ -43,3 +43,4 @@ export {
   Page,
   TimeStub,
 } from "./values";
+export { FetchClient, NodeHTTP2Client } from "./http-client";

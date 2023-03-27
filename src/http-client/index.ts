@@ -5,6 +5,7 @@ import { FetchClient } from "./fetch-client";
 import { NodeHTTP2Client } from "./node-http2-client";
 
 export { FetchClient } from "./fetch-client";
+export { NodeHTTP2Client } from "./node-http2-client";
 
 /**
  * An object representing an http request.

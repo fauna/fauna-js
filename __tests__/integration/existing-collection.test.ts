@@ -40,17 +40,9 @@ beforeAll(async () => {
    * The actual data creation is fine to execute multiple times due to the presence of the
    * unique constraint in the schema.
    */
-  const collDoesNotExist = (
+  console.log(
     await client.query(fql`
-  Collection.byName("Authors") == null
-  `)
-  ).data;
-  if (collDoesNotExist) {
-    console.log(
-      "No existing Authors collection found, creating collection and schema."
-    );
-    console.log(
-      await client.query(fql`
+  if (Collection.byName("Authors") == null) {
     Collection.create({
       name: "Authors",
       indexes: {
@@ -65,9 +57,11 @@ beforeAll(async () => {
         { unique: [ "firstName", "lastName" ] }
       ]
     })
-    `)
-    );
+  } else {
+    "Authors already exists."
   }
+    `)
+  );
   for (const author of authorsData) {
     try {
       await client.query(fql`

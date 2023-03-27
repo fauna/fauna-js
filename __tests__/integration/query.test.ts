@@ -13,6 +13,7 @@ import {
 import { HTTPClient, HTTPResponse } from "../../src/http-client";
 import { fql } from "../../src/query-builder";
 import { Module } from "../../src/values";
+import { QueryValue } from "../../src/wire-protocol";
 
 const client = getClient({
   max_conns: 5,
@@ -295,26 +296,59 @@ describe("query", () => {
 });
 
 describe("query can encode / decode QueryValue correctly", () => {
-  it("treats undefined as unprovided", async () => {
+  it("treats undefined as unprovided when in object", async () => {
     const client = getClient();
     const collectionName = "UndefinedTest";
     await client.query(fql`
       if (Collection.byName(${collectionName}) == null) {
         Collection.create({ name: ${collectionName}})
       }`);
+    // whack in undefined
+    // @ts-ignore
+    let toughInput: QueryValue = {
+      foo: "bar",
+      shouldnt_exist: undefined,
+      nested_object: {
+        i_exist: true,
+        i_dont_exist: undefined,
+      },
+    };
+    const docCreated = await client.query(fql`
+        ${new Module(collectionName)}.create(${toughInput})`);
+    expect(docCreated.data.should_exist).toBeUndefined();
+    expect(docCreated.data.nested_object.i_dont_exist).toBeUndefined();
+    expect(docCreated.data.foo).toEqual("bar");
+    expect(docCreated.data.nested_object.i_exist).toEqual(true);
+  });
+
+  it("treats undefined as unprovided passed directly as value", async () => {
+    expect.assertions(2);
+    const client = getClient();
+    const collectionName = "UndefinedTest";
+    await client.query(fql`
+      if (Collection.byName(${collectionName}) == null) {
+        Collection.create({ name: ${collectionName}})
+      }`);
+    // whack in undefined
+    // @ts-ignore
+    let undefinedValue: QueryValue = undefined;
     try {
       const docCreated = await client.query(fql`
-      ${new Module(collectionName)}.create({
-        foo: "bar",
-        shouldnt_exist: undefined,
-        nested_object: {
-          i_exist: true,
-          i_dont_exist: undefined
-        }
-      })`);
-      console.log(docCreated);
+        ${new Module(collectionName)}.create({
+          foo: "bar",
+          shouldnt_exist: ${undefinedValue},
+          nested_object: {
+            i_exist: true,
+            i_dont_exist: ${undefinedValue}
+          }
+        })`);
     } catch (e) {
-      console.log(e);
+      if (e instanceof TypeError) {
+        expect(e.name).toEqual("TypeError");
+        expect(e.message).toEqual(
+          "Passing undefined as a QueryValue is not supported"
+        );
+      }
     }
   });
 });

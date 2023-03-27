@@ -215,5 +215,5 @@ const encode = (input: QueryValue): QueryValue => {
         return encodeMap["object"](input);
       }
   }
-  // anything here would be dead code
+  // anything here would be unreachable code
 };

@@ -4,9 +4,6 @@ import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
 import { NetworkError } from "../errors";
 import { QueryRequest } from "../wire-protocol";
 
-const { HTTP2_HEADER_PATH, HTTP2_HEADER_METHOD, HTTP2_HEADER_STATUS } =
-  http2.constants;
-
 /**
  * An implementation for {@link HTTPClient} that uses the node http package
  */
@@ -22,6 +19,9 @@ export class NodeHTTP2Client implements HTTPClient {
   private constructor() {}
 
   static getClient() {
+    if (http2 === undefined) {
+      throw new Error("Your platform does not support Node's http2 library");
+    }
     if (this.#client) {
       return this.#client;
     }
@@ -128,7 +128,9 @@ class SessionWrapper {
         http2ResponseHeaders: http2.IncomingHttpHeaders &
           http2.IncomingHttpStatusHeader
       ) => {
-        const status = Number(http2ResponseHeaders[HTTP2_HEADER_STATUS]);
+        const status = Number(
+          http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
+        );
         let responseData = "";
 
         // append response data to the data string every time we receive new data
@@ -150,8 +152,8 @@ class SessionWrapper {
       try {
         const httpRequestHeaders: http2.OutgoingHttpHeaders = {
           ...requestHeaders,
-          [HTTP2_HEADER_PATH]: this.#pathName,
-          [HTTP2_HEADER_METHOD]: method,
+          [http2.constants.HTTP2_HEADER_PATH]: this.#pathName,
+          [http2.constants.HTTP2_HEADER_METHOD]: method,
         };
 
         req = this.internal

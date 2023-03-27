@@ -1,7 +1,7 @@
 import { TaggedTypeFormat } from "./tagged-type";
 import type {
-  JSONObject,
-  JSONValue,
+  QueryValueObject,
+  QueryValue,
   QueryInterpolation,
   QueryRequest,
   QueryRequestHeaders,
@@ -11,7 +11,7 @@ import type {
  * Creates a new Query. Accepts template literal inputs.
  * @param queryFragments - a {@link TemplateStringsArray} that constitute
  *   the strings that are the basis of the query.
- * @param queryArgs - an Array\<JSONValue | Query\> that
+ * @param queryArgs - an Array\<QueryValue | Query\> that
  *   constitute the arguments to inject between the queryFragments.
  * @throws Error - if you call this method directly (not using template
  *   literals) and pass invalid construction parameters
@@ -25,7 +25,7 @@ import type {
  */
 export function fql(
   queryFragments: ReadonlyArray<string>,
-  ...queryArgs: (JSONValue | Query)[]
+  ...queryArgs: (QueryValue | Query)[]
 ): Query {
   return new Query(queryFragments, ...queryArgs);
 }
@@ -37,11 +37,11 @@ export function fql(
  */
 export class Query {
   readonly #queryFragments: ReadonlyArray<string>;
-  readonly #queryArgs: (JSONValue | Query)[];
+  readonly #queryArgs: (QueryValue | Query)[];
 
   constructor(
     queryFragments: ReadonlyArray<string>,
-    ...queryArgs: (JSONValue | Query)[]
+    ...queryArgs: (QueryValue | Query)[]
   ) {
     if (
       queryFragments.length === 0 ||
@@ -78,7 +78,7 @@ export class Query {
       return { query: { fql: [this.#queryFragments[0]] }, arguments: {} };
     }
 
-    let resultArgs: JSONObject = {};
+    let resultArgs: QueryValueObject = {};
     const renderedFragments: (string | QueryInterpolation)[] =
       this.#queryFragments.flatMap((fragment, i) => {
         // There will always be one more fragment than there are arguments

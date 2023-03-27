@@ -1,4 +1,4 @@
-import { JSONObject } from "../wire-protocol";
+import { QueryValueObject } from "../wire-protocol";
 import { TimeStub } from "./date-time";
 
 /**
@@ -127,7 +127,7 @@ export class NamedDocumentReference {
  * ```
  */
 export class NamedDocument<
-  T extends JSONObject = Record<string, never>
+  T extends QueryValueObject = Record<string, never>
 > extends NamedDocumentReference {
   readonly ts: TimeStub;
   readonly data: T;
@@ -190,4 +190,4 @@ export class Module {
  * @remarks The {@link Document} class cannot be generic because classes cannot
  * extend generic type arguments.
  */
-export type DocumentT<T extends JSONObject> = Document & T;
+export type DocumentT<T extends QueryValueObject> = Document & T;

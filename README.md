@@ -120,10 +120,9 @@ The driver is additionally made available to browsers via CDN:
 
 ## Creating queries with the `fql` function
 
-
 The `fql` function is your gateway to building safe, reuseable Fauna queries.
 
-It allows you compose queries from sub-queries and variables native to your program. Variables passed in our treated as unexecutable values in Fauna's API - preventing security issues like injection attacks.
+It allows you compose queries from sub-queries and variables native to your program. Variables passed in are treated as unexecutable values in Fauna's API - preventing security issues like injection attacks.
 
 for example:
 
@@ -151,6 +150,7 @@ This has several advantages:
 The following subsections show some further examples.
 
 ### Pure FQL X via the `fql` function
+
 The `fql` function can also create pure FQL X queries, for example:
 
 ```javascript
@@ -176,7 +176,6 @@ const result = await client.query(fql`
 ```
 
 ### Advanced Composition example using `fql` function
-
 
 ```javascript
 // a reusable FQL X lambda to create Users with validated parameters
@@ -288,7 +287,11 @@ const result = await client.query(SOME_QUERY, options);
 
 ## Client Configuration
 
-The client can be configured for your specific environment. You can also provide query options that will be sent by default with every request
+The driver use's a default ClientConfiguration. We recommend most users stick with the defaults.
+
+If your environment needs different configuration however, the default ClientConfiguration can be overriden.
+
+Furthermore, on each request you can provide query specific configuration that will override the setting in your client for that request only.
 
 ```typescript
 import { Client, endpoints, type ClientConfiguration } from "fauna";
@@ -297,6 +300,8 @@ const config: ClientConfiguration = {
   // configure client
   secret: YOUR_FAUNA_SECRET,
   endpoint: endpoints.default,
+  // note this will change names during the early access beta
+  // to reflect HTTP/2 semantics
   max_conns: 10,
 
   // set default query options

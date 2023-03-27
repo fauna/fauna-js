@@ -20,8 +20,8 @@ export {
 } from "./errors";
 export { type Query, fql } from "./query-builder";
 export {
-  type JSONObject,
-  type JSONValue,
+  type QueryValueObject,
+  type QueryValue,
   type QueryFailure,
   type QueryInfo,
   type QueryInterpolation,

@@ -136,7 +136,9 @@ const encodeMap = {
       if (k.startsWith("@")) {
         wrapped = true;
       }
-      _out[k] = encode(input[k]);
+      if (input[k] !== undefined) {
+        _out[k] = encode(input[k]);
+      }
     }
     return wrapped ? { "@object": _out } : _out;
   },
@@ -172,6 +174,9 @@ const encodeMap = {
 };
 
 const encode = (input: QueryValue): QueryValue => {
+  if (input === undefined) {
+    throw new TypeError("Passing undefined as a QueryValue is not supported");
+  }
   switch (typeof input) {
     case "bigint":
       return encodeMap["bigint"](input);
@@ -179,6 +184,8 @@ const encode = (input: QueryValue): QueryValue => {
       return encodeMap["string"](input);
     case "number":
       return encodeMap["number"](input);
+    case "boolean":
+      return input;
     case "object":
       if (input == null) {
         return null;
@@ -207,8 +214,6 @@ const encode = (input: QueryValue): QueryValue => {
       } else {
         return encodeMap["object"](input);
       }
-      break;
   }
-  // default to encoding directly as the input
-  return input;
+  // anything here would be unreachable code
 };

@@ -239,8 +239,8 @@ export interface Span {
 /**
  * A QueryValueObject is a plain javascript object where
  * each value is a QueryValue.
- * i.e. these objects can be sent as values
- * in the {@link fql} query creation function and are
+ * i.e. these objects can be set as values
+ * in the {@link fql} query creation function and can be
  * returned in {@link QuerySuccess}.
  */
 export type QueryValueObject = {
@@ -250,8 +250,8 @@ export type QueryValueObject = {
 /**
  * A QueryValue can be sent as a value in a query,
  * and received from query output.
- * i.e. these are the types you can send as values
- * in the {@link fql} query creation function and are
+ * i.e. these are the types you can set as values
+ * in the {@link fql} query creation function and can be
  * returned in {@link QuerySuccess}.
  */
 export type QueryValue =

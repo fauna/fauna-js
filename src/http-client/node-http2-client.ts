@@ -20,7 +20,7 @@ export class NodeHTTP2Client implements HTTPClient {
 
   static getClient() {
     if (http2 === undefined) {
-      throw new Error("Your platform does support Node's http2 library");
+      throw new Error("Your platform does not support Node's http2 library");
     }
     if (this.#client) {
       return this.#client;

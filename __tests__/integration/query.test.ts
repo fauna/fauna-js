@@ -1,5 +1,4 @@
 import { getClient } from "../client";
-import { Client } from "../../src/client";
 import { type ClientConfiguration } from "../../src/client-configuration";
 import {
   AuthenticationError,
@@ -13,7 +12,7 @@ import {
 } from "../../src/errors";
 import { HTTPClient, HTTPResponse } from "../../src/http-client";
 import { fql } from "../../src/query-builder";
-import { type QueryRequest, QuerySuccess } from "../../src/wire-protocol";
+import { Module } from "../../src/values";
 
 const client = getClient({
   max_conns: 5,
@@ -38,7 +37,7 @@ const dummyResponse: HTTPResponse = {
   status: 200,
 };
 
-describe("query with $queryType", () => {
+describe("query", () => {
   it("Can query an FQL-x endpoint", async () => {
     const result = await client.query<number>(fql`"taco".length`);
 
@@ -291,6 +290,31 @@ describe("query with $queryType", () => {
         expect(e.httpStatus).toBeGreaterThanOrEqual(400);
         expect(e.message).toBeDefined();
       }
+    }
+  });
+});
+
+describe("query can encode / decode QueryValue correctly", () => {
+  it("treats undefined as unprovided", async () => {
+    const client = getClient();
+    const collectionName = "UndefinedTest";
+    await client.query(fql`
+      if (Collection.byName(${collectionName}) == null) {
+        Collection.create({ name: ${collectionName}})
+      }`);
+    try {
+      const docCreated = await client.query(fql`
+      ${new Module(collectionName)}.create({
+        foo: "bar",
+        shouldnt_exist: undefined,
+        nested_object: {
+          i_exist: true,
+          i_dont_exist: undefined
+        }
+      })`);
+      console.log(docCreated);
+    } catch (e) {
+      console.log(e);
     }
   });
 });

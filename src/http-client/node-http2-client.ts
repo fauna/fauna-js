@@ -1,5 +1,9 @@
-import http2 from "http2";
-
+let http2: any;
+try {
+  http2 = require("node:http2");
+} catch (_) {
+  http2 = undefined;
+}
 import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
 import { NetworkError } from "../errors";
 import { QueryRequest } from "../wire-protocol";
@@ -9,6 +13,7 @@ import { QueryRequest } from "../wire-protocol";
  */
 export class NodeHTTP2Client implements HTTPClient {
   static #client: NodeHTTP2Client | null = null;
+
   #sessionMap: Map<string, SessionWrapper> = new Map();
 
   /**
@@ -87,7 +92,7 @@ const DEFAULT_SESSION_OPTIONS: SessionWrapperOptions = {
 };
 
 class SessionWrapper {
-  readonly internal: http2.ClientHttp2Session;
+  readonly internal: any;
   readonly #idleTime: number;
   // WIP: should be set to something different for streaming
   readonly #pathName: "/query/1";
@@ -121,13 +126,10 @@ class SessionWrapper {
     headers: requestHeaders,
     method,
   }: SessionRequestOptions): Promise<HTTPResponse> {
-    let req: http2.ClientHttp2Stream;
+    let req: any;
 
     return new Promise<HTTPResponse>((resolvePromise, rejectPromise) => {
-      const onResponse = (
-        http2ResponseHeaders: http2.IncomingHttpHeaders &
-          http2.IncomingHttpStatusHeader
-      ) => {
+      const onResponse = (http2ResponseHeaders: any) => {
         const status = Number(
           http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
         );
@@ -135,7 +137,7 @@ class SessionWrapper {
 
         // append response data to the data string every time we receive new data
         // chunks in the response
-        req.on("data", (chunk) => {
+        req.on("data", (chunk: any) => {
           responseData += chunk;
         });
 
@@ -150,7 +152,7 @@ class SessionWrapper {
       };
 
       try {
-        const httpRequestHeaders: http2.OutgoingHttpHeaders = {
+        const httpRequestHeaders: any = {
           ...requestHeaders,
           [http2.constants.HTTP2_HEADER_PATH]: this.#pathName,
           [http2.constants.HTTP2_HEADER_METHOD]: method,
@@ -159,7 +161,7 @@ class SessionWrapper {
         req = this.internal
           .request(httpRequestHeaders)
           .setEncoding("utf8")
-          .on("error", (error) => rejectPromise(error))
+          .on("error", (error: any) => rejectPromise(error))
           .on("response", onResponse);
         req.write(JSON.stringify(requestData), "utf8");
         req.end();

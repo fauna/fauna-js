@@ -1,6 +1,6 @@
 {
   "name": "fauna",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "A driver to query Fauna databases in browsers, Node.js, and other Javascript runtimes",
   "homepage": "https://fauna.com",
   "bugs": {
@@ -37,7 +37,7 @@
   },
   "scripts": {
     "build": "rm -rf dist; yarn build:node; yarn build:browser; yarn build:types",
-    "build:browser": "esbuild src/index.ts --bundle --platform=browser --minify --sourcemap --format=esm --outfile=dist/browser/index.js --external:./src/http-client/node-http2-client",
+    "build:browser": "esbuild src/index.ts --bundle --platform=browser --minify --sourcemap --format=esm --outfile=dist/browser/index.js",
     "build:node": "esbuild src/index.ts --bundle --sourcemap --platform=node --outfile=dist/node/index.js",
     "build:types": "tsc -emitDeclarationOnly --declaration true",
     "lint": "eslint -f unix \"src/**/*.{ts,tsx}\"",

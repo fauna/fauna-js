@@ -50,9 +50,14 @@ export const getDefaultHTTPClient = () =>
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;
 
-function isNode() {
-  if (typeof process !== "undefined") {
-    return process.release?.name === "node";
+export function isNode() {
+  if (typeof process !== "undefined" && process.release?.name === "node") {
+    try {
+      require("node:http2");
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
   return false;
 }

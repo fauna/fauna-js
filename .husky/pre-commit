@@ -1,6 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-yarn build
-yarn lint
-yarn pretty-quick --staged
+if [[ `git status --porcelain -- '*.ts' 'package.json'` ]]; then
+  yarn build
+  yarn lint
+  yarn pretty-quick --staged
+fi

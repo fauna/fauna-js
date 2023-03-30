@@ -2,6 +2,7 @@ import { ClientConfiguration, endpoints } from "./client-configuration";
 import {
   AuthenticationError,
   AuthorizationError,
+  ClientClosedError,
   ClientError,
   NetworkError,
   ProtocolError,
@@ -49,6 +50,8 @@ export class Client {
   #lastTxnTs?: number;
   /** url of Fauna */
   #url: string;
+  /** true if this client is closed false otherwise */
+  #isClosed = false;
 
   /**
    * Constructs a new {@link Client}.
@@ -115,6 +118,20 @@ export class Client {
   }
 
   /**
+   * Closes the underlying HTTP client. Subsquent query calls
+   * will fail.
+   */
+  close() {
+    if (this.#isClosed) {
+      throw new ClientClosedError(
+        "Your client is closed. You cannot close it again."
+      );
+    }
+    this.#httpClient.close();
+    this.#isClosed = true;
+  }
+
+  /**
    * Queries Fauna.
    * @param request - a {@link Query} to execute in Fauna.
    *  Note, you can embed header fields in this object; if you do that there's no need to
@@ -134,12 +151,18 @@ export class Client {
    * @throws {@link NetworkError} the client encountered a network issue
    * connecting to Fauna.
    * @throws A {@link ClientError} the client fails to submit the request
+   * @throws {@link ClientClosedError} if a query is issued after the client is closed.
    * due to an internal error.
    */
   async query<T = any>(
     request: Query,
     headers?: QueryRequestHeaders
   ): Promise<QuerySuccess<T>> {
+    if (this.#isClosed) {
+      throw new ClientClosedError(
+        "Your client is closed. No further requests can be issued."
+      );
+    }
     return this.#query(request.toQuery(headers));
   }
 

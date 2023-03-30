@@ -6,6 +6,10 @@ const client = getClient({
   query_timeout_ms: 60_000,
 });
 
+afterAll(() => {
+  client.close();
+});
+
 describe("query using template format", () => {
   it("succeeds with no arguments", async () => {
     const queryBuilder = fql`"hello world"`;

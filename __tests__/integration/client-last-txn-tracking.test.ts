@@ -14,6 +14,8 @@ describe("last_txn_ts tracking in client", () => {
         }
         return getDefaultHTTPClient().request(req);
       },
+
+      close() {},
     };
 
     const myClient = getClient(
@@ -60,6 +62,8 @@ describe("last_txn_ts tracking in client", () => {
         }
         return getDefaultHTTPClient().request(req);
       },
+
+      close() {},
     };
 
     const myClient = getClient(

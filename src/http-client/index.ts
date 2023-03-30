@@ -40,6 +40,12 @@ export interface HTTPClient {
    * @returns A Promise&lt;{@link HTTPResponse}&gt;
    */
   request(req: HTTPRequest): Promise<HTTPResponse>;
+
+  /**
+   * Closes the HTTPClient. Subsequent requests will
+   * fail.
+   */
+  close(): void;
 }
 
 export const getDefaultHTTPClient = () =>

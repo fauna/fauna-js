@@ -40,4 +40,9 @@ export class FetchClient implements HTTPClient {
       headers: responseHeaders,
     };
   }
+
+  /** {@inheritDoc HTTPClient.close} */
+  close() {
+    // no actions at this time
+  }
 }

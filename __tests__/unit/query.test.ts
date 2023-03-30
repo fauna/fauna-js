@@ -14,6 +14,10 @@ import {
 import { FetchClient } from "../../src/http-client";
 import { fql } from "../../src/query-builder";
 
+afterAll(() => {
+  client.close();
+});
+
 const client = getClient(
   {
     max_conns: 5,

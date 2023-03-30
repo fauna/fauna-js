@@ -7,20 +7,11 @@ const client = getClient({
   query_timeout_ms: 60_000,
 });
 
-let testDoc: Document;
+afterAll(() => {
+  client.close();
+});
 
 describe("querying for set", () => {
-  beforeAll(async () => {
-    await client.query(fql`
-      if (Collection.byName("DocTest") == null) {
-        Collection.create({ name: "DocTest" })
-      }
-    `);
-
-    const result = await client.query<Document>(fql`DocTest.create({})`);
-    testDoc = result.data;
-  });
-
   it("can round-trip Page", async () => {
     const set = new Page<number>({ data: [1, 2, 3], after: "1234" });
 

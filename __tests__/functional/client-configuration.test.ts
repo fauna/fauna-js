@@ -21,8 +21,6 @@ describe("ClientConfiguration", () => {
   });
 
   it("Client respectes passed in client configuration over defaults", () => {
-    process.env["FAUNA_SECRET"] = "foo";
-    const client = new Client({ secret: "bar", query_timeout_ms: 10 });
     // TODO: when the Client accepts an http client add a mock that validates
     //   the configuration changes were applied.
   });
@@ -59,6 +57,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     const result = await client.query<number>(fql`"taco".length`);
     expect(result.data).toEqual(4);
     expect(result.txn_ts).toBeDefined();
+    client.close();
   });
 
   it("client allows txn time to be set", async () => {
@@ -73,6 +72,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     // setting to the past keeps the more recent ts.
     client.lastTxnTs = expectedTxnTime;
     expect(client.lastTxnTs).toBe(addFiveMinutes);
+    client.close();
   });
 
   type HeaderTestInput = {
@@ -105,6 +105,8 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
           );
           return getDefaultHTTPClient().request(req);
         },
+
+        close() {},
       };
 
       const client = getClient(
@@ -126,6 +128,8 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
         expect(req.url).toBe("http://localhost:8443/query/1");
         return getDefaultHTTPClient().request(req);
       },
+
+      close() {},
     };
 
     const client1 = getClient(

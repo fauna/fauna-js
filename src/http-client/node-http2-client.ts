@@ -30,12 +30,10 @@ export class NodeHTTP2Client implements HTTPClient {
       throw new Error("Your platform does not support Node's http2 library");
     }
 
-    if (this.#client) {
-      this.#client.#numberOfUsers++;
-      return this.#client;
+    if (this.#client === null) {
+      this.#client = new NodeHTTP2Client();
     }
 
-    this.#client = new NodeHTTP2Client();
     this.#client.#numberOfUsers++;
     return this.#client;
   }
@@ -57,12 +55,24 @@ export class NodeHTTP2Client implements HTTPClient {
 
   /** {@inheritDoc HTTPClient.close} */
   close() {
+    if (this.isClosed()) {
+      return;
+    }
     this.#numberOfUsers--;
+    // defend against redundant close calls
     if (this.#numberOfUsers === 0) {
+      this.#numberOfUsers = 0;
       for (const sessionWrapper of this.#sessionMap.values()) {
         sessionWrapper.close();
       }
     }
+  }
+
+  /**
+   * @returns true if this client has been closed, false otherwise.
+   */
+  isClosed() {
+    return this.#numberOfUsers === 0;
   }
 
   #getSession(url: string): SessionWrapper {

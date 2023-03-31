@@ -43,7 +43,7 @@ export interface HTTPClient {
 
   /**
    * Flags the calling {@link Client} as no longer
-   * referencing this HTTPClient. Once no processes reference this client
+   * referencing this HTTPClient. Once no {@link Client} instances reference this HTTPClient
    * the underlying resources will be closed.
    * It is expected that calls to this method are _only_ made by a {@link Client}
    * instantiation. The behavior of direct calls is undefined.

@@ -55,11 +55,11 @@ export class NodeHTTP2Client implements HTTPClient {
 
   /** {@inheritDoc HTTPClient.close} */
   close() {
+    // defend against redundant close calls
     if (this.isClosed()) {
       return;
     }
     this.#numberOfUsers--;
-    // defend against redundant close calls
     if (this.#numberOfUsers === 0) {
       this.#numberOfUsers = 0;
       for (const sessionWrapper of this.#sessionMap.values()) {

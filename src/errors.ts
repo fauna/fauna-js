@@ -202,6 +202,20 @@ export class ClientError extends FaunaError {
 }
 
 /**
+ * An error thrown if you try to call the client after it has been closed.
+ */
+export class ClientClosedError extends FaunaError {
+  constructor(message: string, options?: { cause: any }) {
+    super(message, options);
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ClientClosedError);
+    }
+    this.name = "ClientClosedError";
+  }
+}
+
+/**
  * An error representing a failure due to the network.
  * This indicates Fauna was never reached.
  */

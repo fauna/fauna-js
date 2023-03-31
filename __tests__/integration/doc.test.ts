@@ -17,6 +17,10 @@ const client = getClient({
 
 let testDoc: Document;
 
+afterAll(() => {
+  client.close();
+});
+
 describe("querying for doc types", () => {
   beforeAll(async () => {
     await client.query(fql`

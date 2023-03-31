@@ -38,6 +38,10 @@ const dummyResponse: HTTPResponse = {
   status: 200,
 };
 
+afterAll(() => {
+  client.close();
+});
+
 describe("query", () => {
   it("Can query an FQL-x endpoint", async () => {
     const result = await client.query<number>(fql`"taco".length`);
@@ -117,6 +121,7 @@ describe("query", () => {
           });
           return dummyResponse;
         },
+        close() {},
       };
       const clientConfiguration: Partial<ClientConfiguration> = {
         format: "tagged",
@@ -256,6 +261,7 @@ describe("query", () => {
       async request(req) {
         throw new Error("boom!");
       },
+      close() {},
     };
     const badClient = getClient(
       {
@@ -266,7 +272,7 @@ describe("query", () => {
     );
     try {
       await badClient.query<number>(fql`foo`);
-    } catch (e) {
+    } catch (e: any) {
       if (e instanceof ClientError) {
         expect(e.cause).toBeDefined();
         expect(e.message).toEqual(

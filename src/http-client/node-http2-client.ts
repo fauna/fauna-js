@@ -15,6 +15,8 @@ export class NodeHTTP2Client implements HTTPClient {
   static #client: NodeHTTP2Client | null = null;
 
   #sessionMap: Map<string, SessionWrapper> = new Map();
+  /** number of users using this NodeHTTP2Client */
+  #numberOfUsers = 0;
 
   /**
    * @remarks Private constructor means you must instantiate with
@@ -27,11 +29,12 @@ export class NodeHTTP2Client implements HTTPClient {
     if (http2 === undefined) {
       throw new Error("Your platform does not support Node's http2 library");
     }
-    if (this.#client) {
-      return this.#client;
+
+    if (this.#client === null) {
+      this.#client = new NodeHTTP2Client();
     }
 
-    this.#client = new NodeHTTP2Client();
+    this.#client.#numberOfUsers++;
     return this.#client;
   }
 
@@ -48,6 +51,27 @@ export class NodeHTTP2Client implements HTTPClient {
         cause: error,
       });
     }
+  }
+
+  /** {@inheritDoc HTTPClient.close} */
+  close() {
+    // defend against redundant close calls
+    if (this.isClosed()) {
+      return;
+    }
+    this.#numberOfUsers--;
+    if (this.#numberOfUsers === 0) {
+      for (const sessionWrapper of this.#sessionMap.values()) {
+        sessionWrapper.close();
+      }
+    }
+  }
+
+  /**
+   * @returns true if this client has been closed, false otherwise.
+   */
+  isClosed() {
+    return this.#numberOfUsers === 0;
   }
 
   #getSession(url: string): SessionWrapper {

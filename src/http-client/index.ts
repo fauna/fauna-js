@@ -40,6 +40,18 @@ export interface HTTPClient {
    * @returns A Promise&lt;{@link HTTPResponse}&gt;
    */
   request(req: HTTPRequest): Promise<HTTPResponse>;
+
+  /**
+   * Flags the calling {@link Client} as no longer
+   * referencing this HTTPClient. Once no {@link Client} instances reference this HTTPClient
+   * the underlying resources will be closed.
+   * It is expected that calls to this method are _only_ made by a {@link Client}
+   * instantiation. The behavior of direct calls is undefined.
+   * @remarks
+   * For some HTTPClients, such as the {@link FetchClient}, this method
+   * is a no-op as there is no shared resource to close.
+   */
+  close(): void;
 }
 
 export const getDefaultHTTPClient = () =>

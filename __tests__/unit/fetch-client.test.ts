@@ -1,4 +1,6 @@
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
+import { Client } from "../../src/client";
+import { endpoints } from "../../src/client-configuration";
 enableFetchMocks();
 
 import { NetworkError } from "../../src/errors";
@@ -8,6 +10,7 @@ import {
   HTTPResponse,
   isHTTPResponse,
 } from "../../src/http-client";
+import { fql } from "../../src/query-builder";
 import { QueryFailure, QuerySuccess } from "../../src/wire-protocol";
 
 let fetchClient: FetchClient;
@@ -32,6 +35,10 @@ const dummyStats = {
 describe("fetch client", () => {
   beforeAll(() => {
     fetchClient = new FetchClient();
+  });
+
+  afterAll(() => {
+    fetchClient.close();
   });
 
   beforeEach(() => {

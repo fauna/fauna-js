@@ -32,6 +32,10 @@ const authorsData = [
   },
 ];
 
+afterAll(() => {
+  client.close();
+});
+
 beforeAll(async () => {
   /**
    * The intent of these tests is to run against an already existing collection and so

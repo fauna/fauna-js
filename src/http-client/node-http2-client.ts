@@ -61,7 +61,6 @@ export class NodeHTTP2Client implements HTTPClient {
     }
     this.#numberOfUsers--;
     if (this.#numberOfUsers === 0) {
-      this.#numberOfUsers = 0;
       for (const sessionWrapper of this.#sessionMap.values()) {
         sessionWrapper.close();
       }

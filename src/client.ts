@@ -118,7 +118,7 @@ export class Client {
   }
 
   /**
-   * Closes the underlying HTTP client. Subsquent query calls
+   * Closes the underlying HTTP client. Subsquent query or close calls
    * will fail.
    */
   close() {

@@ -188,6 +188,22 @@ describe("query", () => {
     }
   });
 
+  it("Includes abort when present", async () => {
+    expect.assertions(4);
+    try {
+      await client.query(fql`abort("oops")`);
+    } catch (e) {
+      if (e instanceof ServiceError) {
+        expect(e.httpStatus).toEqual(400);
+        // WIP: core is changing the code from "aborted" to "abort"
+        // expect(e.code).toEqual("abort");
+        expect(e.code).toBeDefined();
+        expect(e.queryInfo?.summary).toBeDefined();
+        expect(e.abort).toBeDefined();
+      }
+    }
+  });
+
   it("throws a QueryTimeoutError if the query times out", async () => {
     expect.assertions(4);
     const badClient = getClient({

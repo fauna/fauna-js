@@ -142,7 +142,7 @@ describe("query", () => {
   it("throws a QueryCheckError if the query is invalid", async () => {
     expect.assertions(4);
     try {
-      await client.query<number>(fql`happy little fox`);
+      await client.query(fql`happy little fox`);
     } catch (e) {
       if (e instanceof QueryCheckError) {
         expect(e.httpStatus).toEqual(400);
@@ -156,7 +156,7 @@ describe("query", () => {
   it("throws a QueryRuntimeError if the query hits a runtime error", async () => {
     expect.assertions(3);
     try {
-      await client.query<number>(fql`"taco".length + "taco"`);
+      await client.query(fql`"taco".length + "taco"`);
     } catch (e) {
       if (e instanceof QueryRuntimeError) {
         expect(e.httpStatus).toEqual(400);
@@ -169,7 +169,7 @@ describe("query", () => {
   it("Includes constraint failures when present", async () => {
     expect.assertions(6);
     try {
-      await client.query<number>(
+      await client.query(
         fql`Function.create({"name": "double", "body": "x => x * 2"})`
       );
     } catch (e) {
@@ -211,7 +211,7 @@ describe("query", () => {
       query_timeout_ms: 1,
     });
     try {
-      await badClient.query<number>(fql`Collection.create({ name: 'Wah' })`);
+      await badClient.query(fql`Collection.create({ name: 'Wah' })`);
     } catch (e) {
       if (e instanceof QueryTimeoutError) {
         expect(e.message).toEqual(
@@ -236,7 +236,7 @@ describe("query", () => {
       query_timeout_ms: 60,
     });
     try {
-      await badClient.query<number>(fql`Collection.create({ name: 'Wah' })`);
+      await badClient.query(fql`Collection.create({ name: 'Wah' })`);
     } catch (e) {
       if (e instanceof AuthenticationError) {
         expect(e.message).toBeDefined();
@@ -260,7 +260,7 @@ describe("query", () => {
       query_timeout_ms: 60,
     });
     try {
-      await badClient.query<number>(fql`"taco".length;`);
+      await badClient.query(fql`"taco".length;`);
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(
@@ -287,7 +287,7 @@ describe("query", () => {
       httpClient
     );
     try {
-      await badClient.query<number>(fql`foo`);
+      await badClient.query(fql`foo`);
     } catch (e: any) {
       if (e instanceof ClientError) {
         expect(e.cause).toBeDefined();
@@ -307,7 +307,7 @@ describe("query", () => {
       query_timeout_ms: 60,
     });
     try {
-      await badClient.query<number>(fql`foo`);
+      await badClient.query(fql`foo`);
     } catch (e) {
       if (e instanceof ProtocolError) {
         expect(e.httpStatus).toBeGreaterThanOrEqual(400);

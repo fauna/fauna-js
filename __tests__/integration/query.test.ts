@@ -124,7 +124,6 @@ describe("query", () => {
         close() {},
       };
       const clientConfiguration: Partial<ClientConfiguration> = {
-        format: "tagged",
         max_conns: 5,
         query_timeout_ms: 60,
         linearized: true,

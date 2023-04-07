@@ -25,7 +25,7 @@ export interface ClientConfiguration {
    * It is not recommended that users use the "simple" format as you will lose the typing of your data. e.g. a "Date"
    * will no longer be recognized by the Fauna as a "Date", but will instead be treated as a string.
    */
-  format?: ValueFormat;
+  format: ValueFormat;
   /**
    * The maximum number of connections to a make to Fauna.
    */

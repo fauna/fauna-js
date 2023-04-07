@@ -32,9 +32,10 @@ import { TaggedTypeFormat } from "./tagged-type";
 
 const defaultClientConfiguration: Pick<
   ClientConfiguration,
-  "endpoint" | "max_conns"
+  "endpoint" | "format" | "max_conns"
 > = {
   endpoint: endpoints.default,
+  format: "tagged",
   max_conns: 10,
 };
 
@@ -257,7 +258,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       );
 
       const isTaggedFormat =
-        (this.#clientConfiguration.format ?? "tagged") === "tagged" ||
+        this.#clientConfiguration.format === "tagged" ||
         queryRequest.format === "tagged";
       const queryArgs = isTaggedFormat
         ? TaggedTypeFormat.encode(queryRequest.arguments)

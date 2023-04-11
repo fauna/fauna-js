@@ -1,3 +1,4 @@
+import { ClientError } from "./errors";
 import {
   DateStub,
   Document,
@@ -56,6 +57,9 @@ export class TaggedTypeFormat {
           return new NamedDocumentReference(obj);
         }
       } else if (value["@set"]) {
+        if (typeof value["@set"] === "string") {
+          return new Page({ after: value["@set"] });
+        }
         return new Page(value["@set"]);
       } else if (value["@int"]) {
         return Number(value["@int"]);
@@ -165,12 +169,19 @@ const encodeMap = {
   namedDocument: (value: NamedDocument): TaggedRef => ({
     "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
-  set: (value: Page<any>) => ({
-    // WIP: core does not accept `@set` tagged values, yet, so just unwrap
-    // "@set": { data: encodeMap["array"](value.data), after: value.after },
-    data: encodeMap["array"](value.data),
-    after: value.after,
-  }),
+  set: (value: Page<any>) => {
+    throw new ClientError(
+      "Page could not be encoded. Fauna does not accept encoded Set values, yet. Use Page.data and Page.after as arguments, instead."
+    );
+    // TODO: uncomment to encode Pages once core starts accepting `@set` tagged values
+    // if (value.data === undefined) {
+    //   // if a Page has no data, then it must still have an 'after' cursor
+    //   return { "@set": value.after };
+    // }
+    // return {
+    //   "@set": { data: encodeMap["array"](value.data), after: value.after },
+    // };
+  },
 };
 
 const encode = (input: QueryValue): QueryValue => {

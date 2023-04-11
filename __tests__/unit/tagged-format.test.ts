@@ -41,7 +41,8 @@ describe("tagged format", () => {
       ],
       "molecules": { "@long": "999999999999999999" },
       "null": null,
-      "set": { "@set": { "data": ["a", "b"] } }
+      "page": { "@set": { "data": ["a", "b"] } },
+      "page_string": { "@set": "abc123" }
     }`;
 
     const bugs_mod: Module = new Module("Bugs");
@@ -55,7 +56,8 @@ describe("tagged format", () => {
       id: "123",
       ts: doc_ts,
     });
-    const set = new Page({ data: ["a", "b"] });
+    const page = new Page({ data: ["a", "b"] });
+    const page_string = new Page({ after: "abc123" });
 
     const result = TaggedTypeFormat.decode(allTypes);
     expect(result.bugs_coll).toStrictEqual(bugs_mod);
@@ -77,7 +79,8 @@ describe("tagged format", () => {
     expect(result.measurements[1].time).toBeInstanceOf(TimeStub);
     expect(result.molecules).toEqual(BigInt("999999999999999999"));
     expect(result.null).toBeNull();
-    expect(result.set).toStrictEqual(set);
+    expect(result.page).toStrictEqual(page);
+    expect(result.page_string).toStrictEqual(page_string);
   });
 
   it("can be encoded", () => {
@@ -92,6 +95,8 @@ describe("tagged format", () => {
         number: 48,
         time: TimeStub.from("2023-01-30T16:27:45.204243-05:00"),
         datetime: new Date("2023-01-30T16:27:45.204243-05:00"),
+        page: new Page({ data: ["a", "b"] }),
+        page_string: new Page({ after: "abc123" }),
         extra: [
           {
             id: 1,
@@ -109,12 +114,18 @@ describe("tagged format", () => {
     );
 
     const backToObj = JSON.parse(result)["@object"];
-    expect(backToObj.double).toStrictEqual({ "@double": "4.14" });
-    expect(backToObj.extra).toHaveLength(2);
     expect(backToObj.child.more.itsworking).toStrictEqual({
       "@date": "1983-04-15",
     });
+    expect(backToObj.double).toStrictEqual({ "@double": "4.14" });
     expect(backToObj.null).toBeNull();
+    // WIP: core does not accept `@set` tagged values, yet
+    // expect(backToObj.page).toStrictEqual({ "@set": { data: ["a", "b"] } });
+    expect(backToObj.page).toStrictEqual({ data: ["a", "b"] });
+    // WIP: core does not accept `@set` tagged values, yet
+    // expect(backToObj.page_string).toStrictEqual({ "@set": "abc123" });
+    expect(backToObj.page_string).toStrictEqual("abc123");
+    expect(backToObj.extra).toHaveLength(2);
   });
 
   it("handles conflicts", () => {

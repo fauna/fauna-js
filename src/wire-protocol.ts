@@ -139,6 +139,12 @@ export type QueryFailure = QueryInfo & {
      * Present only if this query encountered constraint failures.
      */
     constraint_failures?: Array<ConstraintFailure>;
+    /**
+     * The user provided value passed to the originating `abort()` call.
+     * Present only when the query encountered an `abort()` call, which is
+     * denoted by the error code `"abort"`
+     */
+    abort?: QueryValue;
   };
 };
 

@@ -2,6 +2,7 @@ import type {
   ConstraintFailure,
   QueryFailure,
   QueryInfo,
+  QueryValue,
 } from "./wire-protocol";
 
 /**
@@ -28,6 +29,12 @@ export class ServiceError extends FaunaError {
    */
   readonly code: string;
   /**
+   * The user provided value passed to the originating `abort()` call.
+   * Present only when the query encountered an `abort()` call, which is denoted
+   * by the error code `"abort"`
+   */
+  readonly abort?: QueryValue;
+  /**
    * Details about the query sent along with the response
    */
   readonly queryInfo?: QueryInfo;
@@ -47,6 +54,7 @@ export class ServiceError extends FaunaError {
 
     this.name = "ServiceError";
     this.code = failure.error.code;
+    this.abort = failure.error.abort;
     this.httpStatus = httpStatus;
 
     const info: QueryInfo = {

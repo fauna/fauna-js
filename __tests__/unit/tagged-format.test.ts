@@ -95,8 +95,10 @@ describe("tagged format", () => {
         number: 48,
         time: TimeStub.from("2023-01-30T16:27:45.204243-05:00"),
         datetime: new Date("2023-01-30T16:27:45.204243-05:00"),
-        page: new Page({ data: ["a", "b"] }),
-        page_string: new Page({ after: "abc123" }),
+        // TODO: uncomment to add test once core accepts `@set` tagged values
+        // page: new Page({ data: ["a", "b"] }),
+        // TODO: uncomment to add test once core accepts `@set` tagged values
+        // page_string: new Page({ after: "abc123" }),
         extra: [
           {
             id: 1,
@@ -119,12 +121,10 @@ describe("tagged format", () => {
     });
     expect(backToObj.double).toStrictEqual({ "@double": "4.14" });
     expect(backToObj.null).toBeNull();
-    // WIP: core does not accept `@set` tagged values, yet
+    // TODO: uncomment to add test once core accepts `@set` tagged values
     // expect(backToObj.page).toStrictEqual({ "@set": { data: ["a", "b"] } });
-    expect(backToObj.page).toStrictEqual({ data: ["a", "b"] });
-    // WIP: core does not accept `@set` tagged values, yet
+    // TODO: uncomment to add test once core accepts `@set` tagged values
     // expect(backToObj.page_string).toStrictEqual({ "@set": "abc123" });
-    expect(backToObj.page_string).toStrictEqual("abc123");
     expect(backToObj.extra).toHaveLength(2);
   });
 

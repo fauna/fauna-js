@@ -5,6 +5,7 @@ import {
   ClientError,
   NetworkError,
   ProtocolError,
+  QueryAbortError,
   QueryCheckError,
   QueryRuntimeError,
   QueryTimeoutError,
@@ -187,18 +188,16 @@ describe("query", () => {
     }
   });
 
-  it("Includes abort when present", async () => {
+  it("throws a QueryAbortError is the `abort` function is called", async () => {
     expect.assertions(4);
     try {
       await client.query(fql`abort("oops")`);
     } catch (e) {
-      if (e instanceof ServiceError) {
+      if (e instanceof QueryAbortError) {
         expect(e.httpStatus).toEqual(400);
-        // WIP: core is changing the code from "aborted" to "abort"
-        // expect(e.code).toEqual("abort");
-        expect(e.code).toBeDefined();
+        expect(e.code).toEqual("abort");
         expect(e.queryInfo?.summary).toBeDefined();
-        expect(e.abort).toBeDefined();
+        expect(e.abort).toEqual("oops");
       }
     }
   });

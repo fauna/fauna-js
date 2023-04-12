@@ -6,6 +6,7 @@ import {
   ClientError,
   NetworkError,
   ProtocolError,
+  QueryAbortError,
   QueryCheckError,
   QueryRuntimeError,
   QueryTimeoutError,
@@ -22,6 +23,7 @@ import {
   type QueryRequest,
   type QueryRequestHeaders,
   type QuerySuccess,
+  type QueryValue,
 } from "./wire-protocol";
 import {
   getDefaultHTTPClient,
@@ -222,26 +224,30 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   #getServiceError(failure: QueryFailure, httpStatus: number): ServiceError {
     switch (httpStatus) {
       case 400:
-        if (
-          httpStatus === 400 &&
-          queryCheckFailureCodes.includes(failure.error.code)
-        ) {
-          return new QueryCheckError(failure, httpStatus);
+        if (queryCheckFailureCodes.includes(failure.error.code)) {
+          return new QueryCheckError(failure);
         }
-
-        return new QueryRuntimeError(failure, httpStatus);
+        if (
+          failure.error.code === "abort" &&
+          failure.error.abort !== undefined
+        ) {
+          return new QueryAbortError(
+            failure as QueryFailure & { error: { abort: QueryValue } }
+          );
+        }
+        return new QueryRuntimeError(failure);
       case 401:
-        return new AuthenticationError(failure, httpStatus);
+        return new AuthenticationError(failure);
       case 403:
-        return new AuthorizationError(failure, httpStatus);
+        return new AuthorizationError(failure);
       case 429:
-        return new ThrottlingError(failure, httpStatus);
+        return new ThrottlingError(failure);
       case 440:
-        return new QueryTimeoutError(failure, httpStatus);
+        return new QueryTimeoutError(failure);
       case 500:
-        return new ServiceInternalError(failure, httpStatus);
+        return new ServiceInternalError(failure);
       case 503:
-        return new ServiceTimeoutError(failure, httpStatus);
+        return new ServiceTimeoutError(failure);
       default:
         return new ServiceError(failure, httpStatus);
     }

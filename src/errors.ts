@@ -111,7 +111,7 @@ export class QueryAbortError extends ServiceError {
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryCheckError);
     }
-    this.name = "QueryCheckError";
+    this.name = "QueryAbortError";
     this.abort = failure.error.abort;
   }
 }

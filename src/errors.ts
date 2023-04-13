@@ -67,6 +67,8 @@ export class ServiceError extends FaunaError {
  * QueryRuntimeError's occur when a bug in your query causes an invalid execution
  * to be requested.
  * The 'code' field will vary based on the specific error cause.
+ *
+ * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class QueryRuntimeError extends ServiceError {
   constructor(failure: QueryFailure) {
@@ -83,6 +85,8 @@ export class QueryRuntimeError extends ServiceError {
 /**
  * An error due to a "compile-time" check of the query
  * failing.
+ *
+ * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class QueryCheckError extends ServiceError {
   constructor(failure: QueryFailure) {
@@ -95,10 +99,11 @@ export class QueryCheckError extends ServiceError {
 }
 
 /**
- * An error due to a "compile-time" check of the query
- * failing.
+ * An error due to calling the FQL `abort` function.
+ *
+ * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
-export class QueryAbortError extends ServiceError {
+export class AbortError extends ServiceError {
   /**
    * The user provided value passed to the originating `abort()` call.
    * Present only when the query encountered an `abort()` call, which is denoted
@@ -111,7 +116,7 @@ export class QueryAbortError extends ServiceError {
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryCheckError);
     }
-    this.name = "QueryAbortError";
+    this.name = "AbortError";
     this.abort = failure.error.abort;
   }
 }

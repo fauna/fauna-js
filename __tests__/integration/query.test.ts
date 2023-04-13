@@ -5,7 +5,7 @@ import {
   ClientError,
   NetworkError,
   ProtocolError,
-  QueryAbortError,
+  AbortError,
   QueryCheckError,
   QueryRuntimeError,
   QueryTimeoutError,
@@ -186,12 +186,12 @@ describe("query", () => {
     }
   });
 
-  it("throws a QueryAbortError is the `abort` function is called", async () => {
+  it("throws a AbortError is the `abort` function is called", async () => {
     expect.assertions(4);
     try {
       await client.query(fql`abort("oops")`);
     } catch (e) {
-      if (e instanceof QueryAbortError) {
+      if (e instanceof AbortError) {
         expect(e.httpStatus).toBe(400);
         expect(e.code).toBe("abort");
         expect(e.queryInfo?.summary).toBeDefined();

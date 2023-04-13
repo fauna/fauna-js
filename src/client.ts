@@ -6,7 +6,7 @@ import {
   ClientError,
   NetworkError,
   ProtocolError,
-  QueryAbortError,
+  AbortError,
   QueryCheckError,
   QueryRuntimeError,
   QueryTimeoutError,
@@ -231,7 +231,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
           failure.error.code === "abort" &&
           failure.error.abort !== undefined
         ) {
-          return new QueryAbortError(
+          return new AbortError(
             failure as QueryFailure & { error: { abort: QueryValue } }
           );
         }

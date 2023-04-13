@@ -41,7 +41,7 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
 # Quick-Start
 
 ```javascript
-import { Client, fql } from "fauna";
+import { Client, fql, FaunaError } from "fauna";
 
 // configure your client
 const client = new Client({
@@ -67,7 +67,7 @@ try {
   `;
   const document_result = await client.query(document_query);
 } catch (error) {
-  if (error instanceof fauna.FaunaError) {
+  if (error instanceof FaunaError) {
     // handle errors
   }
 }
@@ -127,10 +127,14 @@ It allows you compose queries from sub-queries and variables native to your prog
 for example:
 
 ```typescript
-let collectionName = "Pets";
+import { Client, fql } from "fauna";
+
+const client = new Client();
+
+const collectionName = "Pets";
 
 // a reusable sub query to determine a collections existence
-let collectionExists = fql`Collection.byName(${collectionName}) != null`;
+const collectionExists = fql`Collection.byName(${collectionName}) != null`;
 
 client.query(fql`
   if (${collectionExists}) {
@@ -138,7 +142,7 @@ client.query(fql`
   } else {
     Collection.create({ name: ${collectionName} })
     "Collection exists now!"
-  }
+  }`)
 ```
 
 This has several advantages:
@@ -146,27 +150,6 @@ This has several advantages:
 - You can use `fql` to build a library of subqueries applicable to your domain - and combinable in whatever way you need
 - injection attacks are not possible if you pass input variables into the interpolated (`${i'm interpoloated}`) parts of the query.
 - the driver speaks "pure FQL X" - you can try out some FQL X on the dashboard's terminal and paste it directly into your app like fql\`copied from terminal...\` and the query will work as is.
-
-The following subsections show some further examples.
-
-### Pure FQL X via the `fql` function
-
-The `fql` function can also create pure FQL X queries, for example:
-
-```javascript
-const result = await client.query(fql`
-  let u = {
-    name: "Alice",
-    email: "alice@site.example",
-    address: "123 Happy Lane"
-  })
-
-  u {
-    name,
-    email
-  }
-`);
-```
 
 ## Connecting from the browser
 
@@ -201,6 +184,10 @@ const fauna = require("fauna");
 With TypeScript, you can apply a type parameter to your result.
 
 ```typescript
+import { Client, fql } from "fauna";
+
+const client = new Client();
+
 type User = {
   name: string;
   email: string;
@@ -211,8 +198,8 @@ const query = fql`{
   email: "alice@site.example",
 }`;
 
-const result = await client.query<User>(query);
-const user_doc = result.data;
+const result = await client.query<User>(query); // QuerySuccess<User>
+const user_doc = result.data; // User
 
 console.assert(user_doc.name === "Alice");
 console.assert(user_doc.email === "alice@site.example");
@@ -223,7 +210,7 @@ console.assert(user_doc.email === "alice@site.example");
 Options are available to configure queries on each request.
 
 ```typescript
-import { Client, type QueryRequestHeaders } from "fauna";
+import { fql, Client, type QueryRequestHeaders } from "fauna";
 
 const client = new Client();
 
@@ -237,7 +224,7 @@ const options: QueryRequestHeaders = {
   typecheck: true,
 };
 
-const result = await client.query(SOME_QUERY, options);
+const result = await client.query(fql`"Hello, Fauna!`, options);
 ```
 
 ## Client Configuration
@@ -295,11 +282,15 @@ Query statistics are returned with successful query responses and `ServiceError`
 
 ````typescript
 import {
+  fql,
+  Client,
   ServiceError,
   type QueryInfo,
   type QueryStats,
   type QuerySuccess,
 } from "fauna";
+
+const client = new Client();
 
 try {
   const result: QuerySuccess<string> = await client.query(fql`"Hello world"`);

@@ -155,56 +155,17 @@ The `fql` function can also create pure FQL X queries, for example:
 
 ```javascript
 const result = await client.query(fql`
-  let create_user = (params) => if (params.email != null) {
-    User.create(params)
-  } else {
-    null
-  }
-
-  let u = create_user({
+  let u = {
     name: "Alice",
     email: "alice@site.example",
+    address: "123 Happy Lane"
   })
 
   u {
-    id,
-    ts,
     name,
     email
   }
 `);
-```
-
-### Advanced Composition example using `fql` function
-
-```javascript
-// a reusable FQL X lambda to create Users with validated parameters
-const create_user = fql`
-  (params) => if (params.email != null) {
-    User.create(params)
-  } else {
-    null
-  }
-`;
-
-// a reusable projection to format User documents
-const user_projection = fql`{ id, ts, name, email }`;
-
-// an object to pass to the query
-const user_params = {
-  name: "Alice",
-  email: "alice@site.example",
-};
-
-// put everything together
-const composed_query = fql`
-  let create_user = ${create_user}
-  
-  let u = create_user(${user_params})
-
-  u ${user_projection}
-`;
-const result2 = await client.query(composed_query);
 ```
 
 ## Connecting from the browser
@@ -240,25 +201,19 @@ const fauna = require("fauna");
 With TypeScript, you can apply a type parameter to your result.
 
 ```typescript
-import { Document, type DocumentT } from "fauna";
-
 type User = {
   name: string;
   email: string;
 };
 
-const query = fql`User.create({
+const query = fql`{
   name: "Alice",
   email: "alice@site.example",
-})`;
+}`;
 
-const result = await client.query<DocumentT<User>>(query);
+const result = await client.query<User>(query);
 const user_doc = result.data;
 
-// you have typesafe access to `Document` and `User` fields
-console.assert(user_doc instanceof Document);
-console.assert(user_doc.id);
-console.assert(user_doc.ts);
 console.assert(user_doc.name === "Alice");
 console.assert(user_doc.email === "alice@site.example");
 ```

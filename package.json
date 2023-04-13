@@ -1,6 +1,6 @@
 {
   "name": "fauna",
-  "version": "0.5.7",
+  "version": "0.6.0",
   "description": "A driver to query Fauna databases in browsers, Node.js, and other Javascript runtimes",
   "homepage": "https://fauna.com",
   "bugs": {

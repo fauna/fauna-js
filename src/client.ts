@@ -227,34 +227,35 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     switch (httpStatus) {
       case 400:
         if (queryCheckFailureCodes.includes(failure.error.code)) {
-          return new QueryCheckError(failure);
+          return new QueryCheckError(failure, httpStatus);
         }
         if (failure.error.code === "invalid_request") {
-          return new InvalidRequestError(failure);
+          return new InvalidRequestError(failure, httpStatus);
         }
         if (
           failure.error.code === "abort" &&
           failure.error.abort !== undefined
         ) {
           return new AbortError(
-            failure as QueryFailure & { error: { abort: QueryValue } }
+            failure as QueryFailure & { error: { abort: QueryValue } },
+            httpStatus
           );
         }
-        return new QueryRuntimeError(failure);
+        return new QueryRuntimeError(failure, httpStatus);
       case 401:
-        return new AuthenticationError(failure);
+        return new AuthenticationError(failure, httpStatus);
       case 403:
-        return new AuthorizationError(failure);
+        return new AuthorizationError(failure, httpStatus);
       case 409:
-        return new ContendedTransactionError(failure);
+        return new ContendedTransactionError(failure, httpStatus);
       case 429:
-        return new ThrottlingError(failure);
+        return new ThrottlingError(failure, httpStatus);
       case 440:
-        return new QueryTimeoutError(failure);
+        return new QueryTimeoutError(failure, httpStatus);
       case 500:
-        return new ServiceInternalError(failure);
+        return new ServiceInternalError(failure, httpStatus);
       case 503:
-        return new ServiceTimeoutError(failure);
+        return new ServiceTimeoutError(failure, httpStatus);
       default:
         return new ServiceError(failure, httpStatus);
     }

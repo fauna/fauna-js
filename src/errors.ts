@@ -71,8 +71,8 @@ export class ServiceError extends FaunaError {
  * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class QueryRuntimeError extends ServiceError {
-  constructor(failure: QueryFailure) {
-    super(failure, 400);
+  constructor(failure: QueryFailure, httpStatus: 400) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryRuntimeError);
     }
@@ -89,8 +89,8 @@ export class QueryRuntimeError extends ServiceError {
  * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class QueryCheckError extends ServiceError {
-  constructor(failure: QueryFailure) {
-    super(failure, 400);
+  constructor(failure: QueryFailure, httpStatus: 400) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryCheckError);
     }
@@ -105,8 +105,8 @@ export class QueryCheckError extends ServiceError {
  * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class InvalidRequestError extends ServiceError {
-  constructor(failure: QueryFailure) {
-    super(failure, 400);
+  constructor(failure: QueryFailure, httpStatus: 400) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, InvalidRequestError);
     }
@@ -127,8 +127,11 @@ export class AbortError extends ServiceError {
    */
   readonly abort: QueryValue;
 
-  constructor(failure: QueryFailure & { error: { abort: QueryValue } }) {
-    super(failure, 400);
+  constructor(
+    failure: QueryFailure & { error: { abort: QueryValue } },
+    httpStatus: 400
+  ) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryCheckError);
     }
@@ -142,8 +145,8 @@ export class AbortError extends ServiceError {
  * used.
  */
 export class AuthenticationError extends ServiceError {
-  constructor(failure: QueryFailure) {
-    super(failure, 401);
+  constructor(failure: QueryFailure, httpStatus: 401) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthenticationError);
     }
@@ -156,8 +159,8 @@ export class AuthenticationError extends ServiceError {
  * permission to perform the requested action.
  */
 export class AuthorizationError extends ServiceError {
-  constructor(failure: QueryFailure) {
-    super(failure, 403);
+  constructor(failure: QueryFailure, httpStatus: 403) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthorizationError);
     }
@@ -169,8 +172,8 @@ export class AuthorizationError extends ServiceError {
  * An error due to a contended transaction.
  */
 export class ContendedTransactionError extends ServiceError {
-  constructor(failure: QueryFailure) {
-    super(failure, 409);
+  constructor(failure: QueryFailure, httpStatus: 409) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, InvalidRequestError);
     }
@@ -183,8 +186,8 @@ export class ContendedTransactionError extends ServiceError {
  * and thus the request could not be served.
  */
 export class ThrottlingError extends ServiceError {
-  constructor(failure: QueryFailure) {
-    super(failure, 429);
+  constructor(failure: QueryFailure, httpStatus: 429) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ThrottlingError);
     }
@@ -205,8 +208,8 @@ export class QueryTimeoutError extends ServiceError {
    */
   readonly stats?: { [key: string]: number };
 
-  constructor(failure: QueryFailure) {
-    super(failure, 440);
+  constructor(failure: QueryFailure, httpStatus: 440) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryTimeoutError);
     }
@@ -219,8 +222,8 @@ export class QueryTimeoutError extends ServiceError {
  * ServiceInternalError indicates Fauna failed unexpectedly.
  */
 export class ServiceInternalError extends ServiceError {
-  constructor(failure: QueryFailure) {
-    super(failure, 500);
+  constructor(failure: QueryFailure, httpStatus: 500) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ServiceInternalError);
     }
@@ -233,8 +236,8 @@ export class ServiceInternalError extends ServiceError {
  * the request before the timeout was reached.
  */
 export class ServiceTimeoutError extends ServiceError {
-  constructor(failure: QueryFailure) {
-    super(failure, 503);
+  constructor(failure: QueryFailure, httpStatus: 503) {
+    super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ServiceTimeoutError);
     }

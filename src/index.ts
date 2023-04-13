@@ -5,9 +5,12 @@ export {
   endpoints,
 } from "./client-configuration";
 export {
+  AbortError,
   AuthenticationError,
   AuthorizationError,
   ClientError,
+  ContendedTransactionError,
+  InvalidRequestError,
   NetworkError,
   ProtocolError,
   QueryCheckError,

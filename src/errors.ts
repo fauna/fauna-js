@@ -99,6 +99,22 @@ export class QueryCheckError extends ServiceError {
 }
 
 /**
+ * An error due to an invalid request to Fauna. Either the request body was not
+ * valid JSON or did not conform to the API specification
+ *
+ * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
+ */
+export class InvalidRequestError extends ServiceError {
+  constructor(failure: QueryFailure) {
+    super(failure, 400);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, InvalidRequestError);
+    }
+    this.name = "InvalidRequestError";
+  }
+}
+
+/**
  * An error due to calling the FQL `abort` function.
  *
  * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
@@ -118,29 +134,6 @@ export class AbortError extends ServiceError {
     }
     this.name = "AbortError";
     this.abort = failure.error.abort;
-  }
-}
-
-/**
- * A failure due to the timeout being exceeded, but the timeout
- * was set lower than the query's expected processing time.
- * This response is distinguished from a ServiceTimeoutException
- * in that a QueryTimeoutError shows Fauna behaving in an expected
- * manner.
- */
-export class QueryTimeoutError extends ServiceError {
-  /**
-   * Statistics regarding the query.
-   */
-  readonly stats?: { [key: string]: number };
-
-  constructor(failure: QueryFailure) {
-    super(failure, 440);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, QueryTimeoutError);
-    }
-    this.name = "QueryTimeoutError";
-    this.stats = failure.stats;
   }
 }
 
@@ -173,6 +166,19 @@ export class AuthorizationError extends ServiceError {
 }
 
 /**
+ * An error due to a contended transaction.
+ */
+export class ContendedTransactionError extends ServiceError {
+  constructor(failure: QueryFailure) {
+    super(failure, 409);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, InvalidRequestError);
+    }
+    this.name = "ContendedTransactionError";
+  }
+}
+
+/**
  * ThrottlingError indicates some capacity limit was exceeded
  * and thus the request could not be served.
  */
@@ -183,6 +189,29 @@ export class ThrottlingError extends ServiceError {
       Error.captureStackTrace(this, ThrottlingError);
     }
     this.name = "ThrottlingError";
+  }
+}
+
+/**
+ * A failure due to the timeout being exceeded, but the timeout
+ * was set lower than the query's expected processing time.
+ * This response is distinguished from a ServiceTimeoutException
+ * in that a QueryTimeoutError shows Fauna behaving in an expected
+ * manner.
+ */
+export class QueryTimeoutError extends ServiceError {
+  /**
+   * Statistics regarding the query.
+   */
+  readonly stats?: { [key: string]: number };
+
+  constructor(failure: QueryFailure) {
+    super(failure, 440);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, QueryTimeoutError);
+    }
+    this.name = "QueryTimeoutError";
+    this.stats = failure.stats;
   }
 }
 

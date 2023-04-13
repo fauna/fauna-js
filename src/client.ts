@@ -14,6 +14,8 @@ import {
   ServiceInternalError,
   ServiceTimeoutError,
   ThrottlingError,
+  ContendedTransactionError,
+  InvalidRequestError,
 } from "./errors";
 import type { Query } from "./query-builder";
 import {
@@ -227,6 +229,9 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         if (queryCheckFailureCodes.includes(failure.error.code)) {
           return new QueryCheckError(failure);
         }
+        if (failure.error.code === "invalid_request") {
+          return new InvalidRequestError(failure);
+        }
         if (
           failure.error.code === "abort" &&
           failure.error.abort !== undefined
@@ -240,6 +245,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         return new AuthenticationError(failure);
       case 403:
         return new AuthorizationError(failure);
+      case 409:
+        return new ContendedTransactionError(failure);
       case 429:
         return new ThrottlingError(failure);
       case 440:

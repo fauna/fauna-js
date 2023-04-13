@@ -10,11 +10,17 @@ import {
   QueryRuntimeError,
   QueryTimeoutError,
   ServiceError,
+  InvalidRequestError,
 } from "../../src/errors";
-import { HTTPClient, HTTPResponse } from "../../src/http-client";
+import {
+  HTTPClient,
+  HTTPRequest,
+  HTTPResponse,
+  getDefaultHTTPClient,
+} from "../../src/http-client";
 import { fql } from "../../src/query-builder";
 import { Module } from "../../src/values";
-import { QueryValue } from "../../src/wire-protocol";
+import { QueryRequest, QueryValue } from "../../src/wire-protocol";
 
 const client = getClient({
   max_conns: 5,
@@ -182,6 +188,29 @@ describe("query", () => {
             expect(constraintFailure.paths).toBeDefined();
           }
         }
+      }
+    }
+  });
+
+  it("throws an InvalidRequestError when request is invalid", async () => {
+    expect.assertions(2);
+    try {
+      const httpClient: HTTPClient = {
+        async request(req) {
+          const bad_req: HTTPRequest = {
+            ...req,
+            data: "{}" as unknown as QueryRequest,
+          };
+          return getDefaultHTTPClient().request(bad_req);
+        },
+        close() {},
+      };
+      const bad_client = getClient({}, httpClient);
+      await bad_client.query(fql`"dummy"`);
+    } catch (e) {
+      if (e instanceof InvalidRequestError) {
+        expect(e.httpStatus).toBe(400);
+        expect(e.code).toBe("invalid_request");
       }
     }
   });

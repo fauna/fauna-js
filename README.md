@@ -224,7 +224,7 @@ const options: QueryRequestHeaders = {
   typecheck: true,
 };
 
-const result = await client.query(fql`"Hello, Fauna!`, options);
+const result = await client.query(fql`"Hello, Fauna!"`, options);
 ```
 
 ## Client Configuration

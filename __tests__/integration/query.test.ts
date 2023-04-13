@@ -5,15 +5,22 @@ import {
   ClientError,
   NetworkError,
   ProtocolError,
+  AbortError,
   QueryCheckError,
   QueryRuntimeError,
   QueryTimeoutError,
   ServiceError,
+  InvalidRequestError,
 } from "../../src/errors";
-import { HTTPClient, HTTPResponse } from "../../src/http-client";
+import {
+  HTTPClient,
+  HTTPRequest,
+  HTTPResponse,
+  getDefaultHTTPClient,
+} from "../../src/http-client";
 import { fql } from "../../src/query-builder";
 import { Module } from "../../src/values";
-import { QueryValue } from "../../src/wire-protocol";
+import { QueryRequest, QueryValue } from "../../src/wire-protocol";
 
 const client = getClient({
   max_conns: 5,
@@ -46,7 +53,7 @@ describe("query", () => {
   it("Can query an FQL-x endpoint", async () => {
     const result = await client.query<number>(fql`"taco".length`);
 
-    expect(result.data).toEqual(4);
+    expect(result.data).toBe(4);
     expect(result.summary).toBeDefined();
     expect(result.txn_ts).toBeDefined();
     expect(result.stats).toBeDefined();
@@ -62,7 +69,7 @@ describe("query", () => {
   it("Can query with arguments", async () => {
     const str = "taco";
     const result = await client.query(fql`${str}.length`);
-    expect(result.data).toEqual(4);
+    expect(result.data).toBe(4);
     expect(result.txn_ts).toBeDefined();
   });
 
@@ -115,9 +122,7 @@ describe("query", () => {
       const httpClient: HTTPClient = {
         async request(req) {
           Object.entries(expectedHeaders).forEach(([_, expectedHeader]) => {
-            expect(req.headers[expectedHeader.key]).toEqual(
-              expectedHeader.value
-            );
+            expect(req.headers[expectedHeader.key]).toBe(expectedHeader.value);
           });
           return dummyResponse;
         },
@@ -144,7 +149,7 @@ describe("query", () => {
       await client.query(fql`happy little fox`);
     } catch (e) {
       if (e instanceof QueryCheckError) {
-        expect(e.httpStatus).toEqual(400);
+        expect(e.httpStatus).toBe(400);
         expect(e.message).toBeDefined();
         expect(e.code).toBeDefined();
         expect(e.queryInfo?.summary).toBeDefined();
@@ -158,8 +163,8 @@ describe("query", () => {
       await client.query(fql`"taco".length + "taco"`);
     } catch (e) {
       if (e instanceof QueryRuntimeError) {
-        expect(e.httpStatus).toEqual(400);
-        expect(e.code).toEqual("invalid_argument");
+        expect(e.httpStatus).toBe(400);
+        expect(e.code).toBe("invalid_argument");
         expect(e.queryInfo?.summary).toBeDefined();
       }
     }
@@ -173,11 +178,11 @@ describe("query", () => {
       );
     } catch (e) {
       if (e instanceof ServiceError) {
-        expect(e.httpStatus).toEqual(400);
-        expect(e.code).toEqual("constraint_failure");
+        expect(e.httpStatus).toBe(400);
+        expect(e.code).toBe("constraint_failure");
         expect(e.queryInfo?.summary).toBeDefined();
         if (e.constraint_failures !== undefined) {
-          expect(e.constraint_failures.length).toEqual(1);
+          expect(e.constraint_failures.length).toBe(1);
           for (let constraintFailure of e.constraint_failures) {
             expect(constraintFailure.message).toBeDefined();
             expect(constraintFailure.paths).toBeDefined();
@@ -187,18 +192,39 @@ describe("query", () => {
     }
   });
 
-  it("Includes abort when present", async () => {
+  it("throws an InvalidRequestError when request is invalid", async () => {
+    expect.assertions(2);
+    try {
+      const httpClient: HTTPClient = {
+        async request(req) {
+          const bad_req: HTTPRequest = {
+            ...req,
+            data: "{}" as unknown as QueryRequest,
+          };
+          return getDefaultHTTPClient().request(bad_req);
+        },
+        close() {},
+      };
+      const bad_client = getClient({}, httpClient);
+      await bad_client.query(fql`"dummy"`);
+    } catch (e) {
+      if (e instanceof InvalidRequestError) {
+        expect(e.httpStatus).toBe(400);
+        expect(e.code).toBe("invalid_request");
+      }
+    }
+  });
+
+  it("throws a AbortError is the `abort` function is called", async () => {
     expect.assertions(4);
     try {
       await client.query(fql`abort("oops")`);
     } catch (e) {
-      if (e instanceof ServiceError) {
-        expect(e.httpStatus).toEqual(400);
-        // WIP: core is changing the code from "aborted" to "abort"
-        // expect(e.code).toEqual("abort");
-        expect(e.code).toBeDefined();
+      if (e instanceof AbortError) {
+        expect(e.httpStatus).toBe(400);
+        expect(e.code).toBe("abort");
         expect(e.queryInfo?.summary).toBeDefined();
-        expect(e.abort).toBeDefined();
+        expect(e.abort).toBe("oops");
       }
     }
   });
@@ -216,8 +242,8 @@ describe("query", () => {
         expect(e.message).toEqual(
           expect.stringContaining("aggressive deadline")
         );
-        expect(e.httpStatus).toEqual(440);
-        expect(e.code).toEqual("time_out");
+        expect(e.httpStatus).toBe(440);
+        expect(e.code).toBe("time_out");
       }
     }
 
@@ -239,8 +265,8 @@ describe("query", () => {
     } catch (e) {
       if (e instanceof AuthenticationError) {
         expect(e.message).toBeDefined();
-        expect(e.code).toEqual("unauthorized");
-        expect(e.httpStatus).toEqual(401);
+        expect(e.code).toBe("unauthorized");
+        expect(e.httpStatus).toBe(401);
         expect(e.queryInfo?.summary).toBeUndefined();
       }
     }
@@ -262,9 +288,7 @@ describe("query", () => {
       await badClient.query(fql`"taco".length;`);
     } catch (e) {
       if (e instanceof NetworkError) {
-        expect(e.message).toEqual(
-          "The network connection encountered a problem."
-        );
+        expect(e.message).toBe("The network connection encountered a problem.");
         expect(e.cause).toBeDefined();
       }
     }
@@ -290,7 +314,7 @@ describe("query", () => {
     } catch (e: any) {
       if (e instanceof ClientError) {
         expect(e.cause).toBeDefined();
-        expect(e.message).toEqual(
+        expect(e.message).toBe(
           "A client level error occurred. Fauna was not called."
         );
       }
@@ -338,8 +362,8 @@ describe("query can encode / decode QueryValue correctly", () => {
         ${new Module(collectionName)}.create(${toughInput})`);
     expect(docCreated.data.should_exist).toBeUndefined();
     expect(docCreated.data.nested_object.i_dont_exist).toBeUndefined();
-    expect(docCreated.data.foo).toEqual("bar");
-    expect(docCreated.data.nested_object.i_exist).toEqual(true);
+    expect(docCreated.data.foo).toBe("bar");
+    expect(docCreated.data.nested_object.i_exist).toBe(true);
   });
 
   it("treats undefined as unprovided passed directly as value", async () => {
@@ -365,8 +389,8 @@ describe("query can encode / decode QueryValue correctly", () => {
         })`);
     } catch (e) {
       if (e instanceof TypeError) {
-        expect(e.name).toEqual("TypeError");
-        expect(e.message).toEqual(
+        expect(e.name).toBe("TypeError");
+        expect(e.message).toBe(
           "Passing undefined as a QueryValue is not supported"
         );
       }

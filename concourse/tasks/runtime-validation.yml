@@ -1,0 +1,26 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: node
+    tag: 19.8-alpine3.16
+
+params:
+  AWS_LAMBDA_ROLE_ARN:
+  AWS_ACCESS_KEY_ID:
+  AWS_SECRET_ACCESS_KEY:
+  CLOUDFLARE_API_TOKEN: 
+  FAUNA_SECRET:
+  NETLIFY_ACCOUNT:
+  NETLIFY_AUTH_TOKEN:
+  VERCEL_TOKEN:
+
+inputs:
+  - name: fauna-js-repository
+  - name: testtools/fauna-driver-platform-tests
+
+run:
+  path: ./fauna-js-repository/concourse/scripts/runtime-validation.sh
+

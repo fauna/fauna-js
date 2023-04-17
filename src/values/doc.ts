@@ -207,7 +207,7 @@ export class Module {
  *    Users.byId("101")
  *  `);
  *
- *  const color = user.color
+ *  const color = user.color;
  * ```
  *
  * @remarks The {@link Document} class cannot be generic because classes cannot

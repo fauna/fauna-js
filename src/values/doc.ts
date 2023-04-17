@@ -137,7 +137,7 @@ export class NamedDocumentReference {
  *    Users.definition
  *  `);
  *
- *  const metadata = userCollection.data.metadata
+ *  const metadata = userCollection.data.metadata;
  * ```
  */
 export class NamedDocument<

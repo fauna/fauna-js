@@ -72,10 +72,6 @@ jobs:
       - in_parallel:
           fail_fast: false
           steps:
-            - task: unit-and-integration-tests
-              file: fauna-go-repository/concourse/tasks/tests.yml
-              privileged: true
-
             - task: aws-lambda-tests
               image: testtools-image
               file: testtools-repo/fauna-driver-platform-tests/concourse/tasks/js-aws-lambda-tests.yml

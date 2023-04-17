@@ -6,13 +6,17 @@ import { TimeStub } from "./date-time";
  * References to Keys, Tokens, and Documents in user-defined Collections are
  * modeled with a {@link DocumentReference}.
  *
+ * The example below retrieves a document reference from a
+ * hypothetical "Users" collection.
+ *
  * @example
  * ```javascript
- *  const thingRef = await client.query(fql`
- *    Thing("101")
+ *  const userDocumentReference = await client.query(fql`
+ *    Users.byId("101")
  *  `);
  *
- *  const id = thingRef.id
+ *  const id = userDocumentReference.id;
+ *  id === "101"; // returns true
  * ```
  */
 export class DocumentReference {
@@ -37,13 +41,16 @@ export class DocumentReference {
  * provided. Cast the instance to a {@link DocumentT} to have typesafe access to
  * all top level fields.
  *
+ * The example below retrieves a document from a
+ * hypothetical "Users" collection.
+ *
  * @example
  * ```javascript
- *  const thing = await client.query(fql`
- *    Thing.byId("101")
+ *  const userDocument = await client.query(fql`
+ *    Users.byId("101")
  *  `);
  *
- *  const color = thing.color
+ *  const color = userDocument.color;
  * ```
  *
  * @remarks The {@link Document} class cannot be generic because classes cannot
@@ -74,13 +81,17 @@ export class Document extends DocumentReference {
  * References to specific AccessProviders, Collections, Databases, Functions, etc. are
  * modeled with a {@link NamedDocumentReference}.
  *
+ * The example below retrieves a NamedDocumentReference for a hypothetical
+ * "Users" collection.
+ *
  * @example
  * ```javascript
- *  const thingCollection = await client.query(fql`
- *    Thing.definition
+ *  const namedDocumentReference = await client.query(fql`
+ *    Users.definition
  *  `);
  *
- *  const id = thingCollection.id
+ *  const collectionName = namedDocumentReference.name;
+ *  collectionName === "Users"; // returns true
  * ```
  */
 export class NamedDocumentReference {
@@ -102,13 +113,16 @@ export class NamedDocumentReference {
  * A materialized Document with a name. Specific AccessProviders, Collections, Databases,
  * Functions, etc. that include user defined data are modeled with a {@link NamedDocument}.
  *
+ * The example below retrieves a NamedDocument for a hypothetical
+ * "Users" collection.
+ *
  * @example
  * ```javascript
- *  const thingCollection = await client.query(fql`
- *    Thing.definition
+ *  const userCollectionNamedDocument = await client.query(fql`
+ *    Users.definition
  *  `);
  *
- *  const indexes = thingCollection.indexes
+ *  const indexes = userCollectionNamedDocument.indexes;
  * ```
  *
  * @example
@@ -119,11 +133,11 @@ export class NamedDocumentReference {
  *    metadata: string
  *  }
  *
- *  const thingCollection = await client.query<NamedDocument<CollectionMetadata>>(fql`
- *    Thing.definition
+ *  const userCollection = await client.query<NamedDocument<CollectionMetadata>>(fql`
+ *    Users.definition
  *  `);
  *
- *  const metadata = thingCollection.data.metadata
+ *  const metadata = userCollection.data.metadata
  * ```
  */
 export class NamedDocument<
@@ -152,14 +166,20 @@ export class NamedDocument<
 
 /**
  * A Fauna module, such as a Collection, Database, Function, Role, etc.
+ * Every module is usable directly in your FQL X code.
+ *
+ * The example below shows FQL X code that gets all documents for a hypothetical
+ * 'Users' collection by creating a Module for user and then calling .all().
+ *
+ * You can also create modules for databases, functions, roles and other
+ * entities in your database.
  *
  * @example
  * ```javascript
- *  const thingModule = await client.query(fql`
- *    Thing
+ *  const allUserDocuments = await client.query(fql`
+ *    ${new Module("Users")}.all()
  *  `);
  *
- *  const name = thingModule.name
  * ```
  */
 export class Module {
@@ -174,17 +194,20 @@ export class Module {
  * A Document typed with a user-defined data type. Typescript users can cast
  * instances of {@link Document} to {@link DocumentT} to access user-defined fields with type safety.
  *
+ * The example below creates a local type "User" that is applied to queries for documents in a
+ * hypothetical "Users" collection.
+ *
  * @example
  * ```typescript
- *  type Thing = {
+ *  type User = {
  *    color: string
  *  }
  *
- *  const thing = await client.query<DocumentT<Thing>>(fql`
- *    Thing.byId("101")
+ *  const user = await client.query<DocumentT<User>>(fql`
+ *    Users.byId("101")
  *  `);
  *
- *  const color = thing.color
+ *  const color = user.color
  * ```
  *
  * @remarks The {@link Document} class cannot be generic because classes cannot

@@ -8,6 +8,7 @@ import {
   NamedDocument,
   NamedDocumentReference,
   TimeStub,
+  NullDocument,
 } from "../../src/values";
 
 const client = getClient({
@@ -49,16 +50,19 @@ describe("querying for doc types", () => {
   });
 
   it("can round-trip DocumentReference to a non-existent doc", async () => {
+    expect.assertions(4);
     const mod = new Module("DocTest");
     const ref = new DocumentReference({ id: "101", coll: mod });
 
     const queryBuilder = fql`${ref}`;
-    const result = await client.query<DocumentReference>(queryBuilder);
+    const result = await client.query<NullDocument>(queryBuilder);
 
-    expect(result.data).toBeInstanceOf(DocumentReference);
-    expect(result.data).not.toBeInstanceOf(Document);
-    expect(result.data.id).toBe("101");
-    expect(result.data.coll.name).toBe("DocTest");
+    expect(result.data).toBeInstanceOf(NullDocument);
+    expect(result.data.cause).toBe("not found");
+    if (result.data.ref instanceof DocumentReference) {
+      expect(result.data.ref.id).toBe("101");
+      expect(result.data.ref.coll.name).toBe("DocTest");
+    }
   });
 
   it("can round-trip DocumentReference to an existent doc", async () => {

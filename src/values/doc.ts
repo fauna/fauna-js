@@ -11,9 +11,10 @@ import { TimeStub } from "./date-time";
  *
  * @example
  * ```javascript
- *  const userDocumentReference = await client.query(fql`
+ *  const response = await client.query(fql`
  *    Users.byId("101")
  *  `);
+ *  const userDocumentReference = response.data;
  *
  *  const id = userDocumentReference.id;
  *  id === "101"; // returns true
@@ -46,9 +47,10 @@ export class DocumentReference {
  *
  * @example
  * ```javascript
- *  const userDocument = await client.query(fql`
+ *  const response = await client.query(fql`
  *    Users.byId("101")
  *  `);
+ *  const userDocument = response.data;
  *
  *  const color = userDocument.color;
  * ```
@@ -86,9 +88,10 @@ export class Document extends DocumentReference {
  *
  * @example
  * ```javascript
- *  const namedDocumentReference = await client.query(fql`
+ *  const response = await client.query(fql`
  *    Users.definition
  *  `);
+ *  const namedDocumentReference = response.data;
  *
  *  const collectionName = namedDocumentReference.name;
  *  collectionName === "Users"; // returns true
@@ -118,9 +121,10 @@ export class NamedDocumentReference {
  *
  * @example
  * ```javascript
- *  const userCollectionNamedDocument = await client.query(fql`
+ *  const response = await client.query(fql`
  *    Users.definition
  *  `);
+ *  const userCollectionNamedDocument = response.data;
  *
  *  const indexes = userCollectionNamedDocument.indexes;
  * ```
@@ -133,9 +137,10 @@ export class NamedDocumentReference {
  *    metadata: string
  *  }
  *
- *  const userCollection = await client.query<NamedDocument<CollectionMetadata>>(fql`
+ *  const response = await client.query<NamedDocument<CollectionMetadata>>(fql`
  *    Users.definition
  *  `);
+ *  const userCollection = response.data;
  *
  *  const metadata = userCollection.data.metadata;
  * ```
@@ -176,10 +181,10 @@ export class NamedDocument<
  *
  * @example
  * ```javascript
- *  const allUserDocuments = await client.query(fql`
+ *  const response = await client.query(fql`
  *    ${new Module("Users")}.all()
  *  `);
- *
+ *  const allUserDocuments = response.data;
  * ```
  */
 export class Module {
@@ -187,6 +192,42 @@ export class Module {
 
   constructor(name: string) {
     this.name = name;
+  }
+}
+
+/**
+ * A reference to a Document or Named Document that could not be read. The
+ * Document may or may not exist in future queries. The cause field specifies
+ * the reason the document could not be read, typically because the Document
+ * does not exist or due to insufficient privileges.
+ *
+ * Some read operations, such as the `<Collection>.byId` method may return
+ * either a Document or a NullDocument. This example shows how to handle such a
+ * result with the driver
+ *
+ * @example
+ * ```typescript
+ *  const response = await client.query<Document | NullDocument>(fql`
+ *    Users.byId("101")
+ *  `);
+ *  const maybeUserDocument = response.data;
+ *
+ *  if (maybeUserDocument instanceof NullDocument) {
+ *    // handle NullDocument case
+ *    const cause = maybeUserDocument.cause
+ *  } else {
+ *    // handle Document case
+ *    const color = maybeUserDocument.color;
+ *  }
+ * ```
+ */
+export class NullDocument {
+  readonly ref: DocumentReference | NamedDocumentReference;
+  readonly cause: string;
+
+  constructor(ref: DocumentReference | NamedDocumentReference, cause: string) {
+    this.ref = ref;
+    this.cause = cause;
   }
 }
 
@@ -203,9 +244,10 @@ export class Module {
  *    color: string
  *  }
  *
- *  const user = await client.query<DocumentT<User>>(fql`
+ *  const response = await client.query<DocumentT<User>>(fql`
  *    Users.byId("101")
  *  `);
+ *  const user = response.data;
  *
  *  const color = user.color;
  * ```

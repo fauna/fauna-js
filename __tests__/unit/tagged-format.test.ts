@@ -4,6 +4,9 @@ import {
   Document,
   DocumentReference,
   Module,
+  NamedDocument,
+  NamedDocumentReference,
+  NullDocument,
   Page,
   TimeStub,
 } from "../../src/values";
@@ -11,9 +14,6 @@ import {
 describe("tagged format", () => {
   it("can be decoded", () => {
     const allTypes: string = `{
-      "bugs_coll": { "@mod": "Bugs" },
-      "bug_ref": { "@ref": { "coll": { "@mod": "Bugs" }, "id": "123" } },
-      "bug_doc": { "@doc": { "coll": { "@mod": "Bugs" }, "id": "123", "ts": { "@time": "2023-03-20T00:00:00Z" } } },
       "name": "fir",
       "age": { "@int": "200" },
       "birthdate": { "@date": "1823-02-08" },
@@ -41,28 +41,66 @@ describe("tagged format", () => {
       ],
       "molecules": { "@long": "999999999999999999" },
       "null": null,
+      "mod": { "@mod": "Bugs" },
+      "docReference": {
+        "@ref": { "coll": { "@mod": "Bugs" }, "id": "123" }
+      },
+      "doc": {
+        "@doc": { 
+          "coll": { "@mod": "Bugs" },
+          "id": "123",
+          "ts": { "@time": "2023-03-20T00:00:00Z" }
+        }
+      },
+      "namedDocReference": {
+        "@ref": { "coll": { "@mod": "Collection" }, "name": "Bugs" }
+      },
+      "namedDoc": {
+        "@doc": { 
+          "coll": { "@mod": "Collection" },
+          "name": "Bugs",
+          "ts": { "@time": "2023-03-20T00:00:00Z" }
+        }
+      },
+      "nullDoc": {
+        "@ref": { 
+          "coll": { "@mod": "Bugs" }, 
+          "id": "123", 
+          "exists": false, 
+          "cause": "not found"
+        }
+      },
       "page": { "@set": { "data": ["a", "b"] } },
       "page_string": { "@set": "abc123" }
     }`;
 
-    const bugs_mod: Module = new Module("Bugs");
-    const bugs_ref: DocumentReference = new DocumentReference({
+    const bugs_mod = new Module("Bugs");
+    const collection_mod = new Module("Collection");
+    const doc_ts = TimeStub.from("2023-03-20T00:00:00Z");
+    const docReference = new DocumentReference({
       coll: bugs_mod,
       id: "123",
     });
-    const doc_ts = TimeStub.from("2023-03-20T00:00:00Z");
-    const bugs_doc: Document = new Document({
+    const doc: Document = new Document({
       coll: bugs_mod,
       id: "123",
       ts: doc_ts,
     });
+    const namedDocReference = new NamedDocumentReference({
+      coll: collection_mod,
+      name: "Bugs",
+    });
+    const namedDoc = new NamedDocument({
+      coll: collection_mod,
+      name: "Bugs",
+      ts: doc_ts,
+    });
+    const nullDoc = new NullDocument(docReference, "not found");
+
     const page = new Page({ data: ["a", "b"] });
     const page_string = new Page({ after: "abc123" });
 
     const result = TaggedTypeFormat.decode(allTypes);
-    expect(result.bugs_coll).toStrictEqual(bugs_mod);
-    expect(result.bug_ref).toStrictEqual(bugs_ref);
-    expect(result.bug_doc).toStrictEqual(bugs_doc);
     expect(result.name).toEqual("fir");
     expect(result.age).toEqual(200);
     expect(result.birthdate).toBeInstanceOf(DateStub);
@@ -79,26 +117,30 @@ describe("tagged format", () => {
     expect(result.measurements[1].time).toBeInstanceOf(TimeStub);
     expect(result.molecules).toEqual(BigInt("999999999999999999"));
     expect(result.null).toBeNull();
+    expect(result.mod).toStrictEqual(bugs_mod);
+    expect(result.docReference).toStrictEqual(docReference);
+    expect(result.doc).toStrictEqual(doc);
+    expect(result.namedDocReference).toStrictEqual(namedDocReference);
+    expect(result.namedDoc).toStrictEqual(namedDoc);
+    expect(result.nullDoc).toStrictEqual(nullDoc);
     expect(result.page).toStrictEqual(page);
     expect(result.page_string).toStrictEqual(page_string);
   });
 
   it("can be encoded", () => {
+    let bugs_mod = new Module("Bugs");
+    let collection_mod = new Module("Collection");
+
     let result = JSON.stringify(
       TaggedTypeFormat.encode({
-        child: { more: { itsworking: DateStub.from("1983-04-15") } },
-        date: DateStub.from("1923-05-13"),
+        // literals
         double: 4.14,
         int: 32,
         name: "Hello, World",
         null: null,
         number: 48,
-        time: TimeStub.from("2023-01-30T16:27:45.204243-05:00"),
-        datetime: new Date("2023-01-30T16:27:45.204243-05:00"),
-        // TODO: uncomment to add test once core accepts `@set` tagged values
-        // page: new Page({ data: ["a", "b"] }),
-        // TODO: uncomment to add test once core accepts `@set` tagged values
-        // page_string: new Page({ after: "abc123" }),
+        // objects and arrays
+        child: { more: { itsworking: DateStub.from("1983-04-15") } },
         extra: [
           {
             id: 1,
@@ -112,20 +154,71 @@ describe("tagged format", () => {
         "@foobar": {
           date: DateStub.from("1888-08-08"),
         },
+        // dates and times
+        date: DateStub.from("1923-05-13"),
+        time: TimeStub.from("2023-03-20T00:00:00Z"),
+        datetime: new Date("2023-03-20T00:00:00Z"),
+        // Document types
+        mod: bugs_mod,
+        docReference: new DocumentReference({ coll: bugs_mod, id: "123" }),
+        doc: new Document({
+          coll: bugs_mod,
+          id: "123",
+          ts: TimeStub.from("2023-03-20T00:00:00Z"),
+        }),
+        namedDocReference: new NamedDocumentReference({
+          coll: collection_mod,
+          name: "Bugs",
+        }),
+        namedDoc: new NamedDocument({
+          coll: collection_mod,
+          name: "Bugs",
+          ts: TimeStub.from("2023-03-20T00:00:00Z"),
+        }),
+        nullDoc: new NullDocument(
+          new DocumentReference({ coll: bugs_mod, id: "123" }),
+          "not found"
+        ),
+        // Set types
+        // TODO: uncomment to add test once core accepts `@set` tagged values
+        // page: new Page({ data: ["a", "b"] }),
+        // TODO: uncomment to add test once core accepts `@set` tagged values
+        // page_string: new Page({ after: "abc123" }),
       })
     );
 
     const backToObj = JSON.parse(result)["@object"];
+
+    // literals
+    expect(backToObj.double).toStrictEqual({ "@double": "4.14" });
+    expect(backToObj.null).toBeNull();
+    // objects and arrays
     expect(backToObj.child.more.itsworking).toStrictEqual({
       "@date": "1983-04-15",
     });
-    expect(backToObj.double).toStrictEqual({ "@double": "4.14" });
-    expect(backToObj.null).toBeNull();
+    expect(backToObj.extra).toHaveLength(2);
+    // Document types
+    expect(backToObj.mod).toStrictEqual({ "@mod": "Bugs" });
+    expect(backToObj.docReference).toStrictEqual({
+      "@ref": { coll: { "@mod": "Bugs" }, id: "123" },
+    });
+    expect(backToObj.doc).toStrictEqual({
+      "@ref": { coll: { "@mod": "Bugs" }, id: "123" },
+    });
+    expect(backToObj.namedDocReference).toStrictEqual({
+      "@ref": { coll: { "@mod": "Collection" }, name: "Bugs" },
+    });
+    expect(backToObj.namedDoc).toStrictEqual({
+      "@ref": { coll: { "@mod": "Collection" }, name: "Bugs" },
+    });
+    expect(backToObj.nullDoc).toStrictEqual({
+      "@ref": { coll: { "@mod": "Bugs" }, id: "123" },
+    });
+    // Set types
     // TODO: uncomment to add test once core accepts `@set` tagged values
     // expect(backToObj.page).toStrictEqual({ "@set": { data: ["a", "b"] } });
     // TODO: uncomment to add test once core accepts `@set` tagged values
     // expect(backToObj.page_string).toStrictEqual({ "@set": "abc123" });
-    expect(backToObj.extra).toHaveLength(2);
   });
 
   it("handles conflicts", () => {

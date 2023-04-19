@@ -6,6 +6,7 @@ import {
   NamedDocument,
   NamedDocumentReference,
   TimeStub,
+  NullDocument,
 } from "../../src/values";
 
 describe("Module", () => {
@@ -92,5 +93,31 @@ describe("NamedDocument", () => {
     expect(doc.coll.name).toBe("Collection");
     expect(doc.ts.isoString).toBe("2023-10-16T00:00:00Z");
     expect(doc.data).toStrictEqual({ metadata: "metadata" });
+  });
+});
+
+describe("NullDocument", () => {
+  it("can be constructed directly with a DocumentReference", () => {
+    expect.assertions(3);
+    const mod = new Module("Thing");
+    const ref = new DocumentReference({ id: "101", coll: mod });
+    const nullDoc = new NullDocument(ref, "not found");
+    if (nullDoc.ref instanceof DocumentReference) {
+      expect(nullDoc.ref.id).toBe("101");
+      expect(nullDoc.ref.coll.name).toBe("Thing");
+    }
+    expect(nullDoc.cause).toBe("not found");
+  });
+
+  it("can be constructed directly with a NamedDocumentReference", () => {
+    expect.assertions(3);
+    const mod = new Module("Collection");
+    const ref = new NamedDocumentReference({ name: "Thing", coll: mod });
+    const nullDoc = new NullDocument(ref, "permission denied");
+    if (nullDoc.ref instanceof NamedDocumentReference) {
+      expect(nullDoc.ref.name).toBe("Thing");
+      expect(nullDoc.ref.coll.name).toBe("Collection");
+    }
+    expect(nullDoc.cause).toBe("permission denied");
   });
 });

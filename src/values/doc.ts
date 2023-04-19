@@ -11,9 +11,10 @@ import { TimeStub } from "./date-time";
  *
  * @example
  * ```javascript
- *  const userDocumentReference = await client.query(fql`
+ *  const response = await client.query(fql`
  *    Users.byId("101")
  *  `);
+ *  const userDocumentReference = response.data;
  *
  *  const id = userDocumentReference.id;
  *  id === "101"; // returns true
@@ -46,9 +47,10 @@ export class DocumentReference {
  *
  * @example
  * ```javascript
- *  const userDocument = await client.query(fql`
+ *  const response = await client.query(fql`
  *    Users.byId("101")
  *  `);
+ *  const userDocument = response.data;
  *
  *  const color = userDocument.color;
  * ```
@@ -86,9 +88,10 @@ export class Document extends DocumentReference {
  *
  * @example
  * ```javascript
- *  const namedDocumentReference = await client.query(fql`
+ *  const response = await client.query(fql`
  *    Users.definition
  *  `);
+ *  const namedDocumentReference = response.data;
  *
  *  const collectionName = namedDocumentReference.name;
  *  collectionName === "Users"; // returns true
@@ -118,9 +121,10 @@ export class NamedDocumentReference {
  *
  * @example
  * ```javascript
- *  const userCollectionNamedDocument = await client.query(fql`
+ *  const response = await client.query(fql`
  *    Users.definition
  *  `);
+ *  const userCollectionNamedDocument = response.data;
  *
  *  const indexes = userCollectionNamedDocument.indexes;
  * ```
@@ -133,9 +137,10 @@ export class NamedDocumentReference {
  *    metadata: string
  *  }
  *
- *  const userCollection = await client.query<NamedDocument<CollectionMetadata>>(fql`
+ *  const response = await client.query<NamedDocument<CollectionMetadata>>(fql`
  *    Users.definition
  *  `);
+ *  const userCollection = response.data;
  *
  *  const metadata = userCollection.data.metadata;
  * ```
@@ -176,10 +181,10 @@ export class NamedDocument<
  *
  * @example
  * ```javascript
- *  const allUserDocuments = await client.query(fql`
+ *  const response = await client.query(fql`
  *    ${new Module("Users")}.all()
  *  `);
- *
+ *  const allUserDocuments = response.data;
  * ```
  */
 export class Module {
@@ -239,9 +244,10 @@ export class NullDocument {
  *    color: string
  *  }
  *
- *  const user = await client.query<DocumentT<User>>(fql`
+ *  const response = await client.query<DocumentT<User>>(fql`
  *    Users.byId("101")
  *  `);
+ *  const user = response.data;
  *
  *  const color = user.color;
  * ```

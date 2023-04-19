@@ -1,15 +1,17 @@
-import { TaggedTypeFormat, LONG_MIN, LONG_MAX } from "../../src/tagged-type";
 import {
   DateStub,
   Document,
   DocumentReference,
+  LONG_MIN,
+  LONG_MAX,
   Module,
   NamedDocument,
   NamedDocumentReference,
   NullDocument,
   Page,
+  TaggedTypeFormat,
   TimeStub,
-} from "../../src/values";
+} from "../../src";
 
 describe("tagged format", () => {
   it("can be decoded", () => {

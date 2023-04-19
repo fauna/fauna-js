@@ -1,4 +1,4 @@
-import { fql } from "../../src/query-builder";
+import { fql } from "../../src";
 
 describe("fql method producing Querys", () => {
   it("parses with no variables", () => {

@@ -1,26 +1,25 @@
-import { getClient } from "../client";
-import { type ClientConfiguration } from "../../src/client-configuration";
 import {
-  AuthenticationError,
-  ClientError,
-  NetworkError,
-  ProtocolError,
   AbortError,
-  QueryCheckError,
-  QueryRuntimeError,
-  QueryTimeoutError,
-  ServiceError,
-  InvalidRequestError,
-} from "../../src/errors";
-import {
+  AuthenticationError,
+  ClientConfiguration,
+  ClientError,
+  fql,
+  getDefaultHTTPClient,
   HTTPClient,
   HTTPRequest,
   HTTPResponse,
-  getDefaultHTTPClient,
-} from "../../src/http-client";
-import { fql } from "../../src/query-builder";
-import { Module } from "../../src/values";
-import { QueryRequest, QueryValue } from "../../src/wire-protocol";
+  InvalidRequestError,
+  Module,
+  NetworkError,
+  ProtocolError,
+  QueryCheckError,
+  QueryRequest,
+  QueryRuntimeError,
+  QueryTimeoutError,
+  QueryValue,
+  ServiceError,
+} from "../../src";
+import { getClient } from "../client";
 
 const client = getClient({
   max_conns: 5,

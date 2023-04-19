@@ -1,4 +1,4 @@
-import { Page } from "../../src/values";
+import { Page } from "../../src";
 
 describe("Page", () => {
   it("can be constructed directly", () => {

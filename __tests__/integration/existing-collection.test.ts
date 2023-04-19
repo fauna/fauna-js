@@ -1,6 +1,5 @@
+import { fql, ServiceError } from "../../src";
 import { getClient } from "../client";
-import { ServiceError } from "../../src";
-import { fql } from "../../src";
 
 const client = getClient();
 

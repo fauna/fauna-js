@@ -1,4 +1,4 @@
-import { DateStub, TimeStub } from "../../src/values";
+import { DateStub, TimeStub } from "../../src";
 
 type TestCase<I, O> = {
   input: I;

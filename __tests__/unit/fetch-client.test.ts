@@ -1,17 +1,15 @@
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
-import { Client } from "../../src/client";
-import { endpoints } from "../../src/client-configuration";
 enableFetchMocks();
 
-import { NetworkError } from "../../src/errors";
 import {
   FetchClient,
   HTTPRequest,
   HTTPResponse,
   isHTTPResponse,
-} from "../../src/http-client";
-import { fql } from "../../src/query-builder";
-import { QueryFailure, QuerySuccess } from "../../src/wire-protocol";
+  NetworkError,
+  QueryFailure,
+  QuerySuccess,
+} from "../../src";
 
 let fetchClient: FetchClient;
 

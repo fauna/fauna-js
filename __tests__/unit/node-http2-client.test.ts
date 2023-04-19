@@ -1,5 +1,4 @@
-import { getDefaultHTTPClient } from "../../src/http-client";
-import { NodeHTTP2Client } from "../../src/http-client/node-http2-client";
+import { getDefaultHTTPClient, NodeHTTP2Client } from "../../src";
 
 const client = getDefaultHTTPClient();
 

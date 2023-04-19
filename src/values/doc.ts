@@ -191,6 +191,42 @@ export class Module {
 }
 
 /**
+ * A reference to a Document or Named Document that could not be read. The
+ * Document may or may not exist in future queries. The cause field specifies
+ * the reason the document could not be read, typically because the Document
+ * does not exist or due to insufficient privileges.
+ *
+ * Some read operations, such as the `<Collection>.byId` method may return
+ * either a Document or a NullDocument. This example shows how to handle such a
+ * result with the driver
+ *
+ * @example
+ * ```typescript
+ *  const response = await client.query<Document | NullDocument>(fql`
+ *    Users.byId("101")
+ *  `);
+ *  const maybeUserDocument = response.data;
+ *
+ *  if (maybeUserDocument instanceof NullDocument) {
+ *    // handle NullDocument case
+ *    const cause = maybeUserDocument.cause
+ *  } else {
+ *    // handle Document case
+ *    const color = maybeUserDocument.color;
+ *  }
+ * ```
+ */
+export class NullDocument {
+  readonly ref: DocumentReference | NamedDocumentReference;
+  readonly cause: string;
+
+  constructor(ref: DocumentReference | NamedDocumentReference, cause: string) {
+    this.ref = ref;
+    this.cause = cause;
+  }
+}
+
+/**
  * A Document typed with a user-defined data type. Typescript users can cast
  * instances of {@link Document} to {@link DocumentT} to access user-defined fields with type safety.
  *

@@ -8,6 +8,7 @@ import {
   NamedDocumentReference,
   TimeStub,
   Page,
+  NullDocument,
 } from "./values";
 import { QueryValueObject, QueryValue } from "./wire-protocol";
 
@@ -51,11 +52,16 @@ export class TaggedTypeFormat {
         }
       } else if (value["@ref"]) {
         const obj = value["@ref"];
+        let ref: DocumentReference | NamedDocumentReference;
         if (obj.id) {
-          return new DocumentReference(obj);
+          ref = new DocumentReference(obj);
         } else {
-          return new NamedDocumentReference(obj);
+          ref = new NamedDocumentReference(obj);
         }
+        if ("exists" in obj && obj.exists === false) {
+          return new NullDocument(ref, obj.cause);
+        }
+        return ref;
       } else if (value["@set"]) {
         if (typeof value["@set"] === "string") {
           return new Page({ after: value["@set"] });
@@ -220,6 +226,8 @@ const encode = (input: QueryValue): QueryValue => {
         return encodeMap["namedDocument"](input);
       } else if (input instanceof NamedDocumentReference) {
         return encodeMap["namedDocumentReference"](input);
+      } else if (input instanceof NullDocument) {
+        return encode(input.ref);
       } else if (input instanceof Page) {
         return encodeMap["set"](input);
       } else {

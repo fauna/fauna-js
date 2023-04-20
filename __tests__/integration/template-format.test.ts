@@ -1,4 +1,4 @@
-import { fql } from "../../src/query-builder";
+import { fql } from "../../src";
 import { getClient } from "../client";
 
 const client = getClient({

@@ -1,8 +1,11 @@
+import {
+  Client,
+  endpoints,
+  fql,
+  getDefaultHTTPClient,
+  HTTPClient,
+} from "../../src";
 import { getClient } from "../client";
-import { Client } from "../../src/client";
-import { endpoints } from "../../src/client-configuration";
-import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
-import { fql } from "../../src/query-builder";
 
 // save a copy
 const PROCESS_ENV = { ...process.env };

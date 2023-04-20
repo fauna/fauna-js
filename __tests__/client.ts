@@ -1,6 +1,4 @@
-import { Client } from "../src/client";
-import { ClientConfiguration, endpoints } from "../src/client-configuration";
-import { HTTPClient } from "../src/http-client";
+import { Client, ClientConfiguration, endpoints, HTTPClient } from "../src";
 
 export const getClient = (
   config?: Partial<ClientConfiguration>,

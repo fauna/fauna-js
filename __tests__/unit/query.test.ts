@@ -1,18 +1,17 @@
 import fetchMock, { enableFetchMocks } from "jest-fetch-mock";
 enableFetchMocks();
 
-import { getClient } from "../client";
 import {
   AuthorizationError,
-  NetworkError,
+  FetchClient,
+  fql,
   QueryTimeoutError,
   ServiceError,
   ServiceInternalError,
   ServiceTimeoutError,
   ThrottlingError,
-} from "../../src/errors";
-import { FetchClient } from "../../src/http-client";
-import { fql } from "../../src/query-builder";
+} from "../../src";
+import { getClient } from "../client";
 
 afterAll(() => {
   client.close();

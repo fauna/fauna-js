@@ -9,6 +9,7 @@ export {
   AuthenticationError,
   AuthorizationError,
   ClientError,
+  ClientClosedError,
   ContendedTransactionError,
   InvalidRequestError,
   NetworkError,
@@ -22,6 +23,7 @@ export {
   ThrottlingError,
 } from "./errors";
 export { type Query, fql } from "./query-builder";
+export { LONG_MAX, LONG_MIN, TaggedTypeFormat } from "./tagged-type";
 export {
   type QueryValueObject,
   type QueryValue,
@@ -47,4 +49,12 @@ export {
   Page,
   TimeStub,
 } from "./values";
-export { FetchClient, NodeHTTP2Client } from "./http-client";
+export {
+  FetchClient,
+  getDefaultHTTPClient,
+  isHTTPResponse,
+  NodeHTTP2Client,
+  type HTTPClient,
+  type HTTPRequest,
+  type HTTPResponse,
+} from "./http-client";

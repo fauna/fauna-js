@@ -1,8 +1,5 @@
+import { Client, ClientClosedError, fql, NodeHTTP2Client } from "../../src";
 import { getClient, getDefaultSecretAndEndpoint } from "../client";
-import { fql } from "../../src/query-builder";
-import { ClientClosedError } from "../../src/errors";
-import { Client } from "../../src/client";
-import { NodeHTTP2Client } from "../../src/http-client";
 
 describe("Client", () => {
   it("Refuses further requests after close", async () => {

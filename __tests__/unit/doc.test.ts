@@ -5,9 +5,9 @@ import {
   Module,
   NamedDocument,
   NamedDocumentReference,
-  TimeStub,
   NullDocument,
-} from "../../src/values";
+  TimeStub,
+} from "../../src";
 
 describe("Module", () => {
   it("can be constructed directly", () => {

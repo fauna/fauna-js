@@ -1,6 +1,5 @@
+import { fql, getDefaultHTTPClient, HTTPClient } from "../../src";
 import { getClient } from "../client";
-import { fql } from "../../src/query-builder";
-import { HTTPClient, getDefaultHTTPClient } from "../../src/http-client";
 
 describe("last_txn_ts tracking in client", () => {
   it("Tracks the last_txn_ts datetime and send in the headers", async () => {

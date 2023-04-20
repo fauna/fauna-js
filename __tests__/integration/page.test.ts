@@ -1,6 +1,5 @@
+import { fql, Page } from "../../src";
 import { getClient } from "../client";
-import { fql } from "../../src/query-builder";
-import { Page } from "../../src/values";
 
 const client = getClient({
   max_conns: 5,

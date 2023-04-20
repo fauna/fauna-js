@@ -1,15 +1,15 @@
-import { getClient } from "../client";
-import { fql } from "../../src/query-builder";
 import {
   Document,
   DocumentT,
   DocumentReference,
+  fql,
   Module,
   NamedDocument,
   NamedDocumentReference,
-  TimeStub,
   NullDocument,
-} from "../../src/values";
+  TimeStub,
+} from "../../src";
+import { getClient } from "../client";
 
 const client = getClient({
   max_conns: 5,

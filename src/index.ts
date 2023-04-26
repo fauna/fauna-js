@@ -22,6 +22,7 @@ export {
   ServiceTimeoutError,
   ThrottlingError,
 } from "./errors";
+export { PaginationHelper } from "./pagination-helper";
 export { type Query, fql } from "./query-builder";
 export { LONG_MAX, LONG_MIN, TaggedTypeFormat } from "./tagged-type";
 export {

@@ -33,6 +33,8 @@ import {
   type HTTPClient,
 } from "./http-client";
 import { TaggedTypeFormat } from "./tagged-type";
+import { Page } from "./values";
+import { PaginationHelper } from "./pagination-helper";
 
 const defaultClientConfiguration: Pick<
   ClientConfiguration,
@@ -134,6 +136,10 @@ export class Client {
     }
     this.#httpClient.close();
     this.#isClosed = true;
+  }
+
+  paginate<T extends QueryValue = any>(page: Page<T>): PaginationHelper<T> {
+    return new PaginationHelper(this, [page]);
   }
 
   /**

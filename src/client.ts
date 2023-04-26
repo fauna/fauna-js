@@ -159,7 +159,7 @@ export class Client {
    * @throws {@link ClientClosedError} if a query is issued after the client is closed.
    * due to an internal error.
    */
-  async query<T = any>(
+  async query<T extends QueryValue = any>(
     request: Query,
     headers?: QueryRequestHeaders
   ): Promise<QuerySuccess<T>> {
@@ -261,7 +261,9 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
   }
 
-  async #query<T = any>(queryRequest: QueryRequest): Promise<QuerySuccess<T>> {
+  async #query<T extends QueryValue = any>(
+    queryRequest: QueryRequest
+  ): Promise<QuerySuccess<T>> {
     try {
       const headers = {
         Authorization: `Bearer ${this.#clientConfiguration.secret}`,

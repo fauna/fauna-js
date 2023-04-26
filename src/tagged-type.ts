@@ -1,3 +1,4 @@
+import { Client } from "./client";
 import { ClientError } from "./errors";
 import {
   DateStub,
@@ -32,7 +33,7 @@ export class TaggedTypeFormat {
    * @param input - JSON string result from Fauna
    * @returns object of result of FQL query
    */
-  static decode(input: string): any {
+  static decode(client: Client, input: string): any {
     return JSON.parse(input, (_, value: any) => {
       if (value == null) return null;
       if (value["@mod"]) {

@@ -295,7 +295,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         parsedResponse = {
           ...fetchResponse,
           body: isTaggedFormat
-            ? TaggedTypeFormat.decode(fetchResponse.body)
+            ? TaggedTypeFormat.decode(this, fetchResponse.body)
             : JSON.parse(fetchResponse.body),
         };
         if (parsedResponse.body.query_tags) {

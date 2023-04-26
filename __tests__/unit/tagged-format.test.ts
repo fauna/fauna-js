@@ -12,6 +12,9 @@ import {
   TaggedTypeFormat,
   TimeStub,
 } from "../../src";
+import { getClient } from "../client";
+
+const client = getClient();
 
 describe("tagged format", () => {
   it("can be decoded", () => {
@@ -102,7 +105,7 @@ describe("tagged format", () => {
     const page = new Page({ data: ["a", "b"] });
     const page_string = new Page({ after: "abc123" });
 
-    const result = TaggedTypeFormat.decode(allTypes);
+    const result = TaggedTypeFormat.decode(client, allTypes);
     expect(result.name).toEqual("fir");
     expect(result.age).toEqual(200);
     expect(result.birthdate).toBeInstanceOf(DateStub);
@@ -298,7 +301,7 @@ describe("tagged format", () => {
       const encoded = TaggedTypeFormat.encode(input);
       const encodedKey = Object.keys(encoded)[0];
       expect(encodedKey).toEqual(tag);
-      const decoded = TaggedTypeFormat.decode(JSON.stringify(encoded));
+      const decoded = TaggedTypeFormat.decode(client, JSON.stringify(encoded));
       expect(typeof decoded).toBe(expectedType);
       expect(decoded).toEqual(expected);
     }

@@ -47,6 +47,7 @@ export {
   NamedDocumentReference,
   NullDocument,
   Page,
+  PaginationHelper,
   TimeStub,
 } from "./values";
 export {

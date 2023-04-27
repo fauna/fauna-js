@@ -8,6 +8,7 @@ import {
   NamedDocument,
   NamedDocumentReference,
   Page,
+  PaginationHelper,
   TimeStub,
 } from "./values";
 
@@ -277,4 +278,5 @@ export type QueryValue =
   | DocumentReference
   | NamedDocument
   | NamedDocumentReference
-  | Page<QueryValue>;
+  | Page<QueryValue>
+  | PaginationHelper<QueryValue>;

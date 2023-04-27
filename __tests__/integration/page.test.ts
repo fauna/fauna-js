@@ -119,4 +119,36 @@ describe("PaginationHelper", () => {
       }
     }
   });
+
+  it("can can stop the iterator with the return method", async () => {
+    expect.assertions(1);
+
+    const response = await client.query<PaginationHelper<MyDoc>>(
+      fql`IterTestBig.all()`
+    );
+    const paginationHelper = response.data;
+
+    for await (const page of paginationHelper) {
+      expect(page.data.length).toBe(16);
+      await paginationHelper.return();
+    }
+  });
+
+  it("can can stop the iterator with the throw method", async () => {
+    expect.assertions(2);
+
+    const response = await client.query<PaginationHelper<MyDoc>>(
+      fql`IterTestBig.all()`
+    );
+    const paginationHelper = response.data;
+
+    try {
+      for await (const page of paginationHelper) {
+        expect(page.data.length).toBe(16);
+        await paginationHelper.throw("oops");
+      }
+    } catch (e) {
+      expect(e).toBe("oops");
+    }
+  });
 });

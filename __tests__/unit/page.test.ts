@@ -1,4 +1,4 @@
-import { Page } from "../../src";
+import { EmbeddedSet, Page } from "../../src";
 
 describe("Page", () => {
   it("can be constructed directly", () => {
@@ -13,14 +13,15 @@ describe("Page", () => {
     expect(set.after).toBeUndefined();
   });
 
-  it("data is optional if after is provided", () => {
-    const set = new Page<number>({ after: "1234" });
-    expect(set.data).toBeUndefined;
-    expect(set.after).toBe("1234");
+  it("throws if data is undefined", () => {
+    // @ts-expect-error
+    expect(() => new Page<number>({ after: "1234" })).toThrow();
   });
+});
 
-  it("throws if data and after are both undefined", () => {
-    // @ts-ignore-next-line
-    expect(() => new Page<number>({})).toThrow();
+describe("Embedded Set", () => {
+  it("can be constructed directly", () => {
+    const set = new EmbeddedSet("1234");
+    expect(set.after).toBe("1234");
   });
 });

@@ -3,11 +3,17 @@ import { fql } from "../query-builder";
 import { QueryValue } from "../wire-protocol";
 
 /**
- * A materialized Fauna Set.
+ * A materialize view of a Set.
  * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#set}
  */
-export class Page<T extends QueryValue> {
+export class Page<T extends QueryValue> implements PageObject<T> {
+  /** A materialized page of data */
   readonly data: T[];
+  /**
+   * A pagination cursor, used to obtain additional information in the Set.
+   * If `after` is not provided, then `data` must be present and represents the
+   * last Page in the Set.
+   */
   readonly after?: string;
 
   constructor({ data, after }: PageObject<T>) {
@@ -17,17 +23,34 @@ export class Page<T extends QueryValue> {
 }
 
 /**
+ * A un-materialize Set. Typically received when a materialized Set contains
+ * another set, the EmbeddedSet does not contain any data to avoid potential
+ * issues such as self-reference and infinite recursion
+ * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#set}
+ */
+export class EmbeddedSet implements EmbeddedSetObject {
+  /**
+   * A pagination cursor, used to obtain additional information in the Set.
+   */
+  readonly after: string;
+
+  constructor(after: string) {
+    this.after = after;
+  }
+}
+
+/**
  * A class to provide an iterable API for fetching multiple pages of data, given
  * a Fauna Set
  */
-export class PaginationHelper<T extends QueryValue>
+export class SetIterator<T extends QueryValue>
   implements AsyncGenerator<Page<T>, void, unknown>
 {
   readonly #generator: AsyncGenerator<Page<T>, void, unknown>;
   #currentData?: T[];
   #currentAfter?: string;
 
-  constructor(client: Client, initial: PageObject<T> | EmbeddedSet) {
+  constructor(client: Client, initial: PageObject<T> | EmbeddedSetObject) {
     if (!("data" in initial) && initial.after === undefined) {
       throw new TypeError(
         "Failed to construct a Page. 'data' and 'after' are both undefined"
@@ -75,7 +98,7 @@ export class PaginationHelper<T extends QueryValue>
 }
 
 type PageObject<T> = { data: T[]; after?: string };
-type EmbeddedSet = { after: string };
+type EmbeddedSetObject = { after: string };
 
 async function* generatePages<T extends QueryValue>(
   client: Client,

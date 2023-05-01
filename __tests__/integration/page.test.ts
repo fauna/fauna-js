@@ -1,5 +1,4 @@
-import { DocumentT, fql } from "../../src";
-import { PaginationHelper } from "../../src/values";
+import { DocumentT, fql, SetIterator } from "../../src";
 import { getClient } from "../client";
 
 const client = getClient({
@@ -23,7 +22,7 @@ describe("querying for set", () => {
   });
 });
 
-describe("PaginationHelper", () => {
+describe("SetIterator", () => {
   beforeAll(async () => {
     await client.query(fql`
       if (Collection.byName("IterTestSmall") != null) {
@@ -56,12 +55,12 @@ describe("PaginationHelper", () => {
   it("can get single page using for..of when the set is small", async () => {
     expect.assertions(1);
 
-    const response = await client.query<PaginationHelper<MyDoc>>(
+    const response = await client.query<SetIterator<MyDoc>>(
       fql`IterTestSmall.all()`
     );
-    const paginationHelper = response.data;
+    const setIterator = response.data;
 
-    for await (const page of paginationHelper) {
+    for await (const page of setIterator) {
       expect(page.data.length).toBe(10);
     }
   });
@@ -69,12 +68,12 @@ describe("PaginationHelper", () => {
   it("can get multiple pages using for..of when the set is large", async () => {
     expect.assertions(2);
 
-    const response = await client.query<PaginationHelper<MyDoc>>(
+    const response = await client.query<SetIterator<MyDoc>>(
       fql`IterTestBig.all()`
     );
-    const paginationHelper = response.data;
+    const setIterator = response.data;
 
-    for await (const page of paginationHelper) {
+    for await (const page of setIterator) {
       expect(page.data.length).toBeGreaterThan(0);
     }
   });
@@ -82,35 +81,35 @@ describe("PaginationHelper", () => {
   it("can get pages using next()", async () => {
     expect.assertions(3);
 
-    const response = await client.query<PaginationHelper<MyDoc>>(
+    const response = await client.query<SetIterator<MyDoc>>(
       fql`IterTestBig.all()`
     );
-    const paginationHelper = response.data;
+    const setIterator = response.data;
 
-    const result1 = await paginationHelper.next();
+    const result1 = await setIterator.next();
     if (!result1.done) {
       expect(result1.value.data.length).toBe(16);
     }
 
-    const result2 = await paginationHelper.next();
+    const result2 = await setIterator.next();
     if (!result2.done) {
       expect(result2.value.data.length).toBe(4);
     }
 
-    const result3 = await paginationHelper.next();
+    const result3 = await setIterator.next();
     expect(result3.done).toBe(true);
   });
 
   it("can get pages using a loop with next()", async () => {
     expect.assertions(2);
-    const response = await client.query<PaginationHelper<MyDoc>>(
+    const response = await client.query<SetIterator<MyDoc>>(
       fql`IterTestBig.all()`
     );
-    const paginationHelper = response.data;
+    const setIterator = response.data;
 
     let done = false;
     while (!done) {
-      const next = await paginationHelper.next();
+      const next = await setIterator.next();
       done = next.done ?? false;
 
       if (!next.done) {
@@ -123,29 +122,29 @@ describe("PaginationHelper", () => {
   it("can can stop the iterator with the return method", async () => {
     expect.assertions(1);
 
-    const response = await client.query<PaginationHelper<MyDoc>>(
+    const response = await client.query<SetIterator<MyDoc>>(
       fql`IterTestBig.all()`
     );
-    const paginationHelper = response.data;
+    const setIterator = response.data;
 
-    for await (const page of paginationHelper) {
+    for await (const page of setIterator) {
       expect(page.data.length).toBe(16);
-      await paginationHelper.return();
+      await setIterator.return();
     }
   });
 
   it("can can stop the iterator with the throw method", async () => {
     expect.assertions(2);
 
-    const response = await client.query<PaginationHelper<MyDoc>>(
+    const response = await client.query<SetIterator<MyDoc>>(
       fql`IterTestBig.all()`
     );
-    const paginationHelper = response.data;
+    const setIterator = response.data;
 
     try {
-      for await (const page of paginationHelper) {
+      for await (const page of setIterator) {
         expect(page.data.length).toBe(16);
-        await paginationHelper.throw("oops");
+        await setIterator.throw("oops");
       }
     } catch (e) {
       expect(e).toBe("oops");

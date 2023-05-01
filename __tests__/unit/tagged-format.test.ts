@@ -10,7 +10,7 @@ import {
   NullDocument,
   TaggedTypeFormat,
   TimeStub,
-  PaginationHelper,
+  SetIterator,
 } from "../../src";
 import { getClient } from "../client";
 
@@ -102,8 +102,8 @@ describe("tagged format", () => {
     });
     const nullDoc = new NullDocument(docReference, "not found");
 
-    const page = new PaginationHelper(client, { data: ["a", "b"] });
-    const page_string = new PaginationHelper(client, { after: "abc123" });
+    const page = new SetIterator(client, { data: ["a", "b"] });
+    const page_string = new SetIterator(client, { after: "abc123" });
 
     const result = TaggedTypeFormat.decode(client, allTypes);
     expect(result.name).toEqual("fir");

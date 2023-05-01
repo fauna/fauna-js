@@ -42,12 +42,13 @@ export {
   Document,
   DocumentReference,
   type DocumentT,
+  EmbeddedSet,
   Module,
   NamedDocument,
   NamedDocumentReference,
   NullDocument,
   Page,
-  PaginationHelper,
+  SetIterator,
   TimeStub,
 } from "./values";
 export {

@@ -10,7 +10,7 @@ import {
   TimeStub,
   Page,
   NullDocument,
-  PaginationHelper,
+  SetIterator,
 } from "./values";
 import { QueryValueObject, QueryValue } from "./wire-protocol";
 
@@ -66,9 +66,9 @@ export class TaggedTypeFormat {
         return ref;
       } else if (value["@set"]) {
         if (typeof value["@set"] === "string") {
-          return new PaginationHelper(client, { after: value["@set"] });
+          return new SetIterator(client, { after: value["@set"] });
         }
-        return new PaginationHelper(client, value["@set"]);
+        return new SetIterator(client, value["@set"]);
       } else if (value["@int"]) {
         return Number(value["@int"]);
       } else if (value["@long"]) {
@@ -177,7 +177,7 @@ const encodeMap = {
   namedDocument: (value: NamedDocument): TaggedRef => ({
     "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
-  set: (value: Page<any> | PaginationHelper<any>) => {
+  set: (value: Page<any> | SetIterator<any>) => {
     throw new ClientError(
       "Page could not be encoded. Fauna does not accept encoded Set values, yet. Use Page.data and Page.after as arguments, instead."
     );
@@ -232,7 +232,7 @@ const encode = (input: QueryValue): QueryValue => {
         return encode(input.ref);
       } else if (input instanceof Page) {
         return encodeMap["set"](input);
-      } else if (input instanceof PaginationHelper) {
+      } else if (input instanceof SetIterator) {
         return encodeMap["set"](input);
       } else {
         return encodeMap["object"](input);

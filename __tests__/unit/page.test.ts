@@ -1,4 +1,4 @@
-import { EmbeddedSet, Page, SetIterator } from "../../src";
+import { Page, SetIterator } from "../../src";
 import { getClient } from "../client";
 
 const client = getClient();
@@ -14,13 +14,6 @@ describe("Page", () => {
     const set = new Page<number>({ data: [1, 2, 3] });
     expect(set.data).toStrictEqual([1, 2, 3]);
     expect(set.after).toBeUndefined();
-  });
-});
-
-describe("EmbeddedSet", () => {
-  it("can be constructed directly", () => {
-    const set = new EmbeddedSet("1234");
-    expect(set.after).toBe("1234");
   });
 });
 
@@ -41,12 +34,6 @@ describe("SetIterator", () => {
     });
     const set = new SetIterator<number>(client, page);
     expect(set.data).toStrictEqual([1, 2, 3]);
-    expect(set.after).toBe("1234");
-  });
-
-  it("can be constructed from an EmbeddedSet", () => {
-    const embeddedSet = new EmbeddedSet("1234");
-    const set = new SetIterator<number>(client, embeddedSet);
     expect(set.after).toBe("1234");
   });
 

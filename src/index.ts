@@ -42,7 +42,6 @@ export {
   Document,
   DocumentReference,
   type DocumentT,
-  EmbeddedSet,
   Module,
   NamedDocument,
   NamedDocumentReference,

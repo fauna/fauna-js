@@ -23,23 +23,6 @@ export class Page<T extends QueryValue> implements PageObject<T> {
 }
 
 /**
- * A un-materialize Set. Typically received when a materialized Set contains
- * another set, the EmbeddedSet does not contain any data to avoid potential
- * issues such as self-reference and infinite recursion
- * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#set}
- */
-export class EmbeddedSet implements EmbeddedSetObject {
-  /**
-   * A pagination cursor, used to obtain additional information in the Set.
-   */
-  readonly after: string;
-
-  constructor(after: string) {
-    this.after = after;
-  }
-}
-
-/**
  * A class to provide an iterable API for fetching multiple pages of data, given
  * a Fauna Set
  */
@@ -102,7 +85,7 @@ type EmbeddedSetObject = { after: string };
 
 async function* generatePages<T extends QueryValue>(
   client: Client,
-  initial: PageObject<T> | EmbeddedSet
+  initial: PageObject<T> | EmbeddedSetObject
 ): AsyncGenerator<Page<T>, void, unknown> {
   let currentPage = initial;
 

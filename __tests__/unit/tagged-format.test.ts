@@ -11,6 +11,7 @@ import {
   Page,
   TaggedTypeFormat,
   TimeStub,
+  EmbeddedSet,
 } from "../../src";
 
 describe("tagged format", () => {
@@ -73,7 +74,7 @@ describe("tagged format", () => {
         }
       },
       "page": { "@set": { "data": ["a", "b"] } },
-      "page_string": { "@set": "abc123" }
+      "embeddedSet": { "@set": "abc123" }
     }`;
 
     const bugs_mod = new Module("Bugs");
@@ -100,7 +101,7 @@ describe("tagged format", () => {
     const nullDoc = new NullDocument(docReference, "not found");
 
     const page = new Page({ data: ["a", "b"] });
-    const page_string = new Page({ after: "abc123" });
+    const embeddedSet = new EmbeddedSet("abc123");
 
     const result = TaggedTypeFormat.decode(allTypes);
     expect(result.name).toEqual("fir");
@@ -126,7 +127,7 @@ describe("tagged format", () => {
     expect(result.namedDoc).toStrictEqual(namedDoc);
     expect(result.nullDoc).toStrictEqual(nullDoc);
     expect(result.page).toStrictEqual(page);
-    expect(result.page_string).toStrictEqual(page_string);
+    expect(result.embeddedSet).toStrictEqual(embeddedSet);
   });
 
   it("can be encoded", () => {

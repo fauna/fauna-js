@@ -55,10 +55,9 @@ describe("SetIterator", () => {
   it("can get single page using for..of when the set is small", async () => {
     expect.assertions(1);
 
-    const response = await client.query<SetIterator<MyDoc>>(
-      fql`IterTestSmall.all()`
-    );
-    const setIterator = response.data;
+    const response = await client.query<Page<MyDoc>>(fql`IterTestSmall.all()`);
+    const page = response.data;
+    const setIterator = new SetIterator(client, page);
 
     for await (const page of setIterator) {
       expect(page.data.length).toBe(10);
@@ -68,10 +67,9 @@ describe("SetIterator", () => {
   it("can get multiple pages using for..of when the set is large", async () => {
     expect.assertions(2);
 
-    const response = await client.query<SetIterator<MyDoc>>(
-      fql`IterTestBig.all()`
-    );
-    const setIterator = response.data;
+    const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
+    const page = response.data;
+    const setIterator = new SetIterator(client, page);
 
     for await (const page of setIterator) {
       expect(page.data.length).toBeGreaterThan(0);
@@ -81,10 +79,9 @@ describe("SetIterator", () => {
   it("can get pages using next()", async () => {
     expect.assertions(3);
 
-    const response = await client.query<SetIterator<MyDoc>>(
-      fql`IterTestBig.all()`
-    );
-    const setIterator = response.data;
+    const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
+    const page = response.data;
+    const setIterator = new SetIterator(client, page);
 
     const result1 = await setIterator.next();
     if (!result1.done) {
@@ -102,10 +99,9 @@ describe("SetIterator", () => {
 
   it("can get pages using a loop with next()", async () => {
     expect.assertions(2);
-    const response = await client.query<SetIterator<MyDoc>>(
-      fql`IterTestBig.all()`
-    );
-    const setIterator = response.data;
+    const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
+    const page = response.data;
+    const setIterator = new SetIterator(client, page);
 
     let done = false;
     while (!done) {
@@ -122,10 +118,9 @@ describe("SetIterator", () => {
   it("can can stop the iterator with the return method", async () => {
     expect.assertions(1);
 
-    const response = await client.query<SetIterator<MyDoc>>(
-      fql`IterTestBig.all()`
-    );
-    const setIterator = response.data;
+    const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
+    const page = response.data;
+    const setIterator = new SetIterator(client, page);
 
     for await (const page of setIterator) {
       expect(page.data.length).toBe(16);
@@ -136,10 +131,9 @@ describe("SetIterator", () => {
   it("can can stop the iterator with the throw method", async () => {
     expect.assertions(2);
 
-    const response = await client.query<SetIterator<MyDoc>>(
-      fql`IterTestBig.all()`
-    );
-    const setIterator = response.data;
+    const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
+    const page = response.data;
+    const setIterator = new SetIterator(client, page);
 
     try {
       for await (const page of setIterator) {

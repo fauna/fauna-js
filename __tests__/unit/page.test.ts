@@ -12,11 +12,6 @@ describe("Page", () => {
     expect(set.data).toStrictEqual([1, 2, 3]);
     expect(set.after).toBeUndefined();
   });
-
-  it("throws if data is undefined", () => {
-    // @ts-expect-error
-    expect(() => new Page<number>({ after: "1234" })).toThrow();
-  });
 });
 
 describe("Embedded Set", () => {

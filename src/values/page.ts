@@ -51,17 +51,14 @@ export class SetIterator<T extends QueryValue>
   #currentAfter?: string;
 
   constructor(client: Client, initial: Page<T> | EmbeddedSet) {
+    if (!("data" in initial) && initial.after === undefined) {
+      throw new TypeError(
+        "Failed to construct a Page. 'data' and 'after' are both undefined"
+      );
+    }
     this.#generator = generatePages(client, initial);
+    if ("data" in initial) this.#currentData = initial.data;
     this.#currentAfter = initial.after;
-  }
-
-  static fromPage<T extends QueryValue>(
-    client: Client,
-    initial: Page<T>
-  ): SetIterator<T> {
-    const iter = new SetIterator<T>(client, initial);
-    iter.#currentData = initial.data;
-    return iter;
   }
 
   /** A materialized page of data */

@@ -110,9 +110,7 @@ async function* generatePages<T extends QueryValue>(
   while (currentPage.after) {
     // cursor means there is more data to fetch
     const response = await client.query<Page<T>>(
-      // project for data and after cursors so we don't have issues with
-      // recursive Page instances
-      fql`Set.paginate(${currentPage.after}) { data, after }`
+      fql`Set.paginate(${currentPage.after})`
     );
     const nextPage = response.data;
 

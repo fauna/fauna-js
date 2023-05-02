@@ -6,6 +6,11 @@ const client = getClient({
   query_timeout_ms: 60_000,
 });
 
+const smallItems = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
+const bigItems = [
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+];
+
 afterAll(() => {
   client.close();
 });
@@ -37,14 +42,8 @@ describe("SetIterator", () => {
       Collection.create({ name: "IterTestBig" })
     `);
     await client.query(fql`
-      [
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-      ].map(i => IterTestSmall.create({ value: i }))
-
-      [
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-        10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-      ].map(i => IterTestBig.create({ value: i }))
+      ${smallItems}.map(i => IterTestSmall.create({ value: i }))
+      ${bigItems}.map(i => IterTestBig.create({ value: i }))
     `);
   });
 
@@ -53,48 +52,67 @@ describe("SetIterator", () => {
   }>;
 
   it("can get single page using for..of when the set is small", async () => {
-    expect.assertions(1);
+    expect.assertions(2);
 
     const response = await client.query<Page<MyDoc>>(fql`IterTestSmall.all()`);
     const page = response.data;
     const setIterator = client.paginate(page);
 
+    const foundItems: number[] = [];
     for await (const page of setIterator) {
       expect(page.length).toBe(10);
+      for (const item of page) {
+        foundItems.push(item.value);
+      }
     }
+    expect(foundItems).toEqual(smallItems);
   });
 
   it("can get multiple pages using for..of when the set is large", async () => {
-    expect.assertions(2);
-
-    const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
-    const page = response.data;
-    const setIterator = client.paginate(page);
-
-    for await (const page of setIterator) {
-      expect(page.length).toBeGreaterThan(0);
-    }
-  });
-
-  it("can get pages using next()", async () => {
     expect.assertions(3);
 
     const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
     const page = response.data;
     const setIterator = client.paginate(page);
 
+    const foundItems: number[] = [];
+    for await (const page of setIterator) {
+      expect(page.length).toBeGreaterThan(0);
+      for (let item of page) {
+        foundItems.push(item.value);
+      }
+    }
+    expect(foundItems).toEqual(bigItems);
+  });
+
+  it("can get pages using next()", async () => {
+    expect.assertions(4);
+
+    const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
+    const page = response.data;
+    const setIterator = client.paginate(page);
+
+    const foundItems: number[] = [];
+
     const result1 = await setIterator.next();
     if (!result1.done) {
       expect(result1.value.length).toBe(16);
+      for (const i of result1.value) {
+        foundItems.push(i.value);
+      }
     }
 
     const result2 = await setIterator.next();
     if (!result2.done) {
       expect(result2.value.length).toBe(4);
+      for (const i of result2.value) {
+        foundItems.push(i.value);
+      }
     }
 
     const result3 = await setIterator.next();
     expect(result3.done).toBe(true);
+    expect(foundItems).toEqual(bigItems);
   });
 
   it("can get pages using a loop with next()", async () => {

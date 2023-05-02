@@ -1,6 +1,6 @@
 import { Client } from "../client";
 import { fql } from "../query-builder";
-import { QueryValue } from "../wire-protocol";
+import { QuerySuccess, QueryValue } from "../wire-protocol";
 
 /**
  * A materialize view of a Set.
@@ -44,51 +44,35 @@ export class EmbeddedSet {
  * a Fauna Set
  */
 export class SetIterator<T extends QueryValue>
-  implements AsyncGenerator<Page<T>, void, unknown>
+  implements AsyncGenerator<T[], void, unknown>
 {
-  readonly #generator: AsyncGenerator<Page<T>, void, unknown>;
-  #currentData?: T[];
-  #currentAfter?: string;
+  readonly #generator: AsyncGenerator<T[], void, unknown>;
 
-  constructor(client: Client, initial: Page<T> | EmbeddedSet) {
-    if (!("data" in initial) && initial.after === undefined) {
+  constructor(
+    client: Client,
+    initial: Pageable<T> | (() => Promise<QuerySuccess<QueryValue>>)
+  ) {
+    if (
+      !(initial instanceof Function) &&
+      !("data" in initial) &&
+      (!("after" in initial) || initial.after === undefined)
+    ) {
       throw new TypeError(
         "Failed to construct a Page. 'data' and 'after' are both undefined"
       );
     }
     this.#generator = generatePages(client, initial);
-    if ("data" in initial) this.#currentData = initial.data;
-    this.#currentAfter = initial.after;
   }
 
-  /** A materialized page of data */
-  get data() {
-    return this.#currentData;
+  async next(): Promise<IteratorResult<T[], void>> {
+    return this.#generator.next();
   }
 
-  /**
-   * A pagination cursor, used to obtain additional information in the Set.
-   * If `after` is not provided, then `data` must be present and represents the
-   * last Page in the Set.
-   */
-  get after() {
-    return this.#currentAfter;
-  }
-
-  async next(): Promise<IteratorResult<Page<T>, void>> {
-    const next = await this.#generator.next();
-    if (next.value) {
-      this.#currentData = next.value.data;
-      this.#currentAfter = next.value.after;
-    }
-    return next;
-  }
-
-  async return(): Promise<IteratorResult<Page<T>, void>> {
+  async return(): Promise<IteratorResult<T[], void>> {
     return this.#generator.return();
   }
 
-  async throw(e: any): Promise<IteratorResult<Page<T>, void>> {
+  async throw(e: any): Promise<IteratorResult<T[], void>> {
     return this.#generator.throw(e);
   }
 
@@ -97,14 +81,26 @@ export class SetIterator<T extends QueryValue>
   }
 }
 
+export type Pageable<T> = { data?: T[]; after?: string };
+
 async function* generatePages<T extends QueryValue>(
   client: Client,
-  initial: Page<T> | EmbeddedSet
-): AsyncGenerator<Page<T>, void, unknown> {
-  let currentPage = initial;
+  initial: Pageable<T> | (() => Promise<QuerySuccess<QueryValue>>)
+): AsyncGenerator<T[], void, unknown> {
+  let currentPage: Pageable<T>;
+  if (initial instanceof Function) {
+    const initialResponse = await initial();
+    if (initialResponse.data instanceof Page) {
+      currentPage = initialResponse.data as Page<T>;
+    } else {
+      currentPage = { data: initialResponse.data } as Pageable<T>;
+    }
+  } else {
+    currentPage = initial;
+  }
 
-  if ("data" in initial) {
-    yield new Page(initial);
+  if (currentPage.data) {
+    yield currentPage.data;
   }
 
   while (currentPage.after) {
@@ -115,7 +111,7 @@ async function* generatePages<T extends QueryValue>(
     const nextPage = response.data;
 
     currentPage = nextPage;
-    yield new Page(nextPage);
+    yield nextPage.data;
   }
 
   return;

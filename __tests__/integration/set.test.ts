@@ -57,10 +57,10 @@ describe("SetIterator", () => {
 
     const response = await client.query<Page<MyDoc>>(fql`IterTestSmall.all()`);
     const page = response.data;
-    const setIterator = new SetIterator(client, page);
+    const setIterator = client.paginate(page);
 
     for await (const page of setIterator) {
-      expect(page.data.length).toBe(10);
+      expect(page.length).toBe(10);
     }
   });
 
@@ -69,10 +69,10 @@ describe("SetIterator", () => {
 
     const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
     const page = response.data;
-    const setIterator = new SetIterator(client, page);
+    const setIterator = client.paginate(page);
 
     for await (const page of setIterator) {
-      expect(page.data.length).toBeGreaterThan(0);
+      expect(page.length).toBeGreaterThan(0);
     }
   });
 
@@ -81,16 +81,16 @@ describe("SetIterator", () => {
 
     const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
     const page = response.data;
-    const setIterator = new SetIterator(client, page);
+    const setIterator = client.paginate(page);
 
     const result1 = await setIterator.next();
     if (!result1.done) {
-      expect(result1.value.data.length).toBe(16);
+      expect(result1.value.length).toBe(16);
     }
 
     const result2 = await setIterator.next();
     if (!result2.done) {
-      expect(result2.value.data.length).toBe(4);
+      expect(result2.value.length).toBe(4);
     }
 
     const result3 = await setIterator.next();
@@ -101,7 +101,7 @@ describe("SetIterator", () => {
     expect.assertions(2);
     const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
     const page = response.data;
-    const setIterator = new SetIterator(client, page);
+    const setIterator = client.paginate(page);
 
     let done = false;
     while (!done) {
@@ -110,7 +110,7 @@ describe("SetIterator", () => {
 
       if (!next.done) {
         const page = next.value;
-        expect(page.data.length).toBeGreaterThan(0);
+        expect(page.length).toBeGreaterThan(0);
       }
     }
   });
@@ -120,10 +120,10 @@ describe("SetIterator", () => {
 
     const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
     const page = response.data;
-    const setIterator = new SetIterator(client, page);
+    const setIterator = client.paginate(page);
 
     for await (const page of setIterator) {
-      expect(page.data.length).toBe(16);
+      expect(page.length).toBe(16);
       await setIterator.return();
     }
   });
@@ -133,15 +133,35 @@ describe("SetIterator", () => {
 
     const response = await client.query<Page<MyDoc>>(fql`IterTestBig.all()`);
     const page = response.data;
-    const setIterator = new SetIterator(client, page);
+    const setIterator = client.paginate(page);
 
     try {
       for await (const page of setIterator) {
-        expect(page.data.length).toBe(16);
+        expect(page.length).toBe(16);
         await setIterator.throw("oops");
       }
     } catch (e) {
       expect(e).toBe("oops");
+    }
+  });
+
+  it("can paginate a query that returns a set", async () => {
+    expect.assertions(2);
+
+    const setIterator = client.paginate<MyDoc>(fql`IterTestBig.all()`);
+
+    for await (const page of setIterator) {
+      expect(page.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("can paginate a query that does NOT return a set", async () => {
+    expect.assertions(1);
+
+    const setIterator = client.paginate<number>(fql`42`);
+
+    for await (const page of setIterator) {
+      expect(page).toBe(42);
     }
   });
 });

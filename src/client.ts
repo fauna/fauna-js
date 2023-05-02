@@ -33,6 +33,7 @@ import {
   type HTTPClient,
 } from "./http-client";
 import { TaggedTypeFormat } from "./tagged-type";
+import { Page, SetIterator } from "./values";
 
 const defaultClientConfiguration: Pick<
   ClientConfiguration,
@@ -134,6 +135,16 @@ export class Client {
     }
     this.#httpClient.close();
     this.#isClosed = true;
+  }
+
+  paginate<T extends QueryValue = QueryValue>(
+    iterable: Page<T> | Query
+  ): SetIterator<T> {
+    if (iterable instanceof Page) {
+      return new SetIterator<T>(this, iterable);
+    }
+
+    return new SetIterator<T>(this, () => this.query(iterable));
   }
 
   /**

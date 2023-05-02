@@ -31,26 +31,31 @@ describe("SetIterator", () => {
       after: "1234",
     });
     const set = new SetIterator<number>(client, page);
-    expect(set.data).toStrictEqual([1, 2, 3]);
-    expect(set.after).toBe("1234");
   });
 
   it("can be constructed from an EmbeddedSet", () => {
     const embeddedSet = new EmbeddedSet("1234");
     const set = new SetIterator<number>(client, embeddedSet);
-    expect(set.after).toBe("1234");
+  });
+
+  it("can be constructed with an initial thunk", async () => {
+    expect.assertions(1);
+
+    const setIterator = new SetIterator<number>(client, async () => ({
+      data: 42,
+    }));
+
+    for await (const page of setIterator) {
+      expect(page).toBe(42);
+    }
   });
 
   it("after is optional", () => {
     const set = new SetIterator<number>(client, { data: [1, 2, 3] });
-    expect(set.data).toStrictEqual([1, 2, 3]);
-    expect(set.after).toBeUndefined();
   });
 
   it("data is optional if after is provided", () => {
     const set = new SetIterator<number>(client, { after: "1234" });
-    expect(set.data).toBeUndefined;
-    expect(set.after).toBe("1234");
   });
 
   it("throws if data and after are both undefined", () => {

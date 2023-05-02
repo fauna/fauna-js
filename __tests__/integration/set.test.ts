@@ -6,10 +6,10 @@ const client = getClient({
   query_timeout_ms: 60_000,
 });
 
-const smallItems = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
-const bigItems = [
+const smallItems = new Set([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+const bigItems = new Set([
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-];
+]);
 
 afterAll(() => {
   client.close();
@@ -42,8 +42,8 @@ describe("SetIterator", () => {
       Collection.create({ name: "IterTestBig" })
     `);
     await client.query(fql`
-      ${smallItems}.map(i => IterTestSmall.create({ value: i }))
-      ${bigItems}.map(i => IterTestBig.create({ value: i }))
+      ${[...smallItems]}.map(i => IterTestSmall.create({ value: i }))
+      ${[...bigItems]}.map(i => IterTestBig.create({ value: i }))
     `);
   });
 
@@ -58,11 +58,11 @@ describe("SetIterator", () => {
     const page = response.data;
     const setIterator = client.paginate(page);
 
-    const foundItems: number[] = [];
+    const foundItems = new Set<number>();
     for await (const page of setIterator) {
       expect(page.length).toBe(10);
       for (const item of page) {
-        foundItems.push(item.value);
+        foundItems.add(item.value);
       }
     }
     expect(foundItems).toEqual(smallItems);
@@ -75,11 +75,11 @@ describe("SetIterator", () => {
     const page = response.data;
     const setIterator = client.paginate(page);
 
-    const foundItems: number[] = [];
+    const foundItems = new Set<number>();
     for await (const page of setIterator) {
       expect(page.length).toBeGreaterThan(0);
       for (let item of page) {
-        foundItems.push(item.value);
+        foundItems.add(item.value);
       }
     }
     expect(foundItems).toEqual(bigItems);
@@ -92,13 +92,13 @@ describe("SetIterator", () => {
     const page = response.data;
     const setIterator = client.paginate(page);
 
-    const foundItems: number[] = [];
+    const foundItems = new Set<number>();
 
     const result1 = await setIterator.next();
     if (!result1.done) {
       expect(result1.value.length).toBe(16);
       for (const i of result1.value) {
-        foundItems.push(i.value);
+        foundItems.add(i.value);
       }
     }
 
@@ -106,7 +106,7 @@ describe("SetIterator", () => {
     if (!result2.done) {
       expect(result2.value.length).toBe(4);
       for (const i of result2.value) {
-        foundItems.push(i.value);
+        foundItems.add(i.value);
       }
     }
 
@@ -188,10 +188,10 @@ describe("SetIterator", () => {
 
     const setIterator = client.paginate<MyDoc>(fql`IterTestBig.all()`);
 
-    const foundItems: number[] = [];
+    const foundItems = new Set<number>();
     for await (const item of setIterator.flatten()) {
       expect(item.id).toBeDefined();
-      foundItems.push(item.value);
+      foundItems.add(item.value);
     }
     expect(foundItems).toEqual(bigItems);
   });

@@ -46,16 +46,20 @@ describe("SetIterator", () => {
     }));
 
     for await (const page of setIterator) {
-      expect(page).toBe(42);
+      expect(page).toStrictEqual([42]);
     }
   });
 
-  it("after is optional", () => {
-    const set = new SetIterator<number>(client, { data: [1, 2, 3] });
-  });
+  it("can be flattened", async () => {
+    expect.assertions(1);
 
-  it("data is optional if after is provided", () => {
-    const set = new SetIterator<number>(client, { after: "1234" });
+    const setIterator = new SetIterator<number>(client, async () => ({
+      data: 42,
+    }));
+
+    for await (const item of setIterator.flatten()) {
+      expect(item).toStrictEqual(42);
+    }
   });
 
   it("throws if data and after are both undefined", () => {

@@ -17,7 +17,7 @@ import {
   ContendedTransactionError,
   InvalidRequestError,
 } from "./errors";
-import type { Query } from "./query-builder";
+import { Query } from "./query-builder";
 import {
   isQueryFailure,
   isQuerySuccess,
@@ -33,7 +33,7 @@ import {
   type HTTPClient,
 } from "./http-client";
 import { TaggedTypeFormat } from "./tagged-type";
-import { Page, SetIterator } from "./values";
+import { EmbeddedSet, Page, SetIterator } from "./values";
 
 const defaultClientConfiguration: Pick<
   ClientConfiguration,
@@ -137,14 +137,13 @@ export class Client {
     this.#isClosed = true;
   }
 
-  paginate<T extends QueryValue = QueryValue>(
-    iterable: Page<T> | Query
+  paginate<T extends QueryValue>(
+    iterable: Page<T> | EmbeddedSet | Query
   ): SetIterator<T> {
-    if (iterable instanceof Page) {
-      return new SetIterator<T>(this, iterable);
+    if (iterable instanceof Query) {
+      return SetIterator.fromQuery(this, iterable);
     }
-
-    return new SetIterator<T>(this, () => this.query(iterable));
+    return SetIterator.fromPageable(this, iterable) as SetIterator<T>;
   }
 
   /**

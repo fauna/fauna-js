@@ -1,5 +1,5 @@
 import { Client } from "../client";
-import { fql } from "../query-builder";
+import { Query, fql } from "../query-builder";
 import { QuerySuccess, QueryValue } from "../wire-protocol";
 
 /**
@@ -50,18 +50,40 @@ export class SetIterator<T extends QueryValue>
 
   constructor(
     client: Client,
-    initial: Pageable<T> | (() => Promise<QuerySuccess<QueryValue>>)
+    initial: Page<T> | EmbeddedSet | (() => Promise<QuerySuccess<T>>)
   ) {
-    if (
-      !(initial instanceof Function) &&
-      !("data" in initial) &&
-      (!("after" in initial) || initial.after === undefined)
-    ) {
+    if (initial instanceof Function) {
+      this.#generator = generateFromThunk(client, initial);
+    } else if (initial instanceof Page || initial instanceof EmbeddedSet) {
+      this.#generator = generatePages(client, initial);
+    } else {
       throw new TypeError(
-        "Failed to construct a Page. 'data' and 'after' are both undefined"
+        "Expected 'Pageable<QueryValue> | (() => Promise<QuerySuccess<T>>)', but received " +
+          // @ts-expect-error "Property 'constructor' does not exist on type 'never'."
+          // This is okay, we still want to catch weird inputs from JS
+          initial.constructor.name +
+          " " +
+          JSON.stringify(initial)
       );
     }
-    this.#generator = generatePages(client, initial);
+  }
+
+  static fromQuery<T extends QueryValue>(
+    client: Client,
+    query: Query
+  ): SetIterator<T> {
+    return new SetIterator<T>(client, () => client.query<T>(query));
+  }
+
+  static fromPageable<T extends QueryValue>(
+    client: Client,
+    pageable: Page<T> | EmbeddedSet
+  ): SetIterator<T> {
+    return new SetIterator<T>(client, pageable);
+  }
+
+  flatten(): FlattenedSetIterator<T> {
+    return new FlattenedSetIterator(this);
   }
 
   async next(): Promise<IteratorResult<T[], void>> {
@@ -81,25 +103,49 @@ export class SetIterator<T extends QueryValue>
   }
 }
 
-export type Pageable<T> = { data?: T[]; after?: string };
+export class FlattenedSetIterator<T extends QueryValue>
+  implements AsyncGenerator<T, void, unknown>
+{
+  readonly #generator: AsyncGenerator<T, void, unknown>;
+
+  constructor(setIterator: SetIterator<T>) {
+    async function* generateItems<T extends QueryValue>(
+      setIterator: SetIterator<T>
+    ) {
+      for await (const page of setIterator) {
+        for (const item of page) {
+          yield item;
+        }
+      }
+    }
+
+    this.#generator = generateItems(setIterator);
+  }
+
+  async next(): Promise<IteratorResult<T, void>> {
+    return this.#generator.next();
+  }
+
+  async return(): Promise<IteratorResult<T, void>> {
+    return this.#generator.return();
+  }
+
+  async throw(e: any): Promise<IteratorResult<T, void>> {
+    return this.#generator.throw(e);
+  }
+
+  [Symbol.asyncIterator]() {
+    return this;
+  }
+}
 
 async function* generatePages<T extends QueryValue>(
   client: Client,
-  initial: Pageable<T> | (() => Promise<QuerySuccess<QueryValue>>)
+  initial: Page<T> | EmbeddedSet
 ): AsyncGenerator<T[], void, unknown> {
-  let currentPage: Pageable<T>;
-  if (initial instanceof Function) {
-    const initialResponse = await initial();
-    if (initialResponse.data instanceof Page) {
-      currentPage = initialResponse.data as Page<T>;
-    } else {
-      currentPage = { data: initialResponse.data } as Pageable<T>;
-    }
-  } else {
-    currentPage = initial;
-  }
+  let currentPage = initial;
 
-  if (currentPage.data) {
+  if (currentPage instanceof Page) {
     yield currentPage.data;
   }
 
@@ -111,8 +157,22 @@ async function* generatePages<T extends QueryValue>(
     const nextPage = response.data;
 
     currentPage = nextPage;
-    yield nextPage.data;
+    yield currentPage.data;
+  }
+}
+
+async function* generateFromThunk<T extends QueryValue>(
+  client: Client,
+  thunk: () => Promise<QuerySuccess<T>>
+): AsyncGenerator<T[], void, unknown> {
+  const response = await thunk();
+
+  if (response.data instanceof Page) {
+    for await (const page of generatePages(client, response.data as Page<T>)) {
+      yield page;
+    }
+    return;
   }
 
-  return;
+  yield [response.data];
 }

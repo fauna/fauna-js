@@ -1,4 +1,4 @@
-import { DocumentT, fql, Page, SetIterator } from "../../src";
+import { DocumentT, fql, Page } from "../../src";
 import { getClient } from "../client";
 
 const client = getClient({
@@ -179,7 +179,17 @@ describe("SetIterator", () => {
     const setIterator = client.paginate<number>(fql`42`);
 
     for await (const page of setIterator) {
-      expect(page).toBe(42);
+      expect(page).toStrictEqual([42]);
+    }
+  });
+
+  it("can be flattened", async () => {
+    expect.assertions(20);
+
+    const setIterator = client.paginate<MyDoc>(fql`IterTestBig.all()`);
+
+    for await (const item of setIterator.flatten()) {
+      expect(item.id).toBeDefined();
     }
   });
 });

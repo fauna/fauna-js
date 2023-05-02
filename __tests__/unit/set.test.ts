@@ -41,9 +41,7 @@ describe("SetIterator", () => {
   it("can be constructed with an initial thunk", async () => {
     expect.assertions(1);
 
-    const setIterator = new SetIterator<number>(client, async () => ({
-      data: 42,
-    }));
+    const setIterator = new SetIterator<number>(client, async () => 42);
 
     for await (const page of setIterator) {
       expect(page).toStrictEqual([42]);
@@ -53,9 +51,7 @@ describe("SetIterator", () => {
   it("can be flattened", async () => {
     expect.assertions(1);
 
-    const setIterator = new SetIterator<number>(client, async () => ({
-      data: 42,
-    }));
+    const setIterator = new SetIterator<number>(client, async () => 42);
 
     for await (const item of setIterator.flatten()) {
       expect(item).toStrictEqual(42);

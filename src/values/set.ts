@@ -50,7 +50,7 @@ export class SetIterator<T extends QueryValue>
 
   constructor(
     client: Client,
-    initial: Page<T> | EmbeddedSet | (() => Promise<QuerySuccess<T>>)
+    initial: Page<T> | EmbeddedSet | (() => Promise<T>)
   ) {
     if (initial instanceof Function) {
       this.#generator = generateFromThunk(client, initial);
@@ -58,7 +58,7 @@ export class SetIterator<T extends QueryValue>
       this.#generator = generatePages(client, initial);
     } else {
       throw new TypeError(
-        "Expected 'Pageable<QueryValue> | (() => Promise<QuerySuccess<T>>)', but received " +
+        "Expected 'Pageable<QueryValue> | (() => Promise<T>)', but received " +
           // @ts-expect-error "Property 'constructor' does not exist on type 'never'."
           // This is okay, we still want to catch weird inputs from JS
           initial.constructor.name +
@@ -72,7 +72,10 @@ export class SetIterator<T extends QueryValue>
     client: Client,
     query: Query
   ): SetIterator<T> {
-    return new SetIterator<T>(client, () => client.query<T>(query));
+    return new SetIterator<T>(client, async () => {
+      const response = await client.query<T>(query);
+      return response.data;
+    });
   }
 
   static fromPageable<T extends QueryValue>(
@@ -163,16 +166,16 @@ async function* generatePages<T extends QueryValue>(
 
 async function* generateFromThunk<T extends QueryValue>(
   client: Client,
-  thunk: () => Promise<QuerySuccess<T>>
+  thunk: () => Promise<T>
 ): AsyncGenerator<T[], void, unknown> {
-  const response = await thunk();
+  const result = await thunk();
 
-  if (response.data instanceof Page) {
-    for await (const page of generatePages(client, response.data as Page<T>)) {
+  if (result instanceof Page || result instanceof EmbeddedSet) {
+    for await (const page of generatePages(client, result)) {
       yield page;
     }
     return;
   }
 
-  yield [response.data];
+  yield [result];
 }

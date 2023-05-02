@@ -184,12 +184,15 @@ describe("SetIterator", () => {
   });
 
   it("can be flattened", async () => {
-    expect.assertions(20);
+    expect.assertions(21);
 
     const setIterator = client.paginate<MyDoc>(fql`IterTestBig.all()`);
 
+    const foundItems: number[] = [];
     for await (const item of setIterator.flatten()) {
       expect(item.id).toBeDefined();
+      foundItems.push(item.value);
     }
+    expect(foundItems).toEqual(bigItems);
   });
 });

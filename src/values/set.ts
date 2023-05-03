@@ -3,7 +3,7 @@ import { Query, fql } from "../query-builder";
 import { QueryValue } from "../wire-protocol";
 
 /**
- * A materialize view of a Set.
+ * A materialized view of a Set.
  * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#set}
  */
 export class Page<T extends QueryValue> {

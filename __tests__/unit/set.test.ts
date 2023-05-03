@@ -75,6 +75,19 @@ describe("SetIterator", () => {
     }
   });
 
+  it("can flatten a Page", async () => {
+    expect.assertions(2);
+
+    const setIterator = new SetIterator<number>(
+      client,
+      async () => new Page({ data: [42, 42] })
+    );
+
+    for await (const item of setIterator.flatten()) {
+      expect(item).toStrictEqual(42);
+    }
+  });
+
   it("throws if data and after are both undefined", () => {
     // @ts-ignore-next-line
     expect(() => new SetIterator<number>(client, {})).toThrow();

@@ -38,7 +38,7 @@ describe("SetIterator", () => {
     new SetIterator<number>(client, embeddedSet);
   });
 
-  it("can be constructed with an initial thunk", async () => {
+  it("can be constructed with an initial thunk for a T", async () => {
     expect.assertions(1);
 
     const setIterator = new SetIterator<number>(client, async () => 42);
@@ -46,6 +46,23 @@ describe("SetIterator", () => {
     for await (const page of setIterator) {
       expect(page).toStrictEqual([42]);
     }
+  });
+
+  it("can be constructed with an initial thunk for a Page<T>", async () => {
+    expect.assertions(1);
+
+    const setIterator = new SetIterator<number>(
+      client,
+      async () => new Page({ data: [42] })
+    );
+
+    for await (const page of setIterator) {
+      expect(page).toStrictEqual([42]);
+    }
+  });
+
+  it("can be constructed with an initial thunk for an EmbeddedSet", async () => {
+    new SetIterator<number>(client, async () => new EmbeddedSet("1234"));
   });
 
   it("can be flattened", async () => {

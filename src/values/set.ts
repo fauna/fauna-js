@@ -66,7 +66,7 @@ export class SetIterator<T extends QueryValue>
    */
   constructor(
     client: Client,
-    initial: Page<T> | EmbeddedSet | (() => Promise<T>)
+    initial: Page<T> | EmbeddedSet | (() => Promise<T | Page<T> | EmbeddedSet>)
   ) {
     if (initial instanceof Function) {
       this.#generator = generateFromThunk(client, initial);
@@ -74,7 +74,7 @@ export class SetIterator<T extends QueryValue>
       this.#generator = generatePages(client, initial);
     } else {
       throw new TypeError(
-        `Expected 'Page<T> | EmbeddedSet | (() => Promise<T>)', but received ${JSON.stringify(
+        `Expected 'Page<T> | EmbeddedSet | (() => Promise<T | Page<T> | EmbeddedSet>)', but received ${JSON.stringify(
           initial
         )}`
       );
@@ -92,7 +92,7 @@ export class SetIterator<T extends QueryValue>
     query: Query
   ): SetIterator<T> {
     return new SetIterator<T>(client, async () => {
-      const response = await client.query<T>(query);
+      const response = await client.query<T | Page<T> | EmbeddedSet>(query);
       return response.data;
     });
   }
@@ -219,12 +219,15 @@ async function* generatePages<T extends QueryValue>(
  */
 async function* generateFromThunk<T extends QueryValue>(
   client: Client,
-  thunk: () => Promise<T>
+  thunk: () => Promise<T | Page<T> | EmbeddedSet>
 ): AsyncGenerator<T[], void, unknown> {
   const result = await thunk();
 
   if (result instanceof Page || result instanceof EmbeddedSet) {
-    for await (const page of generatePages(client, result)) {
+    for await (const page of generatePages(
+      client,
+      result as Page<T> | EmbeddedSet
+    )) {
       yield page;
     }
     return;

@@ -30,12 +30,12 @@ describe("SetIterator", () => {
       data: [1, 2, 3],
       after: "1234",
     });
-    const set = new SetIterator<number>(client, page);
+    new SetIterator<number>(client, page);
   });
 
   it("can be constructed from an EmbeddedSet", () => {
     const embeddedSet = new EmbeddedSet("1234");
-    const set = new SetIterator<number>(client, embeddedSet);
+    new SetIterator<number>(client, embeddedSet);
   });
 
   it("can be constructed with an initial thunk", async () => {

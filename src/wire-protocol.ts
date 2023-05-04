@@ -8,6 +8,7 @@ import {
   Module,
   NamedDocument,
   NamedDocumentReference,
+  NullDocument,
   Page,
   TimeStub,
 } from "./values";
@@ -278,5 +279,6 @@ export type QueryValue =
   | DocumentReference
   | NamedDocument
   | NamedDocumentReference
+  | NullDocument
   | Page<QueryValue>
   | EmbeddedSet;

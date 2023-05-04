@@ -98,7 +98,7 @@ describe("querying for existing data", () => {
       },
     ];
 
-    const result = await client.query(fql`
+    const result = await client.query<any>(fql`
     Authors.byGenre("sci-fi") {
       firstName,
       lastName,

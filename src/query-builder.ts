@@ -1,11 +1,4 @@
-import { TaggedTypeFormat } from "./tagged-type";
-import type {
-  QueryValueObject,
-  QueryValue,
-  QueryInterpolation,
-  QueryRequest,
-  QueryRequestOptions,
-} from "./wire-protocol";
+import type { QueryValue } from "./wire-protocol";
 
 /**
  * Creates a new Query. Accepts template literal inputs.

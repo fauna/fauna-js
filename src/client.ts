@@ -159,7 +159,7 @@ export class Client {
    * @throws {@link ClientClosedError} if a query is issued after the client is closed.
    * due to an internal error.
    */
-  async query<T extends QueryValue = any>(
+  async query<T extends QueryValue>(
     request: Query,
     headers?: QueryRequestHeaders
   ): Promise<QuerySuccess<T>> {

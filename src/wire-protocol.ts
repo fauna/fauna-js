@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { fql } from "./query-builder";
+import { Query, fql } from "./query-builder";
 import {
   DateStub,
   Document,
@@ -16,7 +16,7 @@ import {
 /**
  * A request to make to Fauna.
  */
-export interface QueryRequest extends QueryRequestHeaders {
+export interface QueryRequest {
   /** The query */
   query: string | QueryInterpolation;
 
@@ -26,7 +26,11 @@ export interface QueryRequest extends QueryRequestHeaders {
   arguments?: QueryValueObject;
 }
 
-export interface QueryRequestHeaders {
+export interface QueryRequestOptions {
+  /** Optional arguments. Variables in the query will be initialized to the
+   * value associated with an argument key.
+   */
+  arguments?: QueryValueObject;
   /**
    * Determines the encoded format expected for the query `arguments` field, and
    * the `data` field of a successful response.
@@ -281,4 +285,5 @@ export type QueryValue =
   | NamedDocumentReference
   | NullDocument
   | Page<QueryValue>
-  | EmbeddedSet;
+  | EmbeddedSet
+  | Query;

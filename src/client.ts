@@ -21,9 +21,10 @@ import { Query } from "./query-builder";
 import {
   isQueryFailure,
   isQuerySuccess,
+  QueryValueObject,
   type QueryFailure,
   type QueryRequest,
-  type QueryRequestHeaders,
+  type QueryRequestOptions,
   type QuerySuccess,
   type QueryValue,
 } from "./wire-protocol";
@@ -192,7 +193,7 @@ export class Client {
    * @param request - a {@link Query} to execute in Fauna.
    *  Note, you can embed header fields in this object; if you do that there's no need to
    *  pass the headers parameter.
-   * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input.
+   * @param headers - optional {@link QueryRequestOptions} to apply on top of the request input.
    *   Values in this headers parameter take precedence over the same values in the {@link ClientConfiguration}.
    * @returns Promise&lt;{@link QuerySuccess}&gt;.
    *
@@ -213,14 +214,14 @@ export class Client {
    */
   async query<T extends QueryValue>(
     request: Query,
-    headers?: QueryRequestHeaders
+    options?: QueryRequestOptions
   ): Promise<QuerySuccess<T>> {
     if (this.#isClosed) {
       throw new ClientClosedError(
         "Your client is closed. No further requests can be issued."
       );
     }
-    return this.#query(request.toQuery(headers));
+    return this.#query(request, options);
   }
 
   #getError(e: any): ClientError | NetworkError | ProtocolError | ServiceError {
@@ -313,27 +314,31 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
   }
 
-  async #query<T extends QueryValue = any>(
-    queryRequest: QueryRequest
+  async #query<T extends QueryValue>(
+    query: Query,
+    options?: QueryRequestOptions
   ): Promise<QuerySuccess<T>> {
     try {
       const headers = {
         Authorization: `Bearer ${this.#clientConfiguration.secret}`,
       };
-      this.#setHeaders(
-        { ...this.clientConfiguration, ...queryRequest },
-        headers
-      );
+      this.#setHeaders({ ...this.clientConfiguration, ...options }, headers);
 
       const isTaggedFormat =
         this.#clientConfiguration.format === "tagged" ||
-        queryRequest.format === "tagged";
-      const queryArgs = isTaggedFormat
-        ? TaggedTypeFormat.encode(queryRequest.arguments)
-        : queryRequest.arguments;
+        options?.format === "tagged";
 
-      const requestData = {
-        query: queryRequest.query,
+      const queryRequest = isTaggedFormat
+        ? TaggedTypeFormat.encode(query)
+        : query.toString();
+
+      const queryArgs: QueryValueObject =
+        isTaggedFormat && options?.arguments
+          ? TaggedTypeFormat.encode(options.arguments)
+          : options?.arguments;
+
+      const requestData: QueryRequest = {
+        query: queryRequest,
         arguments: queryArgs,
       };
 
@@ -386,7 +391,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
   }
 
-  #setHeaders(fromObject: QueryRequestHeaders, headerObject: any): void {
+  #setHeaders(fromObject: QueryRequestOptions, headerObject: any): void {
     for (const entry of Object.entries(fromObject)) {
       if (
         [

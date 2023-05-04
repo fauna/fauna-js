@@ -1,6 +1,7 @@
 import {
   AbortError,
   AuthenticationError,
+  Client,
   ClientConfiguration,
   ClientError,
   fql,
@@ -21,9 +22,15 @@ import {
 } from "../../src";
 import { getClient } from "../client";
 
-const client = getClient({
+let client_simple: Client = getClient({
   max_conns: 5,
   query_timeout_ms: 60_000,
+  format: "simple",
+});
+let client_tagged: Client = getClient({
+  max_conns: 5,
+  query_timeout_ms: 60_000,
+  format: "tagged",
 });
 
 const dummyResponse: HTTPResponse = {
@@ -45,10 +52,15 @@ const dummyResponse: HTTPResponse = {
 };
 
 afterAll(() => {
-  client.close();
+  client_simple.close();
+  client_tagged.close();
 });
 
-describe("query", () => {
+describe.each`
+  client           | clientFormat
+  ${client_tagged} | ${"tagged"}
+  ${client_simple} | ${"simple"}
+`("query using $clientFormat client", ({ client }: { client: Client }) => {
   it("Can query an FQL-x endpoint", async () => {
     const result = await client.query<number>(fql`"taco".length`);
 
@@ -141,6 +153,31 @@ describe("query", () => {
       await myClient.query<number>(fql`"taco".length`, headers);
     }
   );
+
+  it("can send arguments directly", async () => {
+    const foo = {
+      double: 4.14,
+      int: 32,
+      string: "foo",
+      null: null,
+      object: { foo: "bar" },
+      array: [1, 2, 3],
+      "@tagged": "tagged",
+    };
+
+    const response = await client.query<typeof foo>(fql`foo`, {
+      arguments: { foo },
+    });
+    const foo2 = response.data;
+
+    expect(foo2.double).toBe(4.14);
+    expect(foo2.int).toBe(32);
+    expect(foo2.string).toBe("foo");
+    expect(foo2.null).toBeNull();
+    expect(foo2.object).toStrictEqual({ foo: "bar" });
+    expect(foo2.array).toStrictEqual([1, 2, 3]);
+    expect(foo2["@tagged"]).toBe("tagged");
+  });
 
   it("throws a QueryCheckError if the query is invalid", async () => {
     expect.assertions(4);
@@ -387,10 +424,10 @@ describe("query can encode / decode QueryValue correctly", () => {
           }
         })`);
     } catch (e) {
-      if (e instanceof TypeError) {
-        expect(e.name).toBe("TypeError");
+      if (e instanceof ClientError) {
+        expect(e.cause).toBeDefined();
         expect(e.message).toBe(
-          "Passing undefined as a QueryValue is not supported"
+          "A client level error occurred. Fauna was not called."
         );
       }
     }

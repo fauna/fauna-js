@@ -31,7 +31,7 @@ export {
   type QueryInfo,
   type QueryInterpolation,
   type QueryRequest,
-  type QueryRequestHeaders,
+  type QueryRequestOptions,
   type QueryStats,
   type QuerySuccess,
   type Span,

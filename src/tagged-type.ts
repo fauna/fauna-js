@@ -1,4 +1,5 @@
 import { ClientError } from "./errors";
+import { Query } from "./query-builder";
 import {
   DateStub,
   Document,
@@ -11,7 +12,12 @@ import {
   NullDocument,
   EmbeddedSet,
 } from "./values";
-import { QueryValueObject, QueryValue } from "./wire-protocol";
+import {
+  QueryValueObject,
+  QueryValue,
+  QueryInterpolation,
+  FQLFragment,
+} from "./wire-protocol";
 
 /**
  * TaggedType provides the encoding/decoding of the Fauna Tagged Type formatting
@@ -176,6 +182,32 @@ const encodeMap = {
   namedDocument: (value: NamedDocument): TaggedRef => ({
     "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
+  query: (value: Query): FQLFragment => {
+    if (value.queryFragments.length === 1) {
+      return { fql: [value.queryFragments[0]] };
+    }
+
+    const renderedFragments: (string | QueryInterpolation)[] =
+      value.queryFragments.flatMap((fragment, i) => {
+        // There will always be one more fragment than there are arguments
+        if (i === value.queryFragments.length - 1) {
+          return fragment === "" ? [] : [fragment];
+        }
+
+        const arg = value.queryArgs[i];
+        const encoded = TaggedTypeFormat.encode(arg);
+        const subQuery =
+          arg instanceof Query
+            ? encoded
+            : {
+                value: encoded,
+              };
+
+        return [fragment, subQuery].filter((x) => x !== "");
+      });
+
+    return { fql: renderedFragments };
+  },
   set: (value: Page<QueryValue> | EmbeddedSet) => {
     throw new ClientError(
       "Page could not be encoded. Fauna does not accept encoded Set values, yet. Use Page.data and Page.after as arguments, instead."
@@ -233,6 +265,8 @@ const encode = (input: QueryValue): QueryValue => {
         return encodeMap["set"](input);
       } else if (input instanceof EmbeddedSet) {
         return encodeMap["set"](input);
+      } else if (input instanceof Query) {
+        return encodeMap["query"](input);
       } else {
         return encodeMap["object"](input);
       }

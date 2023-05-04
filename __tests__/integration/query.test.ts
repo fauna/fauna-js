@@ -357,7 +357,7 @@ describe("query can encode / decode QueryValue correctly", () => {
         i_dont_exist: undefined,
       },
     };
-    const docCreated = await client.query(fql`
+    const docCreated = await client.query<any>(fql`
         ${new Module(collectionName)}.create(${toughInput})`);
     expect(docCreated.data.should_exist).toBeUndefined();
     expect(docCreated.data.nested_object.i_dont_exist).toBeUndefined();

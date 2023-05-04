@@ -4,6 +4,7 @@ import {
   DateStub,
   Document,
   DocumentReference,
+  EmbeddedSet,
   Module,
   NamedDocument,
   NamedDocumentReference,
@@ -279,4 +280,5 @@ export type QueryValue =
   | NamedDocument
   | NamedDocumentReference
   | NullDocument
-  | Page<QueryValue>;
+  | Page<QueryValue>
+  | EmbeddedSet;

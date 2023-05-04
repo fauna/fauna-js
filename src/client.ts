@@ -17,7 +17,7 @@ import {
   ContendedTransactionError,
   InvalidRequestError,
 } from "./errors";
-import type { Query } from "./query-builder";
+import { Query } from "./query-builder";
 import {
   isQueryFailure,
   isQuerySuccess,
@@ -33,6 +33,7 @@ import {
   type HTTPClient,
 } from "./http-client";
 import { TaggedTypeFormat } from "./tagged-type";
+import { EmbeddedSet, Page, SetIterator } from "./values";
 
 const defaultClientConfiguration: Pick<
   ClientConfiguration,
@@ -137,13 +138,64 @@ export class Client {
   }
 
   /**
+   * Creates an iterator to yield pages of data. If additional pages exist, the
+   * iterator will lazily fetch addition pages on each iteration.
+   *
+   * @typeParam T - The expected type of the items returned from Fauna on each
+   * iteration
+   * @param iterable - a {@link Query} or an existing fauna Set ({@link Page} or
+   * {@link EmbeddedSet})
+   * @returns A {@link SetIterator} that lazily fetches new pages of data on
+   * each iteration
+   *
+   * @example
+   * ```javascript
+   *  const userIterator = await client.paginate(fql`
+   *    Users.all()
+   *  `);
+   *
+   *  for await (const users of userIterator) {
+   *    for (const user of users) {
+   *      // do something with each user
+   *    }
+   *  }
+   * ```
+   *
+   * @example
+   * The {@link SetIterator.flatten} method can be used so the iterator yields
+   * items directly. Each item is fetched asynchronously and hides when
+   * additional pages are fetched.
+   *
+   * ```javascript
+   *  const userIterator = await client.paginate(fql`
+   *    Users.all()
+   *  `);
+   *
+   *  for await (const user of userIterator.flatten()) {
+   *    // do something with each user
+   *  }
+   * ```
+   */
+  paginate<T extends QueryValue>(
+    iterable: Page<T> | EmbeddedSet | Query
+  ): SetIterator<T> {
+    if (iterable instanceof Query) {
+      return SetIterator.fromQuery(this, iterable);
+    }
+    return SetIterator.fromPageable(this, iterable) as SetIterator<T>;
+  }
+
+  /**
    * Queries Fauna.
+   *
+   * @typeParam T - The expected type of the response from Fauna
    * @param request - a {@link Query} to execute in Fauna.
    *  Note, you can embed header fields in this object; if you do that there's no need to
    *  pass the headers parameter.
    * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input.
    *   Values in this headers parameter take precedence over the same values in the {@link ClientConfiguration}.
    * @returns Promise&lt;{@link QuerySuccess}&gt;.
+   *
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
    *   or a concrete ServiceError if it cannot. ServiceError child types are

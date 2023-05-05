@@ -23,7 +23,7 @@ const client = getClient(
     query_timeout_ms: 60,
   },
   // use the FetchClient implementation, so we can mock requests
-  new FetchClient()
+  new FetchClient({})
 );
 
 describe("query", () => {

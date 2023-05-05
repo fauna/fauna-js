@@ -4,14 +4,19 @@ try {
 } catch (_) {
   http2 = undefined;
 }
-import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
+import {
+  HTTPClient,
+  HTTPClientOptions,
+  HTTPRequest,
+  HTTPResponse,
+} from "./http-client";
 import { NetworkError } from "../errors";
 import { QueryRequest } from "../wire-protocol";
 
 /**
  * An implementation for {@link HTTPClient} that uses the node http package
  */
-export class NodeHTTP2Client implements HTTPClient {
+export class NodeHTTP2Client extends HTTPClient {
   static #client: NodeHTTP2Client | null = null;
 
   #sessionMap: Map<string, SessionWrapper> = new Map();
@@ -22,8 +27,9 @@ export class NodeHTTP2Client implements HTTPClient {
    * @remarks Private constructor means you must instantiate with
    * {@link NodeHTTP2Client.getClient}
    */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  private constructor() {}
+  private constructor(options: HTTPClientOptions) {
+    super(options);
+  }
 
   static getClient() {
     if (http2 === undefined) {
@@ -31,7 +37,7 @@ export class NodeHTTP2Client implements HTTPClient {
     }
 
     if (this.#client === null) {
-      this.#client = new NodeHTTP2Client();
+      this.#client = new NodeHTTP2Client({});
     }
 
     this.#client.#numberOfUsers++;

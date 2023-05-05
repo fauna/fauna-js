@@ -55,12 +55,9 @@ export abstract class HTTPClient {
    */
   http2_sessions_idle_ms?: number;
 
-  constructor({
-    client_timeout_ms,
-    http2_sessions_idle_ms,
-  }: HTTPClientOptions) {
-    this.client_timeout_ms = client_timeout_ms;
-    this.http2_sessions_idle_ms = http2_sessions_idle_ms;
+  constructor(options?: HTTPClientOptions) {
+    this.client_timeout_ms = options?.client_timeout_ms;
+    this.http2_sessions_idle_ms = options?.http2_sessions_idle_ms;
   }
 
   /**

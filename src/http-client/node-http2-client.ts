@@ -27,17 +27,17 @@ export class NodeHTTP2Client extends HTTPClient {
    * @remarks Private constructor means you must instantiate with
    * {@link NodeHTTP2Client.getClient}
    */
-  private constructor(options: HTTPClientOptions) {
+  private constructor(options?: HTTPClientOptions) {
     super(options);
   }
 
-  static getClient() {
+  static getClient(options?: HTTPClientOptions) {
     if (http2 === undefined) {
       throw new Error("Your platform does not support Node's http2 library");
     }
 
     if (this.#client === null) {
-      this.#client = new NodeHTTP2Client({});
+      this.#client = new NodeHTTP2Client(options);
     }
 
     this.#client.#numberOfUsers++;

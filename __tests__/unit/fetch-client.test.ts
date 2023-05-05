@@ -32,7 +32,7 @@ const dummyStats = {
 
 describe("fetch client", () => {
   beforeAll(() => {
-    fetchClient = new FetchClient({ client_timeout_ms: 65_000 });
+    fetchClient = new FetchClient();
   });
 
   afterAll(() => {

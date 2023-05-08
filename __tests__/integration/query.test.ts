@@ -3,7 +3,6 @@ import {
   AuthenticationError,
   ClientConfiguration,
   ClientError,
-  FetchClient,
   fql,
   getDefaultHTTPClient,
   HTTPClient,

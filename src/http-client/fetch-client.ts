@@ -7,7 +7,7 @@ import { HTTPClient, HTTPRequest, HTTPResponse } from "./http-client";
 /**
  * An implementation for {@link HTTPClient} that uses the native fetch API
  */
-export class FetchClient extends HTTPClient {
+export class FetchClient implements HTTPClient {
   /** {@inheritDoc HTTPClient.request} */
   async request({
     data,

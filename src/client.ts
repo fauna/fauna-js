@@ -34,7 +34,6 @@ import {
 } from "./http-client";
 import { TaggedTypeFormat } from "./tagged-type";
 import { EmbeddedSet, Page, SetIterator } from "./values";
-import { HTTPClientOptions } from "./http-client/http-client";
 
 const defaultClientConfiguration: Pick<
   ClientConfiguration,
@@ -90,10 +89,7 @@ export class Client {
       this.clientConfiguration.endpoint
     ).toString();
     if (!httpClient) {
-      const clientOptions: HTTPClientOptions = {
-        http2_session_idle_ms: clientConfiguration?.http2_session_idle_ms,
-      };
-      this.#httpClient = getDefaultHTTPClient(clientOptions);
+      this.#httpClient = getDefaultHTTPClient();
     } else {
       this.#httpClient = httpClient;
     }

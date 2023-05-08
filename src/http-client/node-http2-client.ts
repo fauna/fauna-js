@@ -4,18 +4,13 @@ try {
 } catch (_) {
   http2 = undefined;
 }
-import {
-  HTTPClient,
-  HTTPClientOptions,
-  HTTPRequest,
-  HTTPResponse,
-} from "./http-client";
+import { HTTPClient, HTTPRequest, HTTPResponse } from "./http-client";
 import { NetworkError } from "../errors";
 
 /**
  * An implementation for {@link HTTPClient} that uses the node http package
  */
-export class NodeHTTP2Client extends HTTPClient {
+export class NodeHTTP2Client implements HTTPClient {
   static #client: NodeHTTP2Client | null = null;
 
   #sessionMap: Map<string, SessionWrapper> = new Map();
@@ -27,21 +22,15 @@ export class NodeHTTP2Client extends HTTPClient {
    * {@link NodeHTTP2Client.getClient}
    */
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  private constructor(options?: HTTPClientOptions) {
-    super(options);
-  }
+  private constructor() {}
 
-  static getClient(options?: HTTPClientOptions) {
+  static getClient() {
     if (http2 === undefined) {
       throw new Error("Your platform does not support Node's http2 library");
     }
 
     if (this.#client === null) {
-      this.#client = new NodeHTTP2Client(options);
-    }
-
-    if (options?.http2_session_idle_ms) {
-      this.#client.http2_session_idle_ms = options.http2_session_idle_ms;
+      this.#client = new NodeHTTP2Client();
     }
 
     this.#client.#numberOfUsers++;

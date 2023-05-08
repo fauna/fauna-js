@@ -36,36 +36,18 @@ export type HTTPResponse = {
   status: number;
 };
 
-export type HTTPClientOptions = {
-  /**
-   * Time in milliseconds the client will keep an HTTP2 session open after all
-   * requests are completed. Only necessary for HTTP2 implementations.
-   */
-  http2_session_idle_ms?: number;
-};
-
 /**
  * An interface to provide implementation-specific, asyncronous http calls.
  * This driver provides default implementations for common environments. Users
  * can configure the {@link Client} to use custom implementations if desired.
  */
-export abstract class HTTPClient {
-  /**
-   * Time in milliseconds the client will keep an HTTP2 session open after all
-   * requests are completed. Only necessary for HTTP2 implementations.
-   */
-  http2_session_idle_ms?: number;
-
-  constructor(options?: HTTPClientOptions) {
-    this.http2_session_idle_ms = options?.http2_session_idle_ms;
-  }
-
+export interface HTTPClient {
   /**
    * Makes an HTTP request and returns the response
    * @param req - an {@link HTTPRequest}
    * @returns A Promise&lt;{@link HTTPResponse}&gt;
    */
-  abstract request(req: HTTPRequest): Promise<HTTPResponse>;
+  request(req: HTTPRequest): Promise<HTTPResponse>;
 
   /**
    * Flags the calling {@link Client} as no longer
@@ -77,5 +59,5 @@ export abstract class HTTPClient {
    * For some HTTPClients, such as the {@link FetchClient}, this method
    * is a no-op as there is no shared resource to close.
    */
-  abstract close(): void;
+  close(): void;
 }

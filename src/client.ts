@@ -84,10 +84,13 @@ export class Client {
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
+    this.#validateConfiguration();
+
     this.#url = new URL(
       "/query/1",
       this.clientConfiguration.endpoint
     ).toString();
+
     if (!httpClient) {
       this.#httpClient = getDefaultHTTPClient();
     } else {
@@ -220,6 +223,9 @@ export class Client {
         "Your client is closed. No further requests can be issued."
       );
     }
+
+    this.#validateRequest(request, headers);
+
     return this.#query(request.toQuery(headers));
   }
 
@@ -278,7 +284,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   #getServiceError(failure: QueryFailure, httpStatus: number): ServiceError {
     switch (httpStatus) {
       case 400:
-        if (queryCheckFailureCodes.includes(failure.error.code)) {
+        if (QUERY_CHECK_FAILURE_CODES.includes(failure.error.code)) {
           return new QueryCheckError(failure, httpStatus);
         }
         if (failure.error.code === "invalid_request") {
@@ -426,14 +432,49 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       headerObject["x-last-txn-ts"] = this.#lastTxnTs;
     }
   }
+
+  #validateConfiguration() {
+    const config = this.#clientConfiguration;
+    if (config.client_timeout_ms) {
+      if (!config.query_timeout_ms) {
+        throw new TypeError(
+          `Expected number, but received ${config.query_timeout_ms}. 'query_timeout_ms' must be configured if 'client_timeout_ms' is configured.`
+        );
+      }
+
+      if (
+        config.client_timeout_ms <
+        config.query_timeout_ms + CLIENT_TIMEOUT_BUFFER
+      ) {
+        throw new RangeError(
+          `'client_timeout_ms' is less than minimum required setting. 'clien_timeout_ms' must be greater than or equal to 'query_timeout_ms' + ${CLIENT_TIMEOUT_BUFFER} ms`
+        );
+      }
+    }
+  }
+
+  #validateRequest(_: Query, queryOptions?: QueryRequestHeaders) {
+    if (
+      queryOptions?.query_timeout_ms &&
+      this.#clientConfiguration.client_timeout_ms &&
+      this.#clientConfiguration.client_timeout_ms <
+        queryOptions.query_timeout_ms + CLIENT_TIMEOUT_BUFFER
+    ) {
+      throw new RangeError(
+        `'query_timeout_ms' is more than maximum allowed setting. 'clien_timeout_ms' must be greater than or equal to 'query_timeout_ms' + ${CLIENT_TIMEOUT_BUFFER} ms`
+      );
+    }
+  }
 }
 
 // Private types and constants for internal logic.
 
-const queryCheckFailureCodes = [
+const QUERY_CHECK_FAILURE_CODES = [
   "invalid_function_definition",
   "invalid_identifier",
   "invalid_query",
   "invalid_syntax",
   "invalid_type",
 ];
+
+const CLIENT_TIMEOUT_BUFFER = 500;

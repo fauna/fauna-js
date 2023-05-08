@@ -296,15 +296,24 @@ describe("query", () => {
 
   it("throws a NetworkError on client timeout", async () => {
     expect.assertions(2);
-    const badClient = getClient({ client_timeout_ms: 10 });
+
+    const httpClient = getDefaultHTTPClient();
+    const badHTTPClient = {
+      async request(req: HTTPRequest) {
+        const badRequest: HTTPRequest = {
+          ...req,
+          client_timeout_ms: 1,
+        };
+        return httpClient.request(badRequest);
+      },
+      close() {
+        httpClient.close();
+      },
+    };
+
+    const badClient = getClient({}, badHTTPClient);
     try {
-      // do a contrived query that should take a while,
-      const result = await badClient.query(fql`
-        let str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Aliquet nec ullamcorper sit amet risus. Augue neque gravida in fermentum. Nunc mi ipsum faucibus vitae aliquet nec ullamcorper. Imperdiet dui accumsan sit amet nulla facilisi morbi tempus. Odio tempor orci dapibus ultrices in iaculis nunc. Orci a scelerisque purus semper. Commodo elit at imperdiet dui accumsan sit. Eget sit amet tellus cras adipiscing enim eu turpis. Ut consequat semper viverra nam libero. Pharetra vel turpis nunc eget lorem. Non blandit massa enim nec dui nunc mattis enim. Nec ultrices dui sapien eget mi proin sed libero."
-        [0,0,0,0,0,0,0,0,0]
-          .fold(str, (acc, _) => acc.concat(acc))
-          .casefold()
-      `);
+      await badClient.query(fql``);
     } catch (e: any) {
       if (e instanceof NetworkError) {
         expect(e.message).toBe("The network connection encountered a problem.");
@@ -357,6 +366,19 @@ describe("query", () => {
       }
     }
   });
+});
+
+it("throws a RangeError if 'query_timeout_ms' request option is greater than max allowed", async () => {
+  expect.assertions(1);
+  const client = getClient({
+    query_timeout_ms: 60_000,
+    client_timeout_ms: 65_000,
+  });
+  try {
+    await client.query(fql`foo`, { query_timeout_ms: 120_000 });
+  } catch (e: any) {
+    expect(e).toBeInstanceOf(RangeError);
+  }
 });
 
 describe("query can encode / decode QueryValue correctly", () => {

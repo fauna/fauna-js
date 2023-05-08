@@ -332,9 +332,13 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         headers
       );
 
+      const requestConfig = applyDefaults<QueryRequestHeaders>(
+        this.#clientConfiguration,
+        queryRequest
+      );
+
       const isTaggedFormat =
-        this.#clientConfiguration.format === "tagged" ||
-        queryRequest.format === "tagged";
+        requestConfig.format === "tagged" || queryRequest.format === "tagged";
       const queryArgs = isTaggedFormat
         ? TaggedTypeFormat.encode(queryRequest.arguments)
         : queryRequest.arguments;
@@ -344,8 +348,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         arguments: queryArgs,
       };
 
-      const client_timeout_ms = this.#clientConfiguration.query_timeout_ms
-        ? this.#clientConfiguration.query_timeout_ms +
+      const client_timeout_ms = requestConfig.query_timeout_ms
+        ? requestConfig.query_timeout_ms +
           this.#clientConfiguration.client_timeout_buffer_ms
         : undefined;
 

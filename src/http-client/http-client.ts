@@ -7,10 +7,23 @@ import { QueryRequest } from "../wire-protocol";
  * The {@link Client} provides this to the {@link HTTPClient} implementation.
  */
 export type HTTPRequest = {
+  /** The encoded Fauna query to send */
   data: QueryRequest;
+
+  /** Headers in object format */
   headers: Record<string, string | undefined>;
+
+  /** HTTP method to use */
   method: "POST";
+
+  /** URL for the request */
   url: string;
+
+  /**
+   * Time in milliseconds at which the client will abort a request if it has not
+   * received a response
+   */
+  client_timeout_ms?: number;
 };
 
 /**
@@ -25,16 +38,10 @@ export type HTTPResponse = {
 
 export type HTTPClientOptions = {
   /**
-   * Time in milliseconds at which the client will abort a request if it has not
-   * received a response
-   */
-  client_timeout_ms?: number;
-
-  /**
    * Time in milliseconds the client will keep an HTTP2 session open after all
    * requests are completed. Only necessary for HTTP2 implementations.
    */
-  http2_sessions_idle_ms?: number;
+  http2_session_idle_ms?: number;
 };
 
 /**
@@ -44,20 +51,13 @@ export type HTTPClientOptions = {
  */
 export abstract class HTTPClient {
   /**
-   * Time in milliseconds at which the client will abort a request if it has not
-   * received a response
-   */
-  client_timeout_ms?: number;
-
-  /**
    * Time in milliseconds the client will keep an HTTP2 session open after all
    * requests are completed. Only necessary for HTTP2 implementations.
    */
-  http2_sessions_idle_ms?: number;
+  http2_session_idle_ms?: number;
 
   constructor(options?: HTTPClientOptions) {
-    this.client_timeout_ms = options?.client_timeout_ms;
-    this.http2_sessions_idle_ms = options?.http2_sessions_idle_ms;
+    this.http2_session_idle_ms = options?.http2_session_idle_ms;
   }
 
   /**

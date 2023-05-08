@@ -11,7 +11,6 @@ import {
   HTTPResponse,
 } from "./http-client";
 import { NetworkError } from "../errors";
-import { QueryRequest } from "../wire-protocol";
 
 /**
  * An implementation for {@link HTTPClient} that uses the node http package
@@ -27,6 +26,7 @@ export class NodeHTTP2Client extends HTTPClient {
    * @remarks Private constructor means you must instantiate with
    * {@link NodeHTTP2Client.getClient}
    */
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   private constructor(options?: HTTPClientOptions) {
     super(options);
   }
@@ -38,6 +38,10 @@ export class NodeHTTP2Client extends HTTPClient {
 
     if (this.#client === null) {
       this.#client = new NodeHTTP2Client(options);
+    }
+
+    if (options?.http2_session_idle_ms) {
+      this.#client.http2_session_idle_ms = options.http2_session_idle_ms;
     }
 
     this.#client.#numberOfUsers++;
@@ -106,24 +110,17 @@ export class NodeHTTP2Client extends HTTPClient {
 }
 
 type SessionWrapperOptions = {
-  idleTime: number;
+  http2_session_idle_ms: number;
   // WIP: a flag for streaming should go here
 };
 
-type SessionRequestOptions = {
-  data: QueryRequest;
-  headers: Record<string, string | undefined>;
-  method: "POST";
-  // WIP: stream-consumer callbacks like onData should go here
-};
-
 const DEFAULT_SESSION_OPTIONS: SessionWrapperOptions = {
-  idleTime: 500,
+  http2_session_idle_ms: 500,
 };
 
 class SessionWrapper {
   readonly internal: any;
-  readonly #idleTime: number;
+  readonly #http2_session_idle_ms: number;
   // WIP: should be set to something different for streaming
   readonly #pathName: "/query/1";
 
@@ -133,13 +130,13 @@ class SessionWrapper {
       ...options,
     };
     // TODO: put a cap on lax idle time
-    this.#idleTime = _options.idleTime;
+    this.#http2_session_idle_ms = _options.http2_session_idle_ms;
     // WIP: should be set to something different for streaming
     this.#pathName = "/query/1";
 
     try {
       this.internal = http2.connect(url);
-      this.internal.setTimeout(this.#idleTime, () => {
+      this.internal.setTimeout(this.#http2_session_idle_ms, () => {
         this.close();
       });
     } catch (error) {
@@ -155,7 +152,8 @@ class SessionWrapper {
     data: requestData,
     headers: requestHeaders,
     method,
-  }: SessionRequestOptions): Promise<HTTPResponse> {
+    client_timeout_ms,
+  }: HTTPRequest): Promise<HTTPResponse> {
     let req: any;
 
     return new Promise<HTTPResponse>((resolvePromise, rejectPromise) => {
@@ -194,6 +192,14 @@ class SessionWrapper {
           .on("error", (error: any) => rejectPromise(error))
           .on("response", onResponse);
         req.write(JSON.stringify(requestData), "utf8");
+
+        // req.setTimeout must be called before req.end()
+        if (client_timeout_ms !== undefined) {
+          req.setTimeout(client_timeout_ms, () => {
+            req.destroy(new Error(`Client timeout`));
+          });
+        }
+
         req.end();
       } catch (error) {
         rejectPromise(error);

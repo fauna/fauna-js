@@ -2,36 +2,28 @@
 /// <reference lib="dom" />
 
 import { NetworkError } from "../errors";
-import {
-  HTTPClient,
-  HTTPClientOptions,
-  HTTPRequest,
-  HTTPResponse,
-} from "./http-client";
+import { HTTPClient, HTTPRequest, HTTPResponse } from "./http-client";
 
 /**
  * An implementation for {@link HTTPClient} that uses the native fetch API
  */
 export class FetchClient extends HTTPClient {
-  constructor(options?: HTTPClientOptions) {
-    super(options);
-  }
-
   /** {@inheritDoc HTTPClient.request} */
   async request({
     data,
     headers: requestHeaders,
     method,
     url,
+    client_timeout_ms,
   }: HTTPRequest): Promise<HTTPResponse> {
     // TODO: handle client timeouts with AbortController. Emit NetworkError if so.
 
     let controller: AbortController;
     let signal: AbortSignal | undefined = undefined;
-    if (this.client_timeout_ms !== undefined) {
+    if (client_timeout_ms !== undefined) {
       controller = new AbortController();
       signal = controller.signal;
-      setTimeout(() => controller.abort(), this.client_timeout_ms);
+      setTimeout(() => controller.abort(), client_timeout_ms);
     }
 
     const response = await fetch(url, {

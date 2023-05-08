@@ -3,6 +3,7 @@ import {
   AuthenticationError,
   ClientConfiguration,
   ClientError,
+  FetchClient,
   fql,
   getDefaultHTTPClient,
   HTTPClient,
@@ -286,6 +287,25 @@ describe("query", () => {
     try {
       await badClient.query(fql`"taco".length;`);
     } catch (e) {
+      if (e instanceof NetworkError) {
+        expect(e.message).toBe("The network connection encountered a problem.");
+        expect(e.cause).toBeDefined();
+      }
+    }
+  });
+
+  it("throws a NetworkError on client timeout", async () => {
+    expect.assertions(2);
+    const badClient = getClient({ client_timeout_ms: 10 });
+    try {
+      // do a contrived query that should take a while,
+      const result = await badClient.query(fql`
+        let str = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Aliquet nec ullamcorper sit amet risus. Augue neque gravida in fermentum. Nunc mi ipsum faucibus vitae aliquet nec ullamcorper. Imperdiet dui accumsan sit amet nulla facilisi morbi tempus. Odio tempor orci dapibus ultrices in iaculis nunc. Orci a scelerisque purus semper. Commodo elit at imperdiet dui accumsan sit. Eget sit amet tellus cras adipiscing enim eu turpis. Ut consequat semper viverra nam libero. Pharetra vel turpis nunc eget lorem. Non blandit massa enim nec dui nunc mattis enim. Nec ultrices dui sapien eget mi proin sed libero."
+        [0,0,0,0,0,0,0,0,0]
+          .fold(str, (acc, _) => acc.concat(acc))
+          .casefold()
+      `);
+    } catch (e: any) {
       if (e instanceof NetworkError) {
         expect(e.message).toBe("The network connection encountered a problem.");
         expect(e.cause).toBeDefined();

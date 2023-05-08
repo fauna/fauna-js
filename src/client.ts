@@ -34,6 +34,7 @@ import {
 } from "./http-client";
 import { TaggedTypeFormat } from "./tagged-type";
 import { EmbeddedSet, Page, SetIterator } from "./values";
+import { HTTPClientOptions } from "./http-client/http-client";
 
 const defaultClientConfiguration: Pick<
   ClientConfiguration,
@@ -89,7 +90,10 @@ export class Client {
       this.clientConfiguration.endpoint
     ).toString();
     if (!httpClient) {
-      this.#httpClient = getDefaultHTTPClient();
+      const clientOptions: HTTPClientOptions = {
+        http2_session_idle_ms: clientConfiguration?.http2_session_idle_ms,
+      };
+      this.#httpClient = getDefaultHTTPClient(clientOptions);
     } else {
       this.#httpClient = httpClient;
     }
@@ -342,6 +346,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         method: "POST",
         headers,
         data: requestData,
+        client_timeout_ms: this.#clientConfiguration.client_timeout_ms,
       });
 
       let parsedResponse;

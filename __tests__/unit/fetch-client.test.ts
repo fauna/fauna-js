@@ -129,9 +129,9 @@ describe("fetch client", () => {
         new Promise((resolve) => setTimeout(() => resolve({ body: "" }), 100))
     );
     try {
-      const badClient = new FetchClient({ client_timeout_ms: 10 });
+      const badClient = new FetchClient();
 
-      await badClient.request(dummyRequest);
+      await badClient.request({ ...dummyRequest, client_timeout_ms: 1 });
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(

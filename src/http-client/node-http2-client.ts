@@ -6,7 +6,6 @@ try {
 }
 import { HTTPClient, HTTPRequest, HTTPResponse } from "./http-client";
 import { NetworkError } from "../errors";
-import { applyDefaults } from "../util";
 
 /**
  * An implementation for {@link HTTPClient} that uses the node http package

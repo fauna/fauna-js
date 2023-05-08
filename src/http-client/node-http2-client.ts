@@ -6,6 +6,7 @@ try {
 }
 import { HTTPClient, HTTPRequest, HTTPResponse } from "./http-client";
 import { NetworkError } from "../errors";
+import { applyDefaults } from "../util";
 
 /**
  * An implementation for {@link HTTPClient} that uses the node http package
@@ -39,7 +40,7 @@ export class NodeHTTP2Client implements HTTPClient {
 
   /** {@inheritDoc HTTPClient.request} */
   async request(httpRequest: HTTPRequest): Promise<HTTPResponse> {
-    const session = this.#getSession(httpRequest.url);
+    const session = this.#getSession(httpRequest);
 
     try {
       const result = await session.request(httpRequest);
@@ -73,8 +74,8 @@ export class NodeHTTP2Client implements HTTPClient {
     return this.#numberOfUsers === 0;
   }
 
-  #getSession(url: string): SessionWrapper {
-    const sessionKey = url; // WIP: need to account for streaming
+  #getSession(request: HTTPRequest): SessionWrapper {
+    const sessionKey = this.#getSessionHashKey(request);
 
     if (this.#sessionMap.has(sessionKey)) {
       // #sessionMap.has(sessionKey) will not return `undefined`
@@ -88,13 +89,20 @@ export class NodeHTTP2Client implements HTTPClient {
       }
     }
 
-    const session = new SessionWrapper(sessionKey);
+    const session = new SessionWrapper(sessionKey, {
+      http2_session_idle_ms: request.http2_sessions_idle_ms,
+    });
     session.internal
       .once("error", () => session.close())
       .once("goaway", () => session.close());
     this.#sessionMap.set(sessionKey, session);
 
     return session;
+  }
+
+  #getSessionHashKey(request: HTTPRequest): string {
+    // WIP: need to account for streaming
+    return `${request.url}|${request.http2_sessions_idle_ms}`;
   }
 }
 
@@ -114,10 +122,8 @@ class SessionWrapper {
   readonly #pathName: "/query/1";
 
   constructor(url: string, options?: Partial<SessionWrapperOptions>) {
-    const _options: SessionWrapperOptions = {
-      ...DEFAULT_SESSION_OPTIONS,
-      ...options,
-    };
+    const _options = applyDefaults(DEFAULT_SESSION_OPTIONS, options);
+
     // TODO: put a cap on lax idle time
     this.#http2_session_idle_ms = _options.http2_session_idle_ms;
     // WIP: should be set to something different for streaming

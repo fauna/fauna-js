@@ -34,8 +34,9 @@ import {
 } from "./http-client";
 import { TaggedTypeFormat } from "./tagged-type";
 import { EmbeddedSet, Page, SetIterator } from "./values";
+import { applyDefaults } from "./util";
 
-const defaultClientConfiguration: Pick<
+const DEFAULT_CLIENT_CONFIG: Pick<
   ClientConfiguration,
   "endpoint" | "format" | "max_conns"
 > = {
@@ -79,11 +80,14 @@ export class Client {
     clientConfiguration?: Partial<ClientConfiguration>,
     httpClient?: HTTPClient
   ) {
-    this.#clientConfiguration = {
-      ...defaultClientConfiguration,
-      ...clientConfiguration,
-      secret: this.#getSecret(clientConfiguration),
-    };
+    this.#clientConfiguration = applyDefaults(
+      {
+        ...DEFAULT_CLIENT_CONFIG,
+        secret: this.#getSecret(clientConfiguration),
+      },
+      clientConfiguration
+    );
+
     this.#validateConfiguration();
 
     this.#url = new URL(
@@ -349,6 +353,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         headers,
         data: requestData,
         client_timeout_ms: this.#clientConfiguration.client_timeout_ms,
+        http2_sessions_idle_ms: this.#clientConfiguration.http2_session_idle_ms,
       });
 
       let parsedResponse;

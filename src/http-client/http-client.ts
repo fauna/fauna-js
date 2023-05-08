@@ -24,6 +24,12 @@ export type HTTPRequest = {
    * received a response
    */
   client_timeout_ms?: number;
+
+  /**
+   * Time in milliseconds the client will keep an HTTP2 session open after all
+   * requests are completed. Only necessary for HTTP2 implementations.
+   */
+  http2_sessions_idle_ms?: number;
 };
 
 /**

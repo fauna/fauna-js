@@ -306,9 +306,7 @@ describe("query", () => {
         };
         return httpClient.request(badRequest);
       },
-      close() {
-        httpClient.close();
-      },
+      close() {},
     };
 
     const badClient = getClient({}, badHTTPClient);
@@ -366,19 +364,6 @@ describe("query", () => {
       }
     }
   });
-});
-
-it("throws a RangeError if 'query_timeout_ms' request option is greater than max allowed", async () => {
-  expect.assertions(1);
-  const client = getClient({
-    query_timeout_ms: 60_000,
-    client_timeout_ms: 65_000,
-  });
-  try {
-    await client.query(fql`foo`, { query_timeout_ms: 120_000 });
-  } catch (e: any) {
-    expect(e).toBeInstanceOf(RangeError);
-  }
 });
 
 describe("query can encode / decode QueryValue correctly", () => {

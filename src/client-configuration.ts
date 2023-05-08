@@ -5,6 +5,16 @@ import { ValueFormat } from "./wire-protocol";
  */
 export interface ClientConfiguration {
   /**
+   * Time in milliseconds beyond {@link ClientConfiguration.query_timeout_ms} at
+   * which the client will abort a request if it has not received a response.
+   * The default is 500 ms, which should account for network latency for most
+   * clients. The value must be greater than zero. The closer to zero the value
+   * is, the more likely the client is to abort the request before the server
+   * can report a legitimate timeout error.
+   */
+  client_timeout_buffer_ms: number;
+
+  /**
    * The {@link URL} of Fauna to call. See {@link endpoints} for some default options.
    */
   endpoint: URL;
@@ -28,6 +38,13 @@ export interface ClientConfiguration {
   format: ValueFormat;
 
   /**
+   * Time in milliseconds the client will keep an HTTP2 session open after all
+   * requests are completed. Only necessary for HTTP2 implementations. The
+   * default is 500 ms.
+   */
+  http2_session_idle_ms: number;
+
+  /**
    * The maximum number of connections to a make to Fauna.
    */
   max_conns: number;
@@ -38,19 +55,7 @@ export interface ClientConfiguration {
    */
   secret: string;
 
-  /**
-   * Time in milliseconds at which the client will abort a request if it has not
-   * received a response
-   */
-  client_timeout_ms?: number;
-
-  /**
-   * Time in milliseconds the client will keep an HTTP2 session open after all
-   * requests are completed. Only necessary for HTTP2 implementations.
-   */
-  http2_session_idle_ms?: number;
-
-  // Default query options
+  // Query options
 
   /**
    * The timeout of each query, in milliseconds. This controls the maximum amount of

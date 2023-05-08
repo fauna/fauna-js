@@ -148,19 +148,10 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     await client2.query<number>(fql`"taco".length`);
   });
 
-  it("throws an error if 'query_timeout_ms' is not configured when 'client_timeout_ms' is.", async () => {
+  it("throws a RangeError if 'client_timeout_buffer_ms' is less than zero", async () => {
     expect.assertions(1);
     try {
-      getClient({ client_timeout_ms: 65_000 });
-    } catch (e: any) {
-      expect(e).toBeInstanceOf(TypeError);
-    }
-  });
-
-  it("throws an error if 'querclient_timeout_msy_timeout_ms' is less than min required value", async () => {
-    expect.assertions(1);
-    try {
-      getClient({ client_timeout_ms: 65_000, query_timeout_ms: 65_000 });
+      getClient({ client_timeout_buffer_ms: -1 });
     } catch (e: any) {
       expect(e).toBeInstanceOf(RangeError);
     }

@@ -16,6 +16,7 @@ let fetchClient: FetchClient;
 const dummyRequest: HTTPRequest = {
   data: { query: "" },
   headers: {},
+  http2_sessions_idle_ms: 500,
   method: "POST",
   url: "",
 };

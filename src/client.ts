@@ -36,12 +36,11 @@ import { TaggedTypeFormat } from "./tagged-type";
 import { EmbeddedSet, Page, SetIterator } from "./values";
 import { applyDefaults } from "./util";
 
-const DEFAULT_CLIENT_CONFIG: Pick<
-  ClientConfiguration,
-  "endpoint" | "format" | "max_conns"
-> = {
+export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
+  client_timeout_buffer_ms: 500,
   endpoint: endpoints.default,
   format: "tagged",
+  http2_session_idle_ms: 500,
   max_conns: 10,
 };
 
@@ -228,8 +227,6 @@ export class Client {
       );
     }
 
-    this.#validateRequest(request, headers);
-
     return this.#query(request.toQuery(headers));
   }
 
@@ -347,13 +344,20 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         arguments: queryArgs,
       };
 
+      const client_timeout_ms = this.#clientConfiguration.query_timeout_ms
+        ? this.#clientConfiguration.query_timeout_ms +
+          this.#clientConfiguration.client_timeout_buffer_ms
+        : undefined;
+
       const fetchResponse = await this.#httpClient.request({
-        url: this.#url,
-        method: "POST",
-        headers,
+        // required
         data: requestData,
-        client_timeout_ms: this.#clientConfiguration.client_timeout_ms,
+        headers,
         http2_sessions_idle_ms: this.#clientConfiguration.http2_session_idle_ms,
+        method: "POST",
+        url: this.#url,
+        // optional
+        client_timeout_ms,
       });
 
       let parsedResponse;
@@ -440,33 +444,9 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
   #validateConfiguration() {
     const config = this.#clientConfiguration;
-    if (config.client_timeout_ms) {
-      if (!config.query_timeout_ms) {
-        throw new TypeError(
-          `Expected number, but received ${config.query_timeout_ms}. 'query_timeout_ms' must be configured if 'client_timeout_ms' is configured.`
-        );
-      }
-
-      if (
-        config.client_timeout_ms <
-        config.query_timeout_ms + CLIENT_TIMEOUT_BUFFER
-      ) {
-        throw new RangeError(
-          `'client_timeout_ms' is less than minimum required setting. 'clien_timeout_ms' must be greater than or equal to 'query_timeout_ms' + ${CLIENT_TIMEOUT_BUFFER} ms`
-        );
-      }
-    }
-  }
-
-  #validateRequest(_: Query, queryOptions?: QueryRequestHeaders) {
-    if (
-      queryOptions?.query_timeout_ms &&
-      this.#clientConfiguration.client_timeout_ms &&
-      this.#clientConfiguration.client_timeout_ms <
-        queryOptions.query_timeout_ms + CLIENT_TIMEOUT_BUFFER
-    ) {
+    if (config.client_timeout_buffer_ms < 0) {
       throw new RangeError(
-        `'query_timeout_ms' is more than maximum allowed setting. 'clien_timeout_ms' must be greater than or equal to 'query_timeout_ms' + ${CLIENT_TIMEOUT_BUFFER} ms`
+        `'client_timeout_buffer_ms' must be greater than zero.`
       );
     }
   }
@@ -481,5 +461,3 @@ const QUERY_CHECK_FAILURE_CODES = [
   "invalid_syntax",
   "invalid_type",
 ];
-
-const CLIENT_TIMEOUT_BUFFER = 500;

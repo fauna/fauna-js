@@ -111,21 +111,15 @@ type SessionWrapperOptions = {
   // WIP: a flag for streaming should go here
 };
 
-const DEFAULT_SESSION_OPTIONS: SessionWrapperOptions = {
-  http2_session_idle_ms: 500,
-};
-
 class SessionWrapper {
   readonly internal: any;
   readonly #http2_session_idle_ms: number;
   // WIP: should be set to something different for streaming
   readonly #pathName: "/query/1";
 
-  constructor(url: string, options?: Partial<SessionWrapperOptions>) {
-    const _options = applyDefaults(DEFAULT_SESSION_OPTIONS, options);
-
+  constructor(url: string, options: SessionWrapperOptions) {
     // TODO: put a cap on lax idle time
-    this.#http2_session_idle_ms = _options.http2_session_idle_ms;
+    this.#http2_session_idle_ms = options.http2_session_idle_ms;
     // WIP: should be set to something different for streaming
     this.#pathName = "/query/1";
 

@@ -13,6 +13,12 @@ export type HTTPRequest = {
   /** Headers in object format */
   headers: Record<string, string | undefined>;
 
+  /**
+   * Time in milliseconds the client will keep an HTTP2 session open after all
+   * requests are completed. Only necessary for HTTP2 implementations.
+   */
+  http2_sessions_idle_ms: number;
+
   /** HTTP method to use */
   method: "POST";
 
@@ -20,16 +26,10 @@ export type HTTPRequest = {
   url: string;
 
   /**
-   * Time in milliseconds at which the client will abort a request if it has not
-   * received a response
+   * The timeout of each query, in milliseconds. This controls the maximum amount of
+   * time Fauna will execute your query before marking it failed.
    */
   client_timeout_ms?: number;
-
-  /**
-   * Time in milliseconds the client will keep an HTTP2 session open after all
-   * requests are completed. Only necessary for HTTP2 implementations.
-   */
-  http2_sessions_idle_ms?: number;
 };
 
 /**

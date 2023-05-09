@@ -13,13 +13,16 @@ import {
 
 let fetchClient: FetchClient;
 
+const dummyFetchOptions = {
+  url: "",
+  http2_session_idle_ms: 10_000,
+};
+
 const dummyRequest: HTTPRequest = {
   client_timeout_ms: 5500,
   data: { query: "" },
   headers: {},
-  http2_sessions_idle_ms: 500,
   method: "POST",
-  url: "",
 };
 
 const dummyStats = {
@@ -34,7 +37,7 @@ const dummyStats = {
 
 describe("fetch client", () => {
   beforeAll(() => {
-    fetchClient = new FetchClient();
+    fetchClient = new FetchClient(dummyFetchOptions);
   });
 
   afterAll(() => {
@@ -131,7 +134,7 @@ describe("fetch client", () => {
         new Promise((resolve) => setTimeout(() => resolve({ body: "" }), 100))
     );
     try {
-      const badClient = new FetchClient();
+      const badClient = new FetchClient(dummyFetchOptions);
 
       await badClient.request({ ...dummyRequest, client_timeout_ms: 1 });
     } catch (e) {

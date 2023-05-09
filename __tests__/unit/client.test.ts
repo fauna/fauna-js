@@ -1,5 +1,9 @@
 import { Client, ClientClosedError, fql, NodeHTTP2Client } from "../../src";
-import { getClient, getDefaultSecretAndEndpoint } from "../client";
+import {
+  getClient,
+  getDefaultHTTPClientOptions,
+  getDefaultSecretAndEndpoint,
+} from "../client";
 
 describe("Client", () => {
   it("Refuses further requests after close", async () => {
@@ -33,26 +37,26 @@ describe("Client", () => {
   });
 
   it("Allows for creation and usage of a new client after first client closed.", async () => {
-    const nodeClient = NodeHTTP2Client.getClient();
+    const nodeClient = new NodeHTTP2Client(getDefaultHTTPClientOptions());
     const clientOne = new Client(getDefaultSecretAndEndpoint(), nodeClient);
-    expect(nodeClient.isClosed()).toBe(false);
     await clientOne.query(fql`"Hello World"`);
+    expect(nodeClient.isClosed()).toBe(false);
     clientOne.close();
     expect(nodeClient.isClosed()).toBe(true);
     const clientTwo = new Client(
       getDefaultSecretAndEndpoint(),
-      NodeHTTP2Client.getClient()
+      new NodeHTTP2Client(getDefaultHTTPClientOptions())
     );
-    expect(nodeClient.isClosed()).toBe(false);
     expect((await clientTwo.query(fql`"Hello World"`)).data).toEqual(
       "Hello World"
     );
+    expect(nodeClient.isClosed()).toBe(false);
     const clientThree = new Client(
       getDefaultSecretAndEndpoint(),
-      NodeHTTP2Client.getClient()
+      new NodeHTTP2Client(getDefaultHTTPClientOptions())
     );
     clientTwo.close();
-    expect(nodeClient.isClosed()).toBe(false);
+    expect(nodeClient.isClosed()).toBe(true);
     clientThree.close();
     expect(nodeClient.isClosed()).toBe(true);
   });

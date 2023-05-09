@@ -1,5 +1,5 @@
 import { fql, getDefaultHTTPClient, HTTPClient } from "../../src";
-import { getClient } from "../client";
+import { getClient, getDefaultHTTPClientOptions } from "../client";
 
 describe("last_txn_ts tracking in client", () => {
   it("Tracks the last_txn_ts datetime and send in the headers", async () => {
@@ -11,7 +11,7 @@ describe("last_txn_ts tracking in client", () => {
         } else {
           expect(req.headers["x-last-txn-ts"]).toEqual(expectedLastTxn);
         }
-        return getDefaultHTTPClient().request(req);
+        return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(req);
       },
 
       close() {},
@@ -59,7 +59,7 @@ describe("last_txn_ts tracking in client", () => {
         } else {
           expect(req.headers["x-last-txn-ts"]).toEqual(expectedLastTxn);
         }
-        return getDefaultHTTPClient().request(req);
+        return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(req);
       },
 
       close() {},

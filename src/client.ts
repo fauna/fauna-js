@@ -93,7 +93,10 @@ export class Client {
     ).toString();
 
     if (!httpClient) {
-      this.#httpClient = getDefaultHTTPClient();
+      this.#httpClient = getDefaultHTTPClient({
+        url: this.#clientConfiguration.endpoint.toString(),
+        http2_session_idle_ms: this.#clientConfiguration.http2_session_idle_ms,
+      });
     } else {
       this.#httpClient = httpClient;
     }
@@ -358,9 +361,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         // required
         data: requestData,
         headers,
-        http2_sessions_idle_ms: this.#clientConfiguration.http2_session_idle_ms,
         method: "POST",
-        url: this.#url,
         // optional
         client_timeout_ms,
       });

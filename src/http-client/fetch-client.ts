@@ -2,25 +2,35 @@
 /// <reference lib="dom" />
 
 import { NetworkError } from "../errors";
-import { HTTPClient, HTTPRequest, HTTPResponse } from "./http-client";
+import {
+  HTTPClient,
+  HTTPClientOptions,
+  HTTPRequest,
+  HTTPResponse,
+} from "./http-client";
 
 /**
  * An implementation for {@link HTTPClient} that uses the native fetch API
  */
 export class FetchClient implements HTTPClient {
+  #url: string;
+
+  constructor({ url }: HTTPClientOptions) {
+    this.#url = url;
+  }
+
   /** {@inheritDoc HTTPClient.request} */
   async request({
     data,
     headers: requestHeaders,
     method,
-    url,
     client_timeout_ms,
   }: HTTPRequest): Promise<HTTPResponse> {
     const controller = new AbortController();
     const signal = controller.signal;
     setTimeout(() => controller.abort(), client_timeout_ms);
 
-    const response = await fetch(url, {
+    const response = await fetch(this.#url, {
       method,
       headers: { ...requestHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(data),

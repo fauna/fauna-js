@@ -18,17 +18,8 @@ export type HTTPRequest = {
   /** Headers in object format */
   headers: Record<string, string | undefined>;
 
-  /**
-   * Time in milliseconds the client will keep an HTTP2 session open after all
-   * requests are completed. Only necessary for HTTP2 implementations.
-   */
-  http2_sessions_idle_ms: number;
-
   /** HTTP method to use */
   method: "POST";
-
-  /** URL for the request */
-  url: string;
 };
 
 /**
@@ -39,6 +30,11 @@ export type HTTPResponse = {
   body: string;
   headers: Record<string, string | string[] | undefined>;
   status: number;
+};
+
+export type HTTPClientOptions = {
+  url: string;
+  http2_session_idle_ms: number;
 };
 
 /**

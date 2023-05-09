@@ -19,7 +19,7 @@ import {
   QueryValue,
   ServiceError,
 } from "../../src";
-import { getClient } from "../client";
+import { getClient, getDefaultHTTPClientOptions } from "../client";
 
 const client = getClient({
   max_conns: 5,
@@ -199,7 +199,9 @@ describe("query", () => {
             ...req,
             data: "{}" as unknown as QueryRequest,
           };
-          return getDefaultHTTPClient().request(bad_req);
+          return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(
+            bad_req
+          );
         },
         close() {},
       };
@@ -295,7 +297,7 @@ describe("query", () => {
   it("throws a NetworkError on client timeout", async () => {
     expect.assertions(2);
 
-    const httpClient = getDefaultHTTPClient();
+    const httpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
     const badHTTPClient = {
       async request(req: HTTPRequest) {
         const badRequest: HTTPRequest = {

@@ -6,7 +6,7 @@ import {
   getDefaultHTTPClient,
   HTTPClient,
 } from "../../src";
-import { getClient } from "../client";
+import { getClient, getDefaultHTTPClientOptions } from "../client";
 
 // save a copy
 const PROCESS_ENV = { ...process.env };
@@ -107,7 +107,9 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
           expect(req.headers[_expectedHeader.key]).toEqual(
             _expectedHeader.value
           );
-          return getDefaultHTTPClient().request(req);
+          return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(
+            req
+          );
         },
 
         close() {},
@@ -126,26 +128,10 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   );
 
   it("can accept endpoints with or without a trailing slash.", async () => {
-    expect.assertions(2);
-    const httpClient: HTTPClient = {
-      async request(req) {
-        expect(req.url).toBe("http://localhost:8443/query/1");
-        return getDefaultHTTPClient().request(req);
-      },
-
-      close() {},
-    };
-
-    const client1 = getClient(
-      { endpoint: new URL("http://localhost:8443/") },
-      httpClient
-    );
+    const client1 = getClient({ endpoint: new URL("http://localhost:8443/") });
     await client1.query<number>(fql`"taco".length`);
 
-    const client2 = getClient(
-      { endpoint: new URL("http://localhost:8443") },
-      httpClient
-    );
+    const client2 = getClient({ endpoint: new URL("http://localhost:8443") });
     await client2.query<number>(fql`"taco".length`);
   });
 

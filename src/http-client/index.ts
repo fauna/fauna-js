@@ -1,9 +1,14 @@
 import { FetchClient } from "./fetch-client";
 import { NodeHTTP2Client } from "./node-http2-client";
-import { HTTPClient, HTTPRequest, HTTPResponse } from "./http-client";
+import {
+  HTTPClient,
+  HTTPClientOptions,
+  HTTPRequest,
+  HTTPResponse,
+} from "./http-client";
 
-export const getDefaultHTTPClient = (): HTTPClient =>
-  isNode() ? NodeHTTP2Client.getClient() : new FetchClient();
+export const getDefaultHTTPClient = (options: HTTPClientOptions): HTTPClient =>
+  isNode() ? new NodeHTTP2Client(options) : new FetchClient(options);
 
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;

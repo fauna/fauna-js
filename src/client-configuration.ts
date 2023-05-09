@@ -63,7 +63,7 @@ export interface ClientConfiguration {
    * Default is undefined which let's Fauna determine the query timeout to apply. This
    * is recommended for most queries.
    */
-  query_timeout_ms?: number;
+  query_timeout_ms: number;
 
   /**
    * If true, unconditionally run the query as strictly serialized.

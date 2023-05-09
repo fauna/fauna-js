@@ -16,15 +16,9 @@ export class FetchClient implements HTTPClient {
     url,
     client_timeout_ms,
   }: HTTPRequest): Promise<HTTPResponse> {
-    // TODO: handle client timeouts with AbortController. Emit NetworkError if so.
-
-    let controller: AbortController;
-    let signal: AbortSignal | undefined = undefined;
-    if (client_timeout_ms !== undefined) {
-      controller = new AbortController();
-      signal = controller.signal;
-      setTimeout(() => controller.abort(), client_timeout_ms);
-    }
+    const controller = new AbortController();
+    const signal = controller.signal;
+    setTimeout(() => controller.abort(), client_timeout_ms);
 
     const response = await fetch(url, {
       method,

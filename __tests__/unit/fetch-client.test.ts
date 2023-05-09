@@ -14,6 +14,7 @@ import {
 let fetchClient: FetchClient;
 
 const dummyRequest: HTTPRequest = {
+  client_timeout_ms: 5500,
   data: { query: "" },
   headers: {},
   http2_sessions_idle_ms: 500,

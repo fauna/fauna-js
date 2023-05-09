@@ -137,10 +137,10 @@ class SessionWrapper {
   }
 
   async request({
+    client_timeout_ms,
     data: requestData,
     headers: requestHeaders,
     method,
-    client_timeout_ms,
   }: HTTPRequest): Promise<HTTPResponse> {
     let req: any;
 
@@ -182,11 +182,9 @@ class SessionWrapper {
         req.write(JSON.stringify(requestData), "utf8");
 
         // req.setTimeout must be called before req.end()
-        if (client_timeout_ms !== undefined) {
-          req.setTimeout(client_timeout_ms, () => {
-            req.destroy(new Error(`Client timeout`));
-          });
-        }
+        req.setTimeout(client_timeout_ms, () => {
+          req.destroy(new Error(`Client timeout`));
+        });
 
         req.end();
       } catch (error) {

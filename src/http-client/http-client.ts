@@ -7,6 +7,12 @@ import { QueryRequest } from "../wire-protocol";
  * The {@link Client} provides this to the {@link HTTPClient} implementation.
  */
 export type HTTPRequest = {
+  /**
+   * The timeout of each query, in milliseconds. This controls the maximum amount of
+   * time Fauna will execute your query before marking it failed.
+   */
+  client_timeout_ms: number;
+
   /** The encoded Fauna query to send */
   data: QueryRequest;
 
@@ -24,12 +30,6 @@ export type HTTPRequest = {
 
   /** URL for the request */
   url: string;
-
-  /**
-   * The timeout of each query, in milliseconds. This controls the maximum amount of
-   * time Fauna will execute your query before marking it failed.
-   */
-  client_timeout_ms?: number;
 };
 
 /**

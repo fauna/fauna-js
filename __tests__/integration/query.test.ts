@@ -114,7 +114,7 @@ describe("query", () => {
           key: "traceparent",
           value: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
         },
-        query_timeout_ms: { key: "x-query-timeout-ms", value: "60" },
+        query_timeout_ms: { key: "x-query-timeout-ms", value: "5000" },
         typecheck: { key: "x-typecheck", value: "true" },
       };
       expectedHeaders[fieldName] = expectedHeader;
@@ -129,7 +129,6 @@ describe("query", () => {
       };
       const clientConfiguration: Partial<ClientConfiguration> = {
         max_conns: 5,
-        query_timeout_ms: 60,
         linearized: true,
         max_contention_retries: 7,
         query_tags: { alpha: "beta", gamma: "delta" },

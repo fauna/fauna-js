@@ -42,6 +42,7 @@ export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
   format: "tagged",
   http2_session_idle_ms: 500,
   max_conns: 10,
+  query_timeout_ms: 5000
 };
 
 /**
@@ -348,10 +349,12 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         arguments: queryArgs,
       };
 
-      const client_timeout_ms = requestConfig.query_timeout_ms
-        ? requestConfig.query_timeout_ms +
+      // TODO: We know we are providing a default for query_timeout_ms, so can
+      // cast to a defined value. Types for QueryRequest is too tangled up with
+      // QueryRequestHeaders to set query_timeout_ms as a mandatory field. #144
+      // should fix that.
+      const client_timeout_ms = (requestConfig.query_timeout_ms as number) +
           this.#clientConfiguration.client_timeout_buffer_ms
-        : undefined;
 
       const fetchResponse = await this.#httpClient.request({
         // required
@@ -448,7 +451,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
   #validateConfiguration() {
     const config = this.#clientConfiguration;
-    if (config.client_timeout_buffer_ms < 0) {
+    if (config.client_timeout_buffer_ms <= 0) {
       throw new RangeError(
         `'client_timeout_buffer_ms' must be greater than zero.`
       );

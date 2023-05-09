@@ -148,10 +148,10 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     await client2.query<number>(fql`"taco".length`);
   });
 
-  it("throws a RangeError if 'client_timeout_buffer_ms' is less than zero", async () => {
+  it("throws a RangeError if 'client_timeout_buffer_ms' is less than or equal to zero", async () => {
     expect.assertions(1);
     try {
-      getClient({ client_timeout_buffer_ms: -1 });
+      getClient({ client_timeout_buffer_ms: 0 });
     } catch (e: any) {
       expect(e).toBeInstanceOf(RangeError);
     }

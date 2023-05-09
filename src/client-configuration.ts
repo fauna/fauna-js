@@ -10,7 +10,7 @@ export interface ClientConfiguration {
    * The default is 500 ms, which should account for network latency for most
    * clients. The value must be greater than zero. The closer to zero the value
    * is, the more likely the client is to abort the request before the server
-   * can report a legitimate timeout error.
+   * can report a legitimate response or error.
    */
   client_timeout_buffer_ms: number;
 
@@ -60,7 +60,7 @@ export interface ClientConfiguration {
    * The timeout of each query, in milliseconds. This controls the maximum amount of
    * time Fauna will execute your query before marking it failed.
    * Default is undefined which let's Fauna determine the query timeout to apply. This
-   * is recommended for most queries.
+   * is recommended for most queries. The default is 5000 ms.
    */
   query_timeout_ms: number;
 

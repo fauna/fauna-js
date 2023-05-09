@@ -8,8 +8,7 @@ import { QueryRequest } from "../wire-protocol";
  */
 export type HTTPRequest = {
   /**
-   * The timeout of each query, in milliseconds. This controls the maximum amount of
-   * time Fauna will execute your query before marking it failed.
+   * The timeout of each http request, in milliseconds.
    */
   client_timeout_ms: number;
 
@@ -52,6 +51,7 @@ export interface HTTPClient {
    * Makes an HTTP request and returns the response
    * @param req - an {@link HTTPRequest}
    * @returns A Promise&lt;{@link HTTPResponse}&gt;
+   * @throws {@link NetworkError} on request timeout or other network issue.
    */
   request(req: HTTPRequest): Promise<HTTPResponse>;
 

@@ -34,7 +34,6 @@ import {
 } from "./http-client";
 import { TaggedTypeFormat } from "./tagged-type";
 import { EmbeddedSet, Page, SetIterator } from "./values";
-import { applyDefaults } from "./util";
 
 export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
   client_timeout_buffer_ms: 500,
@@ -80,13 +79,11 @@ export class Client {
     clientConfiguration?: Partial<ClientConfiguration>,
     httpClient?: HTTPClient
   ) {
-    this.#clientConfiguration = applyDefaults(
-      {
-        ...DEFAULT_CLIENT_CONFIG,
-        secret: this.#getSecret(clientConfiguration),
-      },
-      clientConfiguration
-    );
+    this.#clientConfiguration = {
+      ...DEFAULT_CLIENT_CONFIG,
+      ...clientConfiguration,
+      secret: this.#getSecret(clientConfiguration),
+    };
 
     this.#validateConfiguration();
 
@@ -333,10 +330,10 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         headers
       );
 
-      const requestConfig = applyDefaults<QueryRequestHeaders>(
-        this.#clientConfiguration,
-        queryRequest
-      );
+      const requestConfig: QueryRequestHeaders = {
+        ...this.#clientConfiguration,
+        ...queryRequest,
+      };
 
       const isTaggedFormat =
         requestConfig.format === "tagged" || queryRequest.format === "tagged";
@@ -452,6 +449,23 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
   #validateConfiguration() {
     const config = this.#clientConfiguration;
+
+    const required_options: (keyof ClientConfiguration)[] = [
+      "client_timeout_buffer_ms",
+      "endpoint",
+      "format",
+      "http2_session_idle_ms",
+      "max_conns",
+      "query_timeout_ms",
+    ];
+    required_options.forEach((option) => {
+      if (config[option] === undefined) {
+        throw new TypeError(
+          `ClientConfiguration option '${option}' must be defined.`
+        );
+      }
+    });
+
     if (config.client_timeout_buffer_ms <= 0) {
       throw new RangeError(
         `'client_timeout_buffer_ms' must be greater than zero.`

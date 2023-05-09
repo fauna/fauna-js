@@ -1,5 +1,6 @@
 import {
   Client,
+  ClientConfiguration,
   endpoints,
   fql,
   getDefaultHTTPClient,
@@ -147,6 +148,28 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     );
     await client2.query<number>(fql`"taco".length`);
   });
+
+  it.each`
+    option
+    ${"client_timeout_buffer_ms"}
+    ${"endpoint"}
+    ${"format"}
+    ${"http2_session_idle_ms"}
+    ${"max_conns"}
+    ${"query_timeout_ms"}
+  `(
+    "throws if $option provided is undefined",
+    async ({ option }: { option: keyof ClientConfiguration }) => {
+      expect.assertions(1);
+      try {
+        const config: Partial<ClientConfiguration> = {};
+        config[option] = undefined;
+        getClient(config);
+      } catch (e: any) {
+        expect(e).toBeInstanceOf(TypeError);
+      }
+    }
+  );
 
   it("throws a RangeError if 'client_timeout_buffer_ms' is less than or equal to zero", async () => {
     expect.assertions(1);

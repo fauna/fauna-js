@@ -39,8 +39,7 @@ export interface ClientConfiguration {
 
   /**
    * Time in milliseconds the client will keep an HTTP2 session open after all
-   * requests are completed. Only necessary for HTTP2 implementations. The
-   * default is 500 ms.
+   * requests are completed. The default is 500 ms.
    */
   http2_session_idle_ms: number;
 

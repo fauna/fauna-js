@@ -471,6 +471,10 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         `'client_timeout_buffer_ms' must be greater than zero.`
       );
     }
+
+    if (config.query_timeout_ms <= 0) {
+      throw new RangeError(`'query_timeout_ms' must be greater than zero.`);
+    }
   }
 }
 

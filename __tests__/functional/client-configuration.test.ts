@@ -179,4 +179,13 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       expect(e).toBeInstanceOf(RangeError);
     }
   });
+
+  it("throws a RangeError if 'query_timeout_ms' is less than or equal to zero", async () => {
+    expect.assertions(1);
+    try {
+      getClient({ query_timeout_ms: 0 });
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(RangeError);
+    }
+  });
 });

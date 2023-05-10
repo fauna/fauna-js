@@ -54,8 +54,6 @@ export class Client {
   readonly #httpClient: HTTPClient;
   /** The last transaction timestamp this client has seen */
   #lastTxnTs?: number;
-  /** url of Fauna */
-  #url: string;
   /** true if this client is closed false otherwise */
   #isClosed = false;
 
@@ -86,11 +84,6 @@ export class Client {
     };
 
     this.#validateConfiguration();
-
-    this.#url = new URL(
-      "/query/1",
-      this.clientConfiguration.endpoint
-    ).toString();
 
     if (!httpClient) {
       this.#httpClient = getDefaultHTTPClient({

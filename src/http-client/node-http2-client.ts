@@ -67,7 +67,7 @@ class SessionManager {
         .once("goaway", () => this.close(client));
 
       new_session.setTimeout(http2_session_idle_ms, () => {
-        this.close(client);
+        this.closeForAll(client);
       });
 
       session_rc.session = new_session;
@@ -91,6 +91,17 @@ class SessionManager {
 
       session_rc.session = null;
     }
+  }
+
+  closeForAll(client: NodeHTTP2Client) {
+    const session_rc = this.#map.get(client.sessionKey);
+    if (!session_rc) return;
+
+    session_rc.refs.clear();
+    const session = session_rc.session;
+    if (session && !session.closed) session.close();
+
+    session_rc.session = null;
   }
 
   isClosed(client: NodeHTTP2Client): boolean {

@@ -11,6 +11,7 @@ import {
   InvalidRequestError,
   Module,
   NetworkError,
+  NodeHTTP2Client,
   ProtocolError,
   QueryCheckError,
   QueryRequest,
@@ -363,6 +364,41 @@ describe("query", () => {
         expect(e.message).toBeDefined();
       }
     }
+  });
+
+  it("session is closed regardless of number of clients", async () => {
+    const httpClient1 = new NodeHTTP2Client(getDefaultHTTPClientOptions());
+    const httpClient2 = new NodeHTTP2Client(getDefaultHTTPClientOptions());
+    const httpClient3 = new NodeHTTP2Client(getDefaultHTTPClientOptions());
+    const client1 = getClient({}, httpClient1);
+    const client2 = getClient({}, httpClient2);
+    const client3 = getClient({}, httpClient3);
+
+    // establish session and reference counts
+    await client1.query(fql`"hello"`);
+    await client2.query(fql`"hello"`);
+    await client3.query(fql`"hello"`);
+
+    // let it trigger idle timeout
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    // clients should be closed
+    expect(httpClient1.isClosed()).toBe(true);
+    expect(httpClient2.isClosed()).toBe(true);
+    expect(httpClient3.isClosed()).toBe(true);
+  });
+
+  it("can be called after session idle timeout", async () => {
+    const client = getClient({ http2_session_idle_ms: 500 });
+
+    // establish a session
+    await client.query(fql`"hello"`);
+
+    // let it trigger idle timeout
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // okay to make a new query
+    await client.query(fql`"hello"`);
   });
 });
 

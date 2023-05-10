@@ -10,13 +10,9 @@ import {
   QueryFailure,
   QuerySuccess,
 } from "../../src";
+import { getDefaultHTTPClientOptions } from "../client";
 
 let fetchClient: FetchClient;
-
-const dummyFetchOptions = {
-  url: "",
-  http2_session_idle_ms: 50,
-};
 
 const dummyRequest: HTTPRequest = {
   client_timeout_ms: 10000,
@@ -37,7 +33,7 @@ const dummyStats = {
 
 describe("fetch client", () => {
   beforeAll(() => {
-    fetchClient = new FetchClient(dummyFetchOptions);
+    fetchClient = new FetchClient(getDefaultHTTPClientOptions());
   });
 
   afterAll(() => {
@@ -134,7 +130,7 @@ describe("fetch client", () => {
         new Promise((resolve) => setTimeout(() => resolve({ body: "" }), 100))
     );
     try {
-      const badClient = new FetchClient(dummyFetchOptions);
+      const badClient = new FetchClient(getDefaultHTTPClientOptions());
 
       await badClient.request({ ...dummyRequest, client_timeout_ms: 1 });
     } catch (e) {

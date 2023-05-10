@@ -16,7 +16,7 @@ export class FetchClient implements HTTPClient {
   #url: string;
 
   constructor({ url }: HTTPClientOptions) {
-    this.#url = url;
+    this.#url = new URL("/query/1", url).toString();
   }
 
   /** {@inheritDoc HTTPClient.request} */

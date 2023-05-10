@@ -7,7 +7,7 @@ export interface ClientConfiguration {
   /**
    * Time in milliseconds beyond {@link ClientConfiguration.query_timeout_ms} at
    * which the client will abort a request if it has not received a response.
-   * The default is 500 ms, which should account for network latency for most
+   * The default is 5000 ms, which should account for network latency for most
    * clients. The value must be greater than zero. The closer to zero the value
    * is, the more likely the client is to abort the request before the server
    * can report a legitimate response or error.

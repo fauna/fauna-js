@@ -8,7 +8,6 @@ PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
 NPM_LATEST_VERSION=$(npm view fauna version)
 echo "Current package version: $PACKAGE_VERSION"
 echo "Latest version in npm: $NPM_LATEST_VERSION"
-n
 if [ "$PACKAGE_VERSION" \> "$NPM_LATEST_VERSION" ]
 then
   npm install

@@ -173,8 +173,8 @@ export class NodeHTTP2Client implements HTTPClient {
 
       const new_session: ClientHttp2Session = http2
         .connect(url)
-        .once("error", () => this.close())
-        .once("goaway", () => this.close());
+        .once("error", () => this.#closeForAll())
+        .once("goaway", () => this.#closeForAll());
 
       new_session.setTimeout(http2_session_idle_ms, () => {
         this.#closeForAll();

@@ -389,7 +389,7 @@ describe("query", () => {
   });
 
   it("can be called after session idle timeout", async () => {
-    const client = getClient({ http2_session_idle_ms: 500 });
+    const client = getClient({ http2_session_idle_ms: 50 });
 
     // establish a session
     await client.query(fql`"hello"`);

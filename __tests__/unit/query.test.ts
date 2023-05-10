@@ -11,7 +11,7 @@ import {
   ServiceTimeoutError,
   ThrottlingError,
 } from "../../src";
-import { getClient } from "../client";
+import { getClient, getDefaultHTTPClientOptions } from "../client";
 
 afterAll(() => {
   client.close();
@@ -23,7 +23,7 @@ const client = getClient(
     query_timeout_ms: 60,
   },
   // use the FetchClient implementation, so we can mock requests
-  new FetchClient()
+  new FetchClient(getDefaultHTTPClientOptions())
 );
 
 describe("query", () => {

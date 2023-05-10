@@ -11,6 +11,7 @@ import {
   InvalidRequestError,
   Module,
   NetworkError,
+  NodeHTTP2Client,
   ProtocolError,
   QueryCheckError,
   QueryRequest,
@@ -19,7 +20,7 @@ import {
   QueryValue,
   ServiceError,
 } from "../../src";
-import { getClient } from "../client";
+import { getClient, getDefaultHTTPClientOptions } from "../client";
 
 const client = getClient({
   max_conns: 5,
@@ -114,7 +115,7 @@ describe("query", () => {
           key: "traceparent",
           value: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
         },
-        query_timeout_ms: { key: "x-query-timeout-ms", value: "60" },
+        query_timeout_ms: { key: "x-query-timeout-ms", value: "5000" },
         typecheck: { key: "x-typecheck", value: "true" },
       };
       expectedHeaders[fieldName] = expectedHeader;
@@ -129,7 +130,6 @@ describe("query", () => {
       };
       const clientConfiguration: Partial<ClientConfiguration> = {
         max_conns: 5,
-        query_timeout_ms: 60,
         linearized: true,
         max_contention_retries: 7,
         query_tags: { alpha: "beta", gamma: "delta" },
@@ -200,7 +200,9 @@ describe("query", () => {
             ...req,
             data: "{}" as unknown as QueryRequest,
           };
-          return getDefaultHTTPClient().request(bad_req);
+          return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(
+            bad_req
+          );
         },
         close() {},
       };
@@ -293,6 +295,32 @@ describe("query", () => {
     }
   });
 
+  it("throws a NetworkError on client timeout", async () => {
+    expect.assertions(2);
+
+    const httpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
+    const badHTTPClient = {
+      async request(req: HTTPRequest) {
+        const badRequest: HTTPRequest = {
+          ...req,
+          client_timeout_ms: 1,
+        };
+        return httpClient.request(badRequest);
+      },
+      close() {},
+    };
+
+    const badClient = getClient({}, badHTTPClient);
+    try {
+      await badClient.query(fql``);
+    } catch (e: any) {
+      if (e instanceof NetworkError) {
+        expect(e.message).toBe("The network connection encountered a problem.");
+        expect(e.cause).toBeDefined();
+      }
+    }
+  });
+
   it("throws a ClientError if the client fails unexpectedly", async () => {
     expect.assertions(2);
     const httpClient: HTTPClient = {
@@ -336,6 +364,41 @@ describe("query", () => {
         expect(e.message).toBeDefined();
       }
     }
+  });
+
+  it("session is closed regardless of number of clients", async () => {
+    const httpClient1 = new NodeHTTP2Client(getDefaultHTTPClientOptions());
+    const httpClient2 = new NodeHTTP2Client(getDefaultHTTPClientOptions());
+    const httpClient3 = new NodeHTTP2Client(getDefaultHTTPClientOptions());
+    const client1 = getClient({}, httpClient1);
+    const client2 = getClient({}, httpClient2);
+    const client3 = getClient({}, httpClient3);
+
+    // establish session and reference counts
+    await client1.query(fql`"hello"`);
+    await client2.query(fql`"hello"`);
+    await client3.query(fql`"hello"`);
+
+    // let it trigger idle timeout
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    // clients should be closed
+    expect(httpClient1.isClosed()).toBe(true);
+    expect(httpClient2.isClosed()).toBe(true);
+    expect(httpClient3.isClosed()).toBe(true);
+  });
+
+  it("can be called after session idle timeout", async () => {
+    const client = getClient({ http2_session_idle_ms: 50 });
+
+    // establish a session
+    await client.query(fql`"hello"`);
+
+    // let it trigger idle timeout
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // okay to make a new query
+    await client.query(fql`"hello"`);
   });
 });
 

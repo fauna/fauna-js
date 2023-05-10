@@ -1,4 +1,5 @@
 import { Client, ClientConfiguration, endpoints, HTTPClient } from "../src";
+import { HTTPClientOptions } from "../src/http-client/http-client";
 
 export const getClient = (
   config?: Partial<ClientConfiguration>,
@@ -22,3 +23,11 @@ export function getDefaultSecretAndEndpoint() {
     : endpoints.local;
   return { secret, endpoint };
 }
+
+export const getDefaultHTTPClientOptions = (): HTTPClientOptions => {
+  const url = process.env["FAUNA_ENDPOINT"]
+    ? new URL(process.env["FAUNA_ENDPOINT"])
+    : endpoints.local;
+  const http2_session_idle_ms = 500;
+  return { url: url.toString(), http2_session_idle_ms };
+};

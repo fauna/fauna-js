@@ -1,5 +1,9 @@
 import { Client, ClientClosedError, fql, NodeHTTP2Client } from "../../src";
-import { getClient, getDefaultSecretAndEndpoint } from "../client";
+import {
+  getClient,
+  getDefaultHTTPClientOptions,
+  getDefaultSecretAndEndpoint,
+} from "../client";
 
 describe("Client", () => {
   it("Refuses further requests after close", async () => {
@@ -33,27 +37,39 @@ describe("Client", () => {
   });
 
   it("Allows for creation and usage of a new client after first client closed.", async () => {
-    const nodeClient = NodeHTTP2Client.getClient();
+    // Sessions are only connected upon making requests. An HTTPClient that has
+    // not yet made a request appears effectively as closed.
+
+    const nodeClient = new NodeHTTP2Client(getDefaultHTTPClientOptions());
     const clientOne = new Client(getDefaultSecretAndEndpoint(), nodeClient);
+    await clientOne.query(fql`"Hello World"`); // nodeClient.request(): refs = [nodeClient]
     expect(nodeClient.isClosed()).toBe(false);
-    await clientOne.query(fql`"Hello World"`);
-    clientOne.close();
+
+    clientOne.close(); // nodeClient.close(): refs = []
     expect(nodeClient.isClosed()).toBe(true);
+
     const clientTwo = new Client(
       getDefaultSecretAndEndpoint(),
-      NodeHTTP2Client.getClient()
+      new NodeHTTP2Client(getDefaultHTTPClientOptions())
     );
-    expect(nodeClient.isClosed()).toBe(false);
     expect((await clientTwo.query(fql`"Hello World"`)).data).toEqual(
       "Hello World"
-    );
+    ); // clientTwo.#httpClient.request(): refs = [clientTwo.#httpClient]
+    expect(nodeClient.isClosed()).toBe(false);
+
     const clientThree = new Client(
       getDefaultSecretAndEndpoint(),
-      NodeHTTP2Client.getClient()
+      new NodeHTTP2Client(getDefaultHTTPClientOptions())
     );
+    expect((await clientThree.query(fql`"Hello World"`)).data).toEqual(
+      "Hello World"
+    ); // clientThree.#httpClient.request(): refs = [clientTwo.#httpClient, clientThree.#httpClient]
     clientTwo.close();
+    // clientTwo.#httpClient.close(): refs = [clientThree.#httpClient]
     expect(nodeClient.isClosed()).toBe(false);
+
     clientThree.close();
+    // clientThree.#httpClient.close(): refs = []
     expect(nodeClient.isClosed()).toBe(true);
   });
 });

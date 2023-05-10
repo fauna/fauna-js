@@ -35,13 +35,13 @@ import {
 import { TaggedTypeFormat } from "./tagged-type";
 import { EmbeddedSet, Page, SetIterator } from "./values";
 
-const defaultClientConfiguration: Pick<
-  ClientConfiguration,
-  "endpoint" | "format" | "max_conns"
-> = {
+export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
+  client_timeout_buffer_ms: 5000,
   endpoint: endpoints.default,
   format: "tagged",
+  http2_session_idle_ms: 500,
   max_conns: 10,
+  query_timeout_ms: 5000,
 };
 
 /**
@@ -54,8 +54,6 @@ export class Client {
   readonly #httpClient: HTTPClient;
   /** The last transaction timestamp this client has seen */
   #lastTxnTs?: number;
-  /** url of Fauna */
-  #url: string;
   /** true if this client is closed false otherwise */
   #isClosed = false;
 
@@ -80,16 +78,18 @@ export class Client {
     httpClient?: HTTPClient
   ) {
     this.#clientConfiguration = {
-      ...defaultClientConfiguration,
+      ...DEFAULT_CLIENT_CONFIG,
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
     };
-    this.#url = new URL(
-      "/query/1",
-      this.clientConfiguration.endpoint
-    ).toString();
+
+    this.#validateConfiguration();
+
     if (!httpClient) {
-      this.#httpClient = getDefaultHTTPClient();
+      this.#httpClient = getDefaultHTTPClient({
+        url: this.#clientConfiguration.endpoint.toString(),
+        http2_session_idle_ms: this.#clientConfiguration.http2_session_idle_ms,
+      });
     } else {
       this.#httpClient = httpClient;
     }
@@ -220,6 +220,7 @@ export class Client {
         "Your client is closed. No further requests can be issued."
       );
     }
+
     return this.#query(request.toQuery(headers));
   }
 
@@ -278,7 +279,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   #getServiceError(failure: QueryFailure, httpStatus: number): ServiceError {
     switch (httpStatus) {
       case 400:
-        if (queryCheckFailureCodes.includes(failure.error.code)) {
+        if (QUERY_CHECK_FAILURE_CODES.includes(failure.error.code)) {
           return new QueryCheckError(failure, httpStatus);
         }
         if (failure.error.code === "invalid_request") {
@@ -325,9 +326,13 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         headers
       );
 
+      const requestConfig: QueryRequestHeaders = {
+        ...this.#clientConfiguration,
+        ...queryRequest,
+      };
+
       const isTaggedFormat =
-        this.#clientConfiguration.format === "tagged" ||
-        queryRequest.format === "tagged";
+        requestConfig.format === "tagged" || queryRequest.format === "tagged";
       const queryArgs = isTaggedFormat
         ? TaggedTypeFormat.encode(queryRequest.arguments)
         : queryRequest.arguments;
@@ -337,11 +342,21 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         arguments: queryArgs,
       };
 
+      // TODO: We know we are providing a default for query_timeout_ms, so can
+      // cast to a defined value. Types for QueryRequest is too tangled up with
+      // QueryRequestHeaders to set query_timeout_ms as a mandatory field. #144
+      // should fix that.
+      const client_timeout_ms =
+        (requestConfig.query_timeout_ms as number) +
+        this.#clientConfiguration.client_timeout_buffer_ms;
+
       const fetchResponse = await this.#httpClient.request({
-        url: this.#url,
-        method: "POST",
-        headers,
+        // required
         data: requestData,
+        headers,
+        method: "POST",
+        // optional
+        client_timeout_ms,
       });
 
       let parsedResponse;
@@ -425,11 +440,41 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       headerObject["x-last-txn-ts"] = this.#lastTxnTs;
     }
   }
+
+  #validateConfiguration() {
+    const config = this.#clientConfiguration;
+
+    const required_options: (keyof ClientConfiguration)[] = [
+      "client_timeout_buffer_ms",
+      "endpoint",
+      "format",
+      "http2_session_idle_ms",
+      "max_conns",
+      "query_timeout_ms",
+    ];
+    required_options.forEach((option) => {
+      if (config[option] === undefined) {
+        throw new TypeError(
+          `ClientConfiguration option '${option}' must be defined.`
+        );
+      }
+    });
+
+    if (config.client_timeout_buffer_ms <= 0) {
+      throw new RangeError(
+        `'client_timeout_buffer_ms' must be greater than zero.`
+      );
+    }
+
+    if (config.query_timeout_ms <= 0) {
+      throw new RangeError(`'query_timeout_ms' must be greater than zero.`);
+    }
+  }
 }
 
 // Private types and constants for internal logic.
 
-const queryCheckFailureCodes = [
+const QUERY_CHECK_FAILURE_CODES = [
   "invalid_function_definition",
   "invalid_identifier",
   "invalid_query",

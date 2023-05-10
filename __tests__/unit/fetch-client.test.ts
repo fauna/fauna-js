@@ -10,14 +10,15 @@ import {
   QueryFailure,
   QuerySuccess,
 } from "../../src";
+import { getDefaultHTTPClientOptions } from "../client";
 
 let fetchClient: FetchClient;
 
 const dummyRequest: HTTPRequest = {
+  client_timeout_ms: 10000,
   data: { query: "" },
   headers: {},
   method: "POST",
-  url: "",
 };
 
 const dummyStats = {
@@ -32,7 +33,7 @@ const dummyStats = {
 
 describe("fetch client", () => {
   beforeAll(() => {
-    fetchClient = new FetchClient();
+    fetchClient = new FetchClient(getDefaultHTTPClientOptions());
   });
 
   afterAll(() => {
@@ -112,6 +113,26 @@ describe("fetch client", () => {
     fetchMock.mockRejectOnce(new Error("oops"));
     try {
       await fetchClient.request(dummyRequest);
+    } catch (e) {
+      if (e instanceof NetworkError) {
+        expect(e.message).toEqual(
+          "The network connection encountered a problem."
+        );
+        expect(e.cause).toBeDefined();
+      }
+    }
+  });
+
+  it("returns a NetworkError if client timeout causes an abort", async () => {
+    expect.assertions(2);
+    fetchMock.mockResponseOnce(
+      () =>
+        new Promise((resolve) => setTimeout(() => resolve({ body: "" }), 100))
+    );
+    try {
+      const badClient = new FetchClient(getDefaultHTTPClientOptions());
+
+      await badClient.request({ ...dummyRequest, client_timeout_ms: 1 });
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(

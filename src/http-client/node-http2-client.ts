@@ -4,47 +4,106 @@ try {
 } catch (_) {
   http2 = undefined;
 }
-import { HTTPClient, HTTPRequest, HTTPResponse } from "./index";
+import {
+  HTTPClient,
+  HTTPClientOptions,
+  HTTPRequest,
+  HTTPResponse,
+} from "./http-client";
 import { NetworkError } from "../errors";
-import { QueryRequest } from "../wire-protocol";
+
+// alias http2 types
+type ClientHttp2Session = any;
+type ClientHttp2Stream = any;
+type IncomingHttpHeaders = any;
+type IncomingHttpStatusHeader = any;
+type OutgoingHttpHeaders = any;
 
 /**
  * An implementation for {@link HTTPClient} that uses the node http package
  */
 export class NodeHTTP2Client implements HTTPClient {
-  static #client: NodeHTTP2Client | null = null;
+  static #sessionMap: Map<string, SessionRC> = new Map();
 
-  #sessionMap: Map<string, SessionWrapper> = new Map();
-  /** number of users using this NodeHTTP2Client */
-  #numberOfUsers = 0;
+  #http2_session_idle_ms: number;
+  #url: string;
 
-  /**
-   * @remarks Private constructor means you must instantiate with
-   * {@link NodeHTTP2Client.getClient}
-   */
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  private constructor() {}
-
-  static getClient() {
+  constructor({ http2_session_idle_ms, url }: HTTPClientOptions) {
     if (http2 === undefined) {
       throw new Error("Your platform does not support Node's http2 library");
     }
 
-    if (this.#client === null) {
-      this.#client = new NodeHTTP2Client();
-    }
-
-    this.#client.#numberOfUsers++;
-    return this.#client;
+    this.#http2_session_idle_ms = http2_session_idle_ms;
+    this.#url = url;
   }
 
   /** {@inheritDoc HTTPClient.request} */
-  async request(httpRequest: HTTPRequest): Promise<HTTPResponse> {
-    const session = this.#getSession(httpRequest.url);
+  async request({
+    client_timeout_ms,
+    data: requestData,
+    headers: requestHeaders,
+    method,
+  }: HTTPRequest): Promise<HTTPResponse> {
+    let req: ClientHttp2Stream;
+
+    const requestPromise = new Promise<HTTPResponse>(
+      (resolvePromise, rejectPromise) => {
+        const onResponse = (
+          http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader
+        ) => {
+          const status = Number(
+            http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
+          );
+          let responseData = "";
+
+          // append response data to the data string every time we receive new
+          // data chunks in the response
+          req.on("data", (chunk: any) => {
+            responseData += chunk;
+          });
+
+          // Once the response is finished, resolve the promise
+          req.on("end", () => {
+            resolvePromise({
+              status,
+              body: responseData,
+              headers: http2ResponseHeaders,
+            });
+          });
+        };
+
+        try {
+          const httpRequestHeaders: OutgoingHttpHeaders = {
+            ...requestHeaders,
+            [http2.constants.HTTP2_HEADER_PATH]: "/query/1",
+            [http2.constants.HTTP2_HEADER_METHOD]: method,
+          };
+
+          const session = this.#connect();
+          req = session
+            .request(httpRequestHeaders)
+            .setEncoding("utf8")
+            .on("error", (error: any) => {
+              rejectPromise(error);
+            })
+            .on("response", onResponse);
+
+          req.write(JSON.stringify(requestData), "utf8");
+
+          // req.setTimeout must be called before req.end()
+          req.setTimeout(client_timeout_ms, () => {
+            req.destroy(new Error(`Client timeout`));
+          });
+
+          req.end();
+        } catch (error) {
+          rejectPromise(error);
+        }
+      }
+    );
 
     try {
-      const result = await session.request(httpRequest);
-      return result;
+      return await requestPromise;
     } catch (error) {
       // TODO: be more discernable about error types
       throw new NetworkError("The network connection encountered a problem.", {
@@ -53,145 +112,95 @@ export class NodeHTTP2Client implements HTTPClient {
     }
   }
 
-  /** {@inheritDoc HTTPClient.close} */
   close() {
-    // defend against redundant close calls
-    if (this.isClosed()) {
-      return;
-    }
-    this.#numberOfUsers--;
-    if (this.#numberOfUsers === 0) {
-      for (const sessionWrapper of this.#sessionMap.values()) {
-        sessionWrapper.close();
-      }
+    const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
+    if (!session_rc) return;
+
+    session_rc.refs.delete(this);
+
+    // if there are no clients referencing the session, then we can close it
+    if (session_rc.refs.size === 0) {
+      const session = session_rc.session;
+      if (session && !session.closed) session.close();
+
+      session_rc.session = null;
     }
   }
 
   /**
    * @returns true if this client has been closed, false otherwise.
    */
-  isClosed() {
-    return this.#numberOfUsers === 0;
+  isClosed(): boolean {
+    const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
+    return (session_rc?.refs.size ?? 0) === 0;
   }
 
-  #getSession(url: string): SessionWrapper {
-    const sessionKey = url; // WIP: need to account for streaming
-
-    if (this.#sessionMap.has(sessionKey)) {
-      // #sessionMap.has(sessionKey) will not return `undefined`
-      const session = this.#sessionMap.get(sessionKey) as SessionWrapper;
-
-      if (session.internal.closed) {
-        // cannot reuse sessions once they are closed
-        this.#sessionMap.delete(sessionKey);
-      } else {
-        return this.#sessionMap.get(sessionKey) as SessionWrapper;
-      }
-    }
-
-    const session = new SessionWrapper(sessionKey);
-    session.internal
-      .once("error", () => session.close())
-      .once("goaway", () => session.close());
-    this.#sessionMap.set(sessionKey, session);
-
-    return session;
-  }
-}
-
-type SessionWrapperOptions = {
-  idleTime: number;
-  // WIP: a flag for streaming should go here
-};
-
-type SessionRequestOptions = {
-  data: QueryRequest;
-  headers: Record<string, string | undefined>;
-  method: "POST";
-  // WIP: stream-consumer callbacks like onData should go here
-};
-
-const DEFAULT_SESSION_OPTIONS: SessionWrapperOptions = {
-  idleTime: 500,
-};
-
-class SessionWrapper {
-  readonly internal: any;
-  readonly #idleTime: number;
-  // WIP: should be set to something different for streaming
-  readonly #pathName: "/query/1";
-
-  constructor(url: string, options?: Partial<SessionWrapperOptions>) {
-    const _options: SessionWrapperOptions = {
-      ...DEFAULT_SESSION_OPTIONS,
-      ...options,
-    };
-    // TODO: put a cap on lax idle time
-    this.#idleTime = _options.idleTime;
-    // WIP: should be set to something different for streaming
-    this.#pathName = "/query/1";
-
-    try {
-      this.internal = http2.connect(url);
-      this.internal.setTimeout(this.#idleTime, () => {
-        this.close();
-      });
-    } catch (error) {
-      throw new NetworkError(`Could not connect to Fauna`, { cause: error });
-    }
+  /**
+   * Creates a key common the client that should share the same session
+   */
+  get sessionKey() {
+    return `${this.#url}|${this.#http2_session_idle_ms}`;
   }
 
-  close() {
-    this.internal.close();
+  #closeForAll() {
+    const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
+    if (!session_rc) return;
+
+    session_rc.refs.clear();
+    const session = session_rc.session;
+    if (session && !session.closed) session.close();
+
+    session_rc.session = null;
   }
 
-  async request({
-    data: requestData,
-    headers: requestHeaders,
-    method,
-  }: SessionRequestOptions): Promise<HTTPResponse> {
-    let req: any;
+  #connect() {
+    let session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
 
-    return new Promise<HTTPResponse>((resolvePromise, rejectPromise) => {
-      const onResponse = (http2ResponseHeaders: any) => {
-        const status = Number(
-          http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
-        );
-        let responseData = "";
-
-        // append response data to the data string every time we receive new data
-        // chunks in the response
-        req.on("data", (chunk: any) => {
-          responseData += chunk;
-        });
-
-        // Once the response is finished, resolve the promise
-        req.on("end", () => {
-          resolvePromise({
-            status,
-            body: responseData,
-            headers: http2ResponseHeaders,
-          });
-        });
+    // initialize the Map if necessary
+    if (!session_rc) {
+      session_rc = {
+        session: null,
+        refs: new Set(),
       };
 
-      try {
-        const httpRequestHeaders: any = {
-          ...requestHeaders,
-          [http2.constants.HTTP2_HEADER_PATH]: this.#pathName,
-          [http2.constants.HTTP2_HEADER_METHOD]: method,
-        };
+      NodeHTTP2Client.#sessionMap.set(this.sessionKey, session_rc);
+    }
 
-        req = this.internal
-          .request(httpRequestHeaders)
-          .setEncoding("utf8")
-          .on("error", (error: any) => rejectPromise(error))
-          .on("response", onResponse);
-        req.write(JSON.stringify(requestData), "utf8");
-        req.end();
-      } catch (error) {
-        rejectPromise(error);
-      }
-    });
+    // create a new session if necessary
+    if (session_rc.session === null || session_rc.session.closed) {
+      const http2_session_idle_ms = this.#http2_session_idle_ms;
+      const url = this.#url;
+
+      const new_session: ClientHttp2Session = http2
+        .connect(url)
+        .once("error", () => this.#closeForAll())
+        .once("goaway", () => this.#closeForAll());
+
+      new_session.setTimeout(http2_session_idle_ms, () => {
+        this.#closeForAll();
+      });
+
+      session_rc.session = new_session;
+    }
+
+    session_rc.refs.add(this);
+
+    return session_rc.session;
   }
 }
+
+/**
+ * Wrapper to provide reference counting for sessions.
+ *
+ * @internal
+ */
+type SessionRC = {
+  /** A session to be shared among http clients */
+  session: ClientHttp2Session | null;
+  /**
+   * A Setof client references. We will only close the session when there are no
+   * references left. This cannot be a WeakSet, because WeakSets are not
+   * enumerable (can't check if they are empty).
+   */
+  refs: Set<NodeHTTP2Client>;
+};

@@ -28,6 +28,6 @@ export const getDefaultHTTPClientOptions = (): HTTPClientOptions => {
   const url = process.env["FAUNA_ENDPOINT"]
     ? new URL(process.env["FAUNA_ENDPOINT"])
     : endpoints.local;
-  const http2_session_idle_ms = 10_000;
+  const http2_session_idle_ms = 500;
   return { url: url.toString(), http2_session_idle_ms };
 };

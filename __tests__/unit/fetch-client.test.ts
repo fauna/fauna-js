@@ -15,11 +15,11 @@ let fetchClient: FetchClient;
 
 const dummyFetchOptions = {
   url: "",
-  http2_session_idle_ms: 10_000,
+  http2_session_idle_ms: 50,
 };
 
 const dummyRequest: HTTPRequest = {
-  client_timeout_ms: 5500,
+  client_timeout_ms: 10000,
   data: { query: "" },
   headers: {},
   method: "POST",

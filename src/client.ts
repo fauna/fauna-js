@@ -36,7 +36,7 @@ import { TaggedTypeFormat } from "./tagged-type";
 import { EmbeddedSet, Page, SetIterator } from "./values";
 
 export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
-  client_timeout_buffer_ms: 500,
+  client_timeout_buffer_ms: 5000,
   endpoint: endpoints.default,
   format: "tagged",
   http2_session_idle_ms: 500,

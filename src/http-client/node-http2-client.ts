@@ -20,108 +20,17 @@ type IncomingHttpStatusHeader = any;
 type OutgoingHttpHeaders = any;
 
 /**
- * Wrapper to provide reference counting for sessions.
- *
- * @internal
- */
-type SessionRC = {
-  /** A session to be shared among http clients */
-  session: ClientHttp2Session | null;
-  /**
-   * A Setof client references. We will only close the session when there are no
-   * references left. This cannot be a WeakSet, because WeakSets are not
-   * enumerable (can't check if they are empty).
-   */
-  refs: Set<NodeHTTP2Client>;
-};
-
-/**
- * A class to manage connecting and closing sessions
- *
- * @internal
- */
-class SessionManager {
-  #map: Map<string, SessionRC> = new Map();
-
-  connect(client: NodeHTTP2Client) {
-    let session_rc = this.#map.get(client.sessionKey);
-
-    // initialize the Map if necessary
-    if (!session_rc) {
-      session_rc = {
-        session: null,
-        refs: new Set(),
-      };
-
-      this.#map.set(client.sessionKey, session_rc);
-    }
-
-    // create a new session if necessary
-    if (session_rc.session === null || session_rc.session.closed) {
-      const http2_session_idle_ms = client.http2_session_idle_ms;
-      const url = client.url;
-
-      const new_session: ClientHttp2Session = http2
-        .connect(url)
-        .once("error", () => this.close(client))
-        .once("goaway", () => this.close(client));
-
-      new_session.setTimeout(http2_session_idle_ms, () => {
-        this.closeForAll(client);
-      });
-
-      session_rc.session = new_session;
-    }
-
-    session_rc.refs.add(client);
-
-    return session_rc.session;
-  }
-
-  close(client: NodeHTTP2Client) {
-    const session_rc = this.#map.get(client.sessionKey);
-    if (!session_rc) return;
-
-    session_rc.refs.delete(client);
-
-    // if there are no clients referencing the session, then we can close it
-    if (session_rc.refs.size === 0) {
-      const session = session_rc.session;
-      if (session && !session.closed) session.close();
-
-      session_rc.session = null;
-    }
-  }
-
-  closeForAll(client: NodeHTTP2Client) {
-    const session_rc = this.#map.get(client.sessionKey);
-    if (!session_rc) return;
-
-    session_rc.refs.clear();
-    const session = session_rc.session;
-    if (session && !session.closed) session.close();
-
-    session_rc.session = null;
-  }
-
-  isClosed(client: NodeHTTP2Client): boolean {
-    const session_rc = this.#map.get(client.sessionKey);
-    return (session_rc?.refs.size ?? 0) === 0;
-  }
-}
-
-/**
  * An implementation for {@link HTTPClient} that uses the node http package
  */
 export class NodeHTTP2Client implements HTTPClient {
-  static #sessionManager = new SessionManager();
+  static #sessionMap: Map<string, SessionRC> = new Map();
 
-  http2_session_idle_ms: number;
-  url: string;
+  #http2_session_idle_ms: number;
+  #url: string;
 
   constructor({ http2_session_idle_ms, url }: HTTPClientOptions) {
-    this.http2_session_idle_ms = http2_session_idle_ms;
-    this.url = url;
+    this.#http2_session_idle_ms = http2_session_idle_ms;
+    this.#url = url;
   }
 
   /** {@inheritDoc HTTPClient.request} */
@@ -166,7 +75,7 @@ export class NodeHTTP2Client implements HTTPClient {
             [http2.constants.HTTP2_HEADER_METHOD]: method,
           };
 
-          const session = NodeHTTP2Client.#sessionManager.connect(this);
+          const session = this.#connect();
           req = session
             .request(httpRequestHeaders)
             .setEncoding("utf8")
@@ -199,22 +108,92 @@ export class NodeHTTP2Client implements HTTPClient {
     }
   }
 
-  /** {@inheritDoc HTTPClient.close} */
   close() {
-    NodeHTTP2Client.#sessionManager.close(this);
+    const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
+    if (!session_rc) return;
+
+    session_rc.refs.delete(this);
+
+    // if there are no clients referencing the session, then we can close it
+    if (session_rc.refs.size === 0) {
+      const session = session_rc.session;
+      if (session && !session.closed) session.close();
+
+      session_rc.session = null;
+    }
   }
 
-  /**
-   * @returns true if this client has been closed, false otherwise.
-   */
   isClosed(): boolean {
-    return NodeHTTP2Client.#sessionManager.isClosed(this);
+    const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
+    return (session_rc?.refs.size ?? 0) === 0;
   }
 
   /**
    * Creates a key common the client that should share the same session
    */
   get sessionKey() {
-    return `${this.url}|${this.http2_session_idle_ms}`;
+    return `${this.#url}|${this.#http2_session_idle_ms}`;
+  }
+
+  #closeForAll() {
+    const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
+    if (!session_rc) return;
+
+    session_rc.refs.clear();
+    const session = session_rc.session;
+    if (session && !session.closed) session.close();
+
+    session_rc.session = null;
+  }
+
+  #connect() {
+    let session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
+
+    // initialize the Map if necessary
+    if (!session_rc) {
+      session_rc = {
+        session: null,
+        refs: new Set(),
+      };
+
+      NodeHTTP2Client.#sessionMap.set(this.sessionKey, session_rc);
+    }
+
+    // create a new session if necessary
+    if (session_rc.session === null || session_rc.session.closed) {
+      const http2_session_idle_ms = this.#http2_session_idle_ms;
+      const url = this.#url;
+
+      const new_session: ClientHttp2Session = http2
+        .connect(url)
+        .once("error", () => this.close())
+        .once("goaway", () => this.close());
+
+      new_session.setTimeout(http2_session_idle_ms, () => {
+        this.#closeForAll();
+      });
+
+      session_rc.session = new_session;
+    }
+
+    session_rc.refs.add(this);
+
+    return session_rc.session;
   }
 }
+
+/**
+ * Wrapper to provide reference counting for sessions.
+ *
+ * @internal
+ */
+type SessionRC = {
+  /** A session to be shared among http clients */
+  session: ClientHttp2Session | null;
+  /**
+   * A Setof client references. We will only close the session when there are no
+   * references left. This cannot be a WeakSet, because WeakSets are not
+   * enumerable (can't check if they are empty).
+   */
+  refs: Set<NodeHTTP2Client>;
+};

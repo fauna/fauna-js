@@ -29,6 +29,10 @@ export class NodeHTTP2Client implements HTTPClient {
   #url: string;
 
   constructor({ http2_session_idle_ms, url }: HTTPClientOptions) {
+    if (http2 === undefined) {
+      throw new Error("Your platform does not support Node's http2 library");
+    }
+
     this.#http2_session_idle_ms = http2_session_idle_ms;
     this.#url = url;
   }
@@ -123,6 +127,9 @@ export class NodeHTTP2Client implements HTTPClient {
     }
   }
 
+  /**
+   * @returns true if this client has been closed, false otherwise.
+   */
   isClosed(): boolean {
     const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
     return (session_rc?.refs.size ?? 0) === 0;

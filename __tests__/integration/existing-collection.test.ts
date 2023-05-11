@@ -45,7 +45,7 @@ beforeAll(async () => {
    */
   console.log(
     await client.query(fql`
-  if (Collection.byName("Authors") == null) {
+  if (Collection.byName("Authors").exists()) {
     Collection.create({
       name: "Authors",
       indexes: {

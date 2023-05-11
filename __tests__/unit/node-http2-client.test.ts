@@ -1,6 +1,5 @@
 import { getDefaultHTTPClient, NodeHTTP2Client } from "../../src";
 import { getDefaultHTTPClientOptions } from "../client";
-import http2 from "node:http2";
 
 const client = getDefaultHTTPClient(getDefaultHTTPClientOptions());
 

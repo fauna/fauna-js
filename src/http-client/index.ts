@@ -8,7 +8,7 @@ import {
 } from "./http-client";
 
 export const getDefaultHTTPClient = (options: HTTPClientOptions): HTTPClient =>
-  isNode() ? new NodeHTTP2Client(options) : new FetchClient(options);
+  isNode() ? NodeHTTP2Client.getClient(options) : new FetchClient(options);
 
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;

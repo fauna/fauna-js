@@ -40,7 +40,7 @@ describe("Client", () => {
     // Sessions are only connected upon making requests. An HTTPClient that has
     // not yet made a request appears effectively as closed.
 
-    const nodeClient = new NodeHTTP2Client(getDefaultHTTPClientOptions());
+    const nodeClient = NodeHTTP2Client.getClient(getDefaultHTTPClientOptions());
     const clientOne = new Client(getDefaultSecretAndEndpoint(), nodeClient);
     await clientOne.query(fql`"Hello World"`); // nodeClient.request(): refs = [nodeClient]
     expect(nodeClient.isClosed()).toBe(false);
@@ -50,7 +50,7 @@ describe("Client", () => {
 
     const clientTwo = new Client(
       getDefaultSecretAndEndpoint(),
-      new NodeHTTP2Client(getDefaultHTTPClientOptions())
+      NodeHTTP2Client.getClient(getDefaultHTTPClientOptions())
     );
     expect((await clientTwo.query(fql`"Hello World"`)).data).toEqual(
       "Hello World"
@@ -59,7 +59,7 @@ describe("Client", () => {
 
     const clientThree = new Client(
       getDefaultSecretAndEndpoint(),
-      new NodeHTTP2Client(getDefaultHTTPClientOptions())
+      NodeHTTP2Client.getClient(getDefaultHTTPClientOptions())
     );
     expect((await clientThree.query(fql`"Hello World"`)).data).toEqual(
       "Hello World"

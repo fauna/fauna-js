@@ -367,9 +367,15 @@ describe("query", () => {
   });
 
   it("session is closed regardless of number of clients", async () => {
-    const httpClient1 = new NodeHTTP2Client(getDefaultHTTPClientOptions());
-    const httpClient2 = new NodeHTTP2Client(getDefaultHTTPClientOptions());
-    const httpClient3 = new NodeHTTP2Client(getDefaultHTTPClientOptions());
+    const httpClient1 = NodeHTTP2Client.getClient(
+      getDefaultHTTPClientOptions()
+    );
+    const httpClient2 = NodeHTTP2Client.getClient(
+      getDefaultHTTPClientOptions()
+    );
+    const httpClient3 = NodeHTTP2Client.getClient(
+      getDefaultHTTPClientOptions()
+    );
     const client1 = getClient({}, httpClient1);
     const client2 = getClient({}, httpClient2);
     const client3 = getClient({}, httpClient3);

@@ -23,18 +23,44 @@ type OutgoingHttpHeaders = any;
  * An implementation for {@link HTTPClient} that uses the node http package
  */
 export class NodeHTTP2Client implements HTTPClient {
-  static #sessionMap: Map<string, SessionRC> = new Map();
+  static #clients: Map<string, NodeHTTP2Client> = new Map();
 
   #http2_session_idle_ms: number;
   #url: string;
+  #numberOfUsers = 0;
+  #session: ClientHttp2Session | null;
 
-  constructor({ http2_session_idle_ms, url }: HTTPClientOptions) {
+  private constructor({ http2_session_idle_ms, url }: HTTPClientOptions) {
     if (http2 === undefined) {
       throw new Error("Your platform does not support Node's http2 library");
     }
 
     this.#http2_session_idle_ms = http2_session_idle_ms;
     this.#url = url;
+    this.#session = null;
+  }
+
+  /**
+   * Gets a {@link NodeHTTP2Client} matching the {@link HTTTPClientOptions}
+   * @param httpClientOptions - the {@link HTTTPClientOptions}
+   * @returns a {@link NodeHTTP2Client} matching the {@link HTTTPClientOptions}
+   */
+  static getClient(httpClientOptions: HTTPClientOptions): NodeHTTP2Client {
+    const clientKey = NodeHTTP2Client.#getClientKey(httpClientOptions);
+    if (!NodeHTTP2Client.#clients.has(clientKey)) {
+      NodeHTTP2Client.#clients.set(
+        clientKey,
+        new NodeHTTP2Client(httpClientOptions)
+      );
+    }
+    // we know that we have a client here
+    const client = NodeHTTP2Client.#clients.get(clientKey) as NodeHTTP2Client;
+    client.#numberOfUsers++;
+    return client;
+  }
+
+  static #getClientKey({ http2_session_idle_ms, url }: HTTPClientOptions) {
+    return `${url}|${http2_session_idle_ms}`;
   }
 
   /** {@inheritDoc HTTPClient.request} */
@@ -112,18 +138,15 @@ export class NodeHTTP2Client implements HTTPClient {
     }
   }
 
+  /** {@inheritDoc HTTPClient.close} */
   close() {
-    const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
-    if (!session_rc) return;
-
-    session_rc.refs.delete(this);
-
-    // if there are no clients referencing the session, then we can close it
-    if (session_rc.refs.size === 0) {
-      const session = session_rc.session;
-      if (session && !session.closed) session.close();
-
-      session_rc.session = null;
+    // defend against redundant close calls
+    if (this.isClosed()) {
+      return;
+    }
+    this.#numberOfUsers--;
+    if (this.#numberOfUsers === 0 && this.#session && !this.#session.closed) {
+      this.#session.close();
     }
   }
 
@@ -131,76 +154,30 @@ export class NodeHTTP2Client implements HTTPClient {
    * @returns true if this client has been closed, false otherwise.
    */
   isClosed(): boolean {
-    const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
-    return (session_rc?.refs.size ?? 0) === 0;
-  }
-
-  /**
-   * Creates a key common the client that should share the same session
-   */
-  get sessionKey() {
-    return `${this.#url}|${this.#http2_session_idle_ms}`;
+    return this.#numberOfUsers === 0;
   }
 
   #closeForAll() {
-    const session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
-    if (!session_rc) return;
-
-    session_rc.refs.clear();
-    const session = session_rc.session;
-    if (session && !session.closed) session.close();
-
-    session_rc.session = null;
+    this.#numberOfUsers = 0;
+    if (this.#session && !this.#session.closed) {
+      this.#session.close();
+    }
   }
 
   #connect() {
-    let session_rc = NodeHTTP2Client.#sessionMap.get(this.sessionKey);
-
-    // initialize the Map if necessary
-    if (!session_rc) {
-      session_rc = {
-        session: null,
-        refs: new Set(),
-      };
-
-      NodeHTTP2Client.#sessionMap.set(this.sessionKey, session_rc);
-    }
-
-    // create a new session if necessary
-    if (session_rc.session === null || session_rc.session.closed) {
-      const http2_session_idle_ms = this.#http2_session_idle_ms;
-      const url = this.#url;
-
+    // create the session if it does not exist or is closed
+    if (!this.#session || this.#session.closed) {
       const new_session: ClientHttp2Session = http2
-        .connect(url)
+        .connect(this.#url)
         .once("error", () => this.#closeForAll())
         .once("goaway", () => this.#closeForAll());
 
-      new_session.setTimeout(http2_session_idle_ms, () => {
+      new_session.setTimeout(this.#http2_session_idle_ms, () => {
         this.#closeForAll();
       });
 
-      session_rc.session = new_session;
+      this.#session = new_session;
     }
-
-    session_rc.refs.add(this);
-
-    return session_rc.session;
+    return this.#session;
   }
 }
-
-/**
- * Wrapper to provide reference counting for sessions.
- *
- * @internal
- */
-type SessionRC = {
-  /** A session to be shared among http clients */
-  session: ClientHttp2Session | null;
-  /**
-   * A Setof client references. We will only close the session when there are no
-   * references left. This cannot be a WeakSet, because WeakSets are not
-   * enumerable (can't check if they are empty).
-   */
-  refs: Set<NodeHTTP2Client>;
-};

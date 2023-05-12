@@ -64,78 +64,41 @@ export class NodeHTTP2Client implements HTTPClient {
   }
 
   /** {@inheritDoc HTTPClient.request} */
-  async request({
-    client_timeout_ms,
-    data: requestData,
-    headers: requestHeaders,
-    method,
-  }: HTTPRequest): Promise<HTTPResponse> {
-    let req: ClientHttp2Stream;
-
-    const requestPromise = new Promise<HTTPResponse>(
-      (resolvePromise, rejectPromise) => {
-        const onResponse = (
-          http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader
-        ) => {
-          const status = Number(
-            http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
+  async request(req: HTTPRequest): Promise<HTTPResponse> {
+    let retryCount = 0;
+    let memoizedError: any;
+    do {
+      try {
+        return await this.#doRequest(req);
+      } catch (error: any) {
+        // see https://github.com/nodejs/node/pull/42190/files
+        // and https://github.com/nodejs/help/issues/2105
+        //
+        // TLDR; In Node, there is a race condition between handling
+        // GOAWAY and submitting requests - that can cause
+        // clients that safely handle go away to submit
+        // requests after a GOAWAY was received anyway.
+        //
+        // technical explanation: node HTTP2 request gets put
+        // on event queue before it is actually executed. In the iterim,
+        // a GOAWAY can come and cause the request to fail
+        // with a GOAWAY.
+        if (error?.code !== "ERR_HTTP2_GOAWAY_SESSION") {
+          // TODO: be more discernable about error types
+          throw new NetworkError(
+            "The network connection encountered a problem.",
+            {
+              cause: error,
+            }
           );
-          let responseData = "";
-
-          // append response data to the data string every time we receive new
-          // data chunks in the response
-          req.on("data", (chunk: any) => {
-            responseData += chunk;
-          });
-
-          // Once the response is finished, resolve the promise
-          req.on("end", () => {
-            resolvePromise({
-              status,
-              body: responseData,
-              headers: http2ResponseHeaders,
-            });
-          });
-        };
-
-        try {
-          const httpRequestHeaders: OutgoingHttpHeaders = {
-            ...requestHeaders,
-            [http2.constants.HTTP2_HEADER_PATH]: "/query/1",
-            [http2.constants.HTTP2_HEADER_METHOD]: method,
-          };
-
-          const session = this.#connect();
-          req = session
-            .request(httpRequestHeaders)
-            .setEncoding("utf8")
-            .on("error", (error: any) => {
-              rejectPromise(error);
-            })
-            .on("response", onResponse);
-
-          req.write(JSON.stringify(requestData), "utf8");
-
-          // req.setTimeout must be called before req.end()
-          req.setTimeout(client_timeout_ms, () => {
-            req.destroy(new Error(`Client timeout`));
-          });
-
-          req.end();
-        } catch (error) {
-          rejectPromise(error);
         }
+        memoizedError = error;
+        retryCount++;
       }
-    );
-
-    try {
-      return await requestPromise;
-    } catch (error) {
-      // TODO: be more discernable about error types
-      throw new NetworkError("The network connection encountered a problem.", {
-        cause: error,
-      });
-    }
+    } while (retryCount < 3);
+    throw new NetworkError("The network connection encountered a problem.", {
+      cause: memoizedError,
+    });
   }
 
   /** {@inheritDoc HTTPClient.close} */
@@ -179,5 +142,67 @@ export class NodeHTTP2Client implements HTTPClient {
       this.#session = new_session;
     }
     return this.#session;
+  }
+
+  #doRequest({
+    client_timeout_ms,
+    data: requestData,
+    headers: requestHeaders,
+    method,
+  }: HTTPRequest): Promise<HTTPResponse> {
+    return new Promise<HTTPResponse>((resolvePromise, rejectPromise) => {
+      let req: ClientHttp2Stream;
+      const onResponse = (
+        http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader
+      ) => {
+        const status = Number(
+          http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
+        );
+        let responseData = "";
+
+        // append response data to the data string every time we receive new
+        // data chunks in the response
+        req.on("data", (chunk: any) => {
+          responseData += chunk;
+        });
+
+        // Once the response is finished, resolve the promise
+        req.on("end", () => {
+          resolvePromise({
+            status,
+            body: responseData,
+            headers: http2ResponseHeaders,
+          });
+        });
+      };
+
+      try {
+        const httpRequestHeaders: OutgoingHttpHeaders = {
+          ...requestHeaders,
+          [http2.constants.HTTP2_HEADER_PATH]: "/query/1",
+          [http2.constants.HTTP2_HEADER_METHOD]: method,
+        };
+
+        const session = this.#connect();
+        req = session
+          .request(httpRequestHeaders)
+          .setEncoding("utf8")
+          .on("error", (error: any) => {
+            rejectPromise(error);
+          })
+          .on("response", onResponse);
+
+        req.write(JSON.stringify(requestData), "utf8");
+
+        // req.setTimeout must be called before req.end()
+        req.setTimeout(client_timeout_ms, () => {
+          req.destroy(new Error(`Client timeout`));
+        });
+
+        req.end();
+      } catch (error) {
+        rejectPromise(error);
+      }
+    });
   }
 }

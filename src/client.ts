@@ -39,7 +39,7 @@ export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
   client_timeout_buffer_ms: 5000,
   endpoint: endpoints.default,
   format: "tagged",
-  http2_session_idle_ms: 500,
+  http2_session_idle_ms: 5000,
   max_conns: 10,
   query_timeout_ms: 5000,
 };

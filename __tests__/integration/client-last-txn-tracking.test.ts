@@ -48,6 +48,7 @@ describe("last_txn_ts tracking in client", () => {
     `);
     expect(resultThree.txn_ts).not.toBeUndefined();
     expect(resultThree.txn_ts).not.toEqual(resultTwo.txn_ts);
+    myClient.close();
   });
 
   it("Accepts an override of the last_txn_ts datetime and sends in the headers", async () => {

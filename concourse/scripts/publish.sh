@@ -18,7 +18,7 @@ then
   npm publish
   rm .npmrc
 
-  echo "fauna-js@$PACKAGE_VERSION published to npm <!subteam^S03CV3GLMCZ>" > ../slack-message/publish
+  echo "fauna-js@$PACKAGE_VERSION published to npm <!subteam^S0562QFL21M>" > ../slack-message/publish
 else
   echo "fauna-js@${NPM_LATEST_VERSION} package has been already published" > ../slack-message/publish
   echo "fauna-js@${NPM_LATEST_VERSION} package has been already published" 1>&2

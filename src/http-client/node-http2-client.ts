@@ -77,7 +77,7 @@ export class NodeHTTP2Client implements HTTPClient {
         // TLDR; In Node, there is a race condition between handling
         // GOAWAY and submitting requests - that can cause
         // clients that safely handle go away to submit
-        // requests fter a GOAWAWY was recieved anyway.
+        // requests after a GOAWAY was received anyway.
         //
         // technical explanation: node HTTP2 request gets put
         // on event queue before it is actually executed. In the iterim,

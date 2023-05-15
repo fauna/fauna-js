@@ -173,7 +173,10 @@ describe("query", () => {
     expect.assertions(6);
     try {
       await client.query(
-        fql`Function.create({"name": "double", "body": "x => x * 2"})`
+        fql`Function.create({"name": "my_double", "body": "x => x * 2"})`
+      );
+      await client.query(
+        fql`Function.create({"name": "my_double", "body": "x => x * 2"})`
       );
     } catch (e) {
       if (e instanceof ServiceError) {

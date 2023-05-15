@@ -44,9 +44,25 @@ export interface ClientConfiguration {
   http2_session_idle_ms: number;
 
   /**
-   * The maximum number of connections to a make to Fauna.
+   * The maximum number of HTTP2 streams to execute in parallel
+   * to Fauna per HTTP2 session.
+   * Only relevant to certain HTTP2 clients.
+   * @remarks
+   * Relevant to clients using the {@link NodeHTTP2Client} provided,
+   * or any custom HTTP2Clients you implement that suppor this feature.
    */
-  max_conns: number;
+  http2_max_streams?: number;
+
+  /**
+   * When true will keep executing a request even if the page
+   * that fired the request is no longer executing. Only relevant
+   * to underlying HTTP2 clients using the {@link https://fetch.spec.whatwg.org/ | Fetch standard}.
+   * By default set to false.
+   * @remarks
+   * Relevant to clients using the {@link FetchClient} provided,
+   * or any custom HTTP2Clients you implement that support this feature.
+   */
+  fetch_keep_alive?: boolean;
 
   /**
    * A secret for your Fauna DB, used to authorize your queries.

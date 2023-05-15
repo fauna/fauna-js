@@ -41,7 +41,8 @@ export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
   endpoint: endpoints.default,
   format: "tagged",
   http2_session_idle_ms: 5000,
-  max_conns: 10,
+  http2_max_streams: 100,
+  fetch_keep_alive: false,
   query_timeout_ms: 5000,
 };
 
@@ -70,7 +71,6 @@ export class Client {
    *  const myClient = new Client(
    *   {
    *     endpoint: endpoints.cloud,
-   *     max_conns: 10,
    *     secret: "foo",
    *     query_timeout_ms: 60_000,
    *   }
@@ -455,7 +455,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       "endpoint",
       "format",
       "http2_session_idle_ms",
-      "max_conns",
       "query_timeout_ms",
     ];
     required_options.forEach((option) => {

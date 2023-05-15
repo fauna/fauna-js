@@ -23,7 +23,6 @@ import {
 import { getClient, getDefaultHTTPClientOptions } from "../client";
 
 const client = getClient({
-  max_conns: 5,
   query_timeout_ms: 60_000,
 });
 
@@ -138,7 +137,6 @@ describe("query", () => {
         close() {},
       };
       const clientConfiguration: Partial<ClientConfiguration> = {
-        max_conns: 5,
         linearized: true,
         max_contention_retries: 7,
         query_tags: { alpha: "beta", gamma: "delta" },
@@ -245,7 +243,6 @@ describe("query", () => {
   it("throws a QueryTimeoutError if the query times out", async () => {
     expect.assertions(4);
     const badClient = getClient({
-      max_conns: 5,
       query_timeout_ms: 1,
     });
     try {
@@ -269,7 +266,6 @@ describe("query", () => {
   it("throws a AuthenticationError creds are invalid", async () => {
     expect.assertions(4);
     const badClient = getClient({
-      max_conns: 5,
       secret: "nah",
       query_timeout_ms: 60,
     });
@@ -293,7 +289,6 @@ describe("query", () => {
     expect.assertions(2);
     const badClient = getClient({
       endpoint: new URL("http://localhost:1"),
-      max_conns: 1,
       secret: "secret",
       query_timeout_ms: 60,
     });
@@ -343,7 +338,6 @@ describe("query", () => {
     };
     const badClient = getClient(
       {
-        max_conns: 5,
         query_timeout_ms: 60,
       },
       httpClient
@@ -364,7 +358,6 @@ describe("query", () => {
     expect.assertions(2);
     const badClient = getClient({
       endpoint: new URL("https://frontdoor.fauna.com/"),
-      max_conns: 5,
       secret: "nah",
       query_timeout_ms: 60,
     });

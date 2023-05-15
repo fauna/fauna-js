@@ -54,7 +54,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     });
     const client = getClient({
       endpoint: endpoints["my-alternative-port"],
-      max_conns: 5,
       secret: "secret",
       query_timeout_ms: 60_000,
     });

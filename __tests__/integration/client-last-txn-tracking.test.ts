@@ -19,7 +19,6 @@ describe("last_txn_ts tracking in client", () => {
 
     const myClient = getClient(
       {
-        max_conns: 5,
         query_timeout_ms: 60_000,
       },
       httpClient
@@ -68,7 +67,6 @@ describe("last_txn_ts tracking in client", () => {
 
     const myClient = getClient(
       {
-        max_conns: 5,
         query_timeout_ms: 60_000,
       },
       httpClient

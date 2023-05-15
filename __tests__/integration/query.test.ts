@@ -124,6 +124,7 @@ describe("query", () => {
           Object.entries(expectedHeaders).forEach(([_, expectedHeader]) => {
             expect(req.headers[expectedHeader.key]).toBe(expectedHeader.value);
           });
+          expect(req.headers["X-Driver-Env"]).toBeDefined();
           return dummyResponse;
         },
         close() {},

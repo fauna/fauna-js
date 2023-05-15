@@ -17,7 +17,15 @@ import {
   ContendedTransactionError,
   InvalidRequestError,
 } from "./errors";
+import {
+  getDefaultHTTPClient,
+  isHTTPResponse,
+  type HTTPClient,
+} from "./http-client";
 import { Query } from "./query-builder";
+import { TaggedTypeFormat } from "./tagged-type";
+import { getDriverEnv } from "./util/environment";
+import { EmbeddedSet, Page, SetIterator } from "./values";
 import {
   isQueryFailure,
   isQuerySuccess,
@@ -27,13 +35,6 @@ import {
   type QuerySuccess,
   type QueryValue,
 } from "./wire-protocol";
-import {
-  getDefaultHTTPClient,
-  isHTTPResponse,
-  type HTTPClient,
-} from "./http-client";
-import { TaggedTypeFormat } from "./tagged-type";
-import { EmbeddedSet, Page, SetIterator } from "./values";
 
 export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
   client_timeout_buffer_ms: 5000,
@@ -439,6 +440,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     ) {
       headerObject["x-last-txn-ts"] = this.#lastTxnTs;
     }
+
+    headerObject["X-Driver-Env"] = getDriverEnv();
   }
 
   #validateConfiguration() {

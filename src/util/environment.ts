@@ -55,10 +55,13 @@ export const getDriverEnv = (): string => {
     driverEnv.os = getBrowserOsDetails();
   }
 
-  return Object.entries(driverEnv)
-    .filter(([_, val]) => val !== "unknown")
-    .map((entry: [string, string]) => entry.join("="))
-    .join("; ");
+  return (
+    Object.entries(driverEnv)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .filter(([_, val]) => val !== "unknown")
+      .map((entry: [string, string]) => entry.join("="))
+      .join("; ")
+  );
 };
 
 /**

@@ -8,22 +8,6 @@ try {
 }
 
 /**
- * Predicate to determine if we're executing in a Node environment or not
- * @internal
- */
-export const isNode = (): boolean => {
-  if (typeof process !== "undefined" && process.release?.name === "node") {
-    try {
-      require("node:http2");
-      return true;
-    } catch (_) {
-      return false;
-    }
-  }
-  return false;
-};
-
-/**
  * Function to put all of the environment details together.
  * @internal
  */
@@ -64,6 +48,15 @@ export const getDriverEnv = (): string => {
       .join("; ")
   );
 };
+
+/**
+ * Predicate to determine if we're executing in a Node environment or not
+ */
+const isNode = (): boolean =>
+  typeof window === "undefined" &&
+  typeof process !== "undefined" &&
+  process.versions != null &&
+  process.versions.node != null;
 
 /**
  * Get browser environment details

@@ -37,7 +37,6 @@ export const getDriverEnv = (): string => {
 
   let isServiceWorker = false;
   try {
-    // @ts-expect-error Cannot find name 'ServiceWorkerGlobalScope'.ts(2304)
     isServiceWorker = global instanceof ServiceWorkerGlobalScope;
   } catch (_) {
     // okay if this fails
@@ -48,11 +47,13 @@ export const getDriverEnv = (): string => {
     driverEnv.env = getNodeRuntimeEnv();
     driverEnv.os = [os.platform(), os.release()].join("-");
   } else if (isServiceWorker) {
-    driverEnv.runtime = "Service Worker";
+    driverEnv.runtime = getBrowserDetails(navigator);
+    driverEnv.env = "Service Worker";
+    driverEnv.os = getBrowserOsDetails(navigator);
   } else {
-    driverEnv.runtime = getBrowserDetails();
+    driverEnv.runtime = getBrowserDetails(navigator);
     driverEnv.env = "browser";
-    driverEnv.os = getBrowserOsDetails();
+    driverEnv.os = getBrowserOsDetails(navigator);
   }
 
   return (
@@ -67,7 +68,7 @@ export const getDriverEnv = (): string => {
 /**
  * Get browser environment details
  */
-const getBrowserDetails = (): string => {
+const getBrowserDetails = (navigator: Navigator | WorkerNavigator): string => {
   let browser: string = navigator.appName;
   let browserVersion = "" + parseFloat(navigator.appVersion);
   let nameOffset, verOffset, ix;
@@ -152,7 +153,9 @@ const getBrowserDetails = (): string => {
 /**
  * Get OS details for the browser
  */
-const getBrowserOsDetails = (): string => {
+const getBrowserOsDetails = (
+  navigator: Navigator | WorkerNavigator
+): string => {
   let os = "unknown";
   const clientStrings = [
     { s: "Windows 10", r: /(Windows 10.0|Windows NT 10.0)/ },

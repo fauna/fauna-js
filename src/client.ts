@@ -49,6 +49,9 @@ export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
  * Client for calling Fauna.
  */
 export class Client {
+  /** A static copy of the driver env header to send with each request */
+  static readonly #driverEnvHeader = getDriverEnv();
+
   /** The {@link ClientConfiguration} */
   readonly #clientConfiguration: ClientConfiguration;
   /** The underlying {@link HTTPClient} client. */
@@ -441,7 +444,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       headerObject["x-last-txn-ts"] = this.#lastTxnTs;
     }
 
-    headerObject["X-Driver-Env"] = getDriverEnv();
+    headerObject["x-driver-env"] = Client.#driverEnvHeader;
   }
 
   #validateConfiguration() {

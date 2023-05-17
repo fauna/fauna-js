@@ -1,4 +1,4 @@
-import packageJson from "../../package.json";
+import { packageVersion } from "./package-version";
 
 let os: any;
 try {
@@ -13,7 +13,7 @@ try {
  */
 export const getDriverEnv = (): string => {
   const driverEnv = {
-    driver: ["javascript", packageJson.version].join("-"),
+    driver: ["javascript", packageVersion].join("-"),
     env: "unknown",
     os: "unknown",
     runtime: "unknown",

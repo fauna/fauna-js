@@ -1,6 +1,9 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+VERSION=`cat "package.json" | grep "^  \"version\":" | cut -d: -f2 | cut -d\" -f2`
+echo "export const packageVersion = \"$VERSION\";" > ./src/util/package-version.ts
+git add ./src/util/package-version.ts
 if [[ `git status --porcelain -- '*.ts' 'package.json'` ]]; then
   yarn build
   yarn lint

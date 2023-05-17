@@ -124,6 +124,15 @@ describe("query", () => {
           Object.entries(expectedHeaders).forEach(([_, expectedHeader]) => {
             expect(req.headers[expectedHeader.key]).toBe(expectedHeader.value);
           });
+          expect(req.headers["x-driver-env"]).toEqual(
+            expect.stringContaining("driver=")
+          );
+          expect(req.headers["x-driver-env"]).toEqual(
+            expect.stringContaining("os=")
+          );
+          expect(req.headers["x-driver-env"]).toEqual(
+            expect.stringContaining("runtime=")
+          );
           return dummyResponse;
         },
         close() {},

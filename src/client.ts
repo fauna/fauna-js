@@ -17,7 +17,15 @@ import {
   ContendedTransactionError,
   InvalidRequestError,
 } from "./errors";
+import {
+  getDefaultHTTPClient,
+  isHTTPResponse,
+  type HTTPClient,
+} from "./http-client";
 import { Query } from "./query-builder";
+import { TaggedTypeFormat } from "./tagged-type";
+import { getDriverEnv } from "./util/environment";
+import { EmbeddedSet, Page, SetIterator } from "./values";
 import {
   isQueryFailure,
   isQuerySuccess,
@@ -27,13 +35,6 @@ import {
   type QuerySuccess,
   type QueryValue,
 } from "./wire-protocol";
-import {
-  getDefaultHTTPClient,
-  isHTTPResponse,
-  type HTTPClient,
-} from "./http-client";
-import { TaggedTypeFormat } from "./tagged-type";
-import { EmbeddedSet, Page, SetIterator } from "./values";
 
 export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
   client_timeout_buffer_ms: 5000,
@@ -48,6 +49,9 @@ export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
  * Client for calling Fauna.
  */
 export class Client {
+  /** A static copy of the driver env header to send with each request */
+  static readonly #driverEnvHeader = getDriverEnv();
+
   /** The {@link ClientConfiguration} */
   readonly #clientConfiguration: ClientConfiguration;
   /** The underlying {@link HTTPClient} client. */
@@ -439,6 +443,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     ) {
       headerObject["x-last-txn-ts"] = this.#lastTxnTs;
     }
+
+    headerObject["x-driver-env"] = Client.#driverEnvHeader;
   }
 
   #validateConfiguration() {

@@ -8,14 +8,14 @@ import {
 } from "./http-client";
 
 export const getDefaultHTTPClient = (options: HTTPClientOptions): HTTPClient =>
-  http2IsSupported()
+  nodeHttp2IsSupported()
     ? NodeHTTP2Client.getClient(options)
     : new FetchClient(options);
 
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;
 
-const http2IsSupported = () => {
+const nodeHttp2IsSupported = () => {
   if (typeof process !== "undefined" && process.release?.name === "node") {
     try {
       require("node:http2");

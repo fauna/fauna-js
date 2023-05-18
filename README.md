@@ -242,8 +242,6 @@ const config: ClientConfiguration = {
   // configure client
   secret: YOUR_FAUNA_SECRET,
   endpoint: endpoints.default,
-  // note this will change names during the early access beta
-  // to reflect HTTP/2 semantics
 
   // set default query options
   format: "tagged",

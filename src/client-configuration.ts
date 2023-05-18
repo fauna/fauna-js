@@ -49,7 +49,7 @@ export interface ClientConfiguration {
    * Only relevant to certain HTTP2 clients.
    * @remarks
    * Relevant to clients using the {@link NodeHTTP2Client} provided,
-   * or any custom HTTP2Clients you implement that suppor this feature.
+   * or any custom HTTP2Clients you implement that support this feature.
    */
   http2_max_streams?: number;
 

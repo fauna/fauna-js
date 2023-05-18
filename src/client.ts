@@ -34,9 +34,24 @@ import {
   type QueryRequestHeaders,
   type QuerySuccess,
   type QueryValue,
+  type ValueFormat,
 } from "./wire-protocol";
 
-export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
+interface RequiredClientConfig {
+  client_timeout_buffer_ms: number;
+  endpoint: URL;
+  format: ValueFormat;
+  http2_session_idle_ms: number;
+  http2_max_streams: number;
+  fetch_keep_alive: boolean;
+  secret: string;
+  query_timeout_ms: number;
+}
+
+export const DEFAULT_CLIENT_CONFIG: Omit<
+  ClientConfiguration & RequiredClientConfig,
+  "secret"
+> = {
   client_timeout_buffer_ms: 5000,
   endpoint: endpoints.default,
   format: "tagged",
@@ -54,7 +69,7 @@ export class Client {
   static readonly #driverEnvHeader = getDriverEnv();
 
   /** The {@link ClientConfiguration} */
-  readonly #clientConfiguration: ClientConfiguration;
+  readonly #clientConfiguration: ClientConfiguration & RequiredClientConfig;
   /** The underlying {@link HTTPClient} client. */
   readonly #httpClient: HTTPClient;
   /** The last transaction timestamp this client has seen */
@@ -78,7 +93,7 @@ export class Client {
    * ```
    */
   constructor(
-    clientConfiguration?: Partial<ClientConfiguration>,
+    clientConfiguration?: ClientConfiguration,
     httpClient?: HTTPClient
   ) {
     this.#clientConfiguration = {
@@ -93,6 +108,8 @@ export class Client {
       this.#httpClient = getDefaultHTTPClient({
         url: this.#clientConfiguration.endpoint.toString(),
         http2_session_idle_ms: this.#clientConfiguration.http2_session_idle_ms,
+        http2_max_streams: this.#clientConfiguration.http2_max_streams,
+        fetch_keep_alive: this.#clientConfiguration.fetch_keep_alive,
       });
     } else {
       this.#httpClient = httpClient;
@@ -264,7 +281,7 @@ export class Client {
     );
   }
 
-  #getSecret(partialClientConfig?: Partial<ClientConfiguration>): string {
+  #getSecret(partialClientConfig?: ClientConfiguration): string {
     let fallback = undefined;
     if (typeof process === "object") {
       fallback = process.env["FAUNA_SECRET"];

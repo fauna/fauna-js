@@ -14,9 +14,11 @@ import {
  */
 export class FetchClient implements HTTPClient {
   #url: string;
+  #keepalive: boolean;
 
-  constructor({ url }: HTTPClientOptions) {
+  constructor({ url, fetch_keep_alive }: HTTPClientOptions) {
     this.#url = new URL("/query/1", url).toString();
+    this.#keepalive = fetch_keep_alive;
   }
 
   /** {@inheritDoc HTTPClient.request} */
@@ -31,6 +33,7 @@ export class FetchClient implements HTTPClient {
       headers: { ...requestHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(data),
       signal: AbortSignal.timeout(client_timeout_ms),
+      keepalive: this.#keepalive,
     }).catch((error) => {
       throw new NetworkError("The network connection encountered a problem.", {
         cause: error,

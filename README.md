@@ -142,7 +142,7 @@ client.query(fql`
   } else {
     Collection.create({ name: ${collectionName} })
     "Collection exists now!"
-  }`)
+  }`);
 ```
 
 This has several advantages:
@@ -244,7 +244,6 @@ const config: ClientConfiguration = {
   endpoint: endpoints.default,
   // note this will change names during the early access beta
   // to reflect HTTP/2 semantics
-  max_conns: 10,
 
   // set default query options
   format: "tagged",

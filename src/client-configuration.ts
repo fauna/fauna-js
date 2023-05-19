@@ -56,11 +56,11 @@ export interface ClientConfiguration {
   /**
    * When true will keep executing a request even if the page
    * that fired the request is no longer executing. Only relevant
-   * to underlying HTTP2 clients using the {@link https://fetch.spec.whatwg.org/ | Fetch standard}.
+   * to underlying clients using the {@link https://fetch.spec.whatwg.org/ | Fetch standard}.
    * By default set to false.
    * @remarks
    * Relevant to clients using the {@link FetchClient} provided,
-   * or any custom HTTP2Clients you implement that support this feature.
+   * or any custom HTTP Clients you implement using the Fetch standard.
    */
   fetch_keep_alive?: boolean;
 

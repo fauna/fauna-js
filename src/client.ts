@@ -48,7 +48,7 @@ interface RequiredClientConfig {
   query_timeout_ms: number;
 }
 
-export const DEFAULT_CLIENT_CONFIG: Omit<
+const DEFAULT_CLIENT_CONFIG: Omit<
   ClientConfiguration & RequiredClientConfig,
   "secret"
 > = {

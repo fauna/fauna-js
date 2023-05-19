@@ -140,6 +140,8 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     ${"format"}
     ${"http2_session_idle_ms"}
     ${"query_timeout_ms"}
+    ${"http2_max_streams"}
+    ${"fetch_keepalive"}
   `(
     "throws if $option provided is undefined",
     async ({ option }: { option: keyof ClientConfiguration }) => {
@@ -164,6 +166,15 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
   });
 
   it("throws a RangeError if 'query_timeout_ms' is less than or equal to zero", async () => {
+    expect.assertions(1);
+    try {
+      getClient({ query_timeout_ms: 0 });
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(RangeError);
+    }
+  });
+
+  it("throws a RangeError if 'http2_max_streams' is less than or equal to zero", async () => {
     expect.assertions(1);
     try {
       getClient({ query_timeout_ms: 0 });

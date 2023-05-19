@@ -33,6 +33,6 @@ export const getDefaultHTTPClientOptions = (): HTTPClientOptions => {
     url: url.toString(),
     http2_session_idle_ms,
     http2_max_streams: 100,
-    fetch_keep_alive: false,
+    fetch_keepalive: false,
   };
 };

@@ -16,9 +16,9 @@ export class FetchClient implements HTTPClient {
   #url: string;
   #keepalive: boolean;
 
-  constructor({ url, fetch_keep_alive }: HTTPClientOptions) {
+  constructor({ url, fetch_keepalive }: HTTPClientOptions) {
     this.#url = new URL("/query/1", url).toString();
-    this.#keepalive = fetch_keep_alive;
+    this.#keepalive = fetch_keepalive;
   }
 
   /** {@inheritDoc HTTPClient.request} */

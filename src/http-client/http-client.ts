@@ -36,7 +36,7 @@ export type HTTPClientOptions = {
   url: string;
   http2_session_idle_ms: number;
   http2_max_streams: number;
-  fetch_keep_alive: boolean;
+  fetch_keepalive: boolean;
 };
 
 /**

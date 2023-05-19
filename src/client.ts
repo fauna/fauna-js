@@ -43,7 +43,7 @@ interface RequiredClientConfig {
   format: ValueFormat;
   http2_session_idle_ms: number;
   http2_max_streams: number;
-  fetch_keep_alive: boolean;
+  fetch_keepalive: boolean;
   secret: string;
   query_timeout_ms: number;
 }
@@ -57,7 +57,7 @@ export const DEFAULT_CLIENT_CONFIG: Omit<
   format: "tagged",
   http2_session_idle_ms: 5000,
   http2_max_streams: 100,
-  fetch_keep_alive: false,
+  fetch_keepalive: false,
   query_timeout_ms: 5000,
 };
 
@@ -109,7 +109,7 @@ export class Client {
         url: this.#clientConfiguration.endpoint.toString(),
         http2_session_idle_ms: this.#clientConfiguration.http2_session_idle_ms,
         http2_max_streams: this.#clientConfiguration.http2_max_streams,
-        fetch_keep_alive: this.#clientConfiguration.fetch_keep_alive,
+        fetch_keepalive: this.#clientConfiguration.fetch_keepalive,
       });
     } else {
       this.#httpClient = httpClient;

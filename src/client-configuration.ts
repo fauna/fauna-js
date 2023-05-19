@@ -62,7 +62,7 @@ export interface ClientConfiguration {
    * Relevant to clients using the {@link FetchClient} provided,
    * or any custom HTTP Clients you implement using the Fetch standard.
    */
-  fetch_keep_alive?: boolean;
+  fetch_keepalive?: boolean;
 
   /**
    * A secret for your Fauna DB, used to authorize your queries.

@@ -34,14 +34,30 @@ import {
   type QueryRequestHeaders,
   type QuerySuccess,
   type QueryValue,
+  type ValueFormat,
 } from "./wire-protocol";
 
-export const DEFAULT_CLIENT_CONFIG: Omit<ClientConfiguration, "secret"> = {
+interface RequiredClientConfig {
+  client_timeout_buffer_ms: number;
+  endpoint: URL;
+  format: ValueFormat;
+  http2_session_idle_ms: number;
+  http2_max_streams: number;
+  fetch_keepalive: boolean;
+  secret: string;
+  query_timeout_ms: number;
+}
+
+const DEFAULT_CLIENT_CONFIG: Omit<
+  ClientConfiguration & RequiredClientConfig,
+  "secret"
+> = {
   client_timeout_buffer_ms: 5000,
   endpoint: endpoints.default,
   format: "tagged",
   http2_session_idle_ms: 5000,
-  max_conns: 10,
+  http2_max_streams: 100,
+  fetch_keepalive: false,
   query_timeout_ms: 5000,
 };
 
@@ -53,7 +69,7 @@ export class Client {
   static readonly #driverEnvHeader = getDriverEnv();
 
   /** The {@link ClientConfiguration} */
-  readonly #clientConfiguration: ClientConfiguration;
+  readonly #clientConfiguration: ClientConfiguration & RequiredClientConfig;
   /** The underlying {@link HTTPClient} client. */
   readonly #httpClient: HTTPClient;
   /** The last transaction timestamp this client has seen */
@@ -70,7 +86,6 @@ export class Client {
    *  const myClient = new Client(
    *   {
    *     endpoint: endpoints.cloud,
-   *     max_conns: 10,
    *     secret: "foo",
    *     query_timeout_ms: 60_000,
    *   }
@@ -78,7 +93,7 @@ export class Client {
    * ```
    */
   constructor(
-    clientConfiguration?: Partial<ClientConfiguration>,
+    clientConfiguration?: ClientConfiguration,
     httpClient?: HTTPClient
   ) {
     this.#clientConfiguration = {
@@ -93,6 +108,8 @@ export class Client {
       this.#httpClient = getDefaultHTTPClient({
         url: this.#clientConfiguration.endpoint.toString(),
         http2_session_idle_ms: this.#clientConfiguration.http2_session_idle_ms,
+        http2_max_streams: this.#clientConfiguration.http2_max_streams,
+        fetch_keepalive: this.#clientConfiguration.fetch_keepalive,
       });
     } else {
       this.#httpClient = httpClient;
@@ -264,7 +281,7 @@ export class Client {
     );
   }
 
-  #getSecret(partialClientConfig?: Partial<ClientConfiguration>): string {
+  #getSecret(partialClientConfig?: ClientConfiguration): string {
     let fallback = undefined;
     if (typeof process === "object") {
       fallback = process.env["FAUNA_SECRET"];
@@ -455,7 +472,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       "endpoint",
       "format",
       "http2_session_idle_ms",
-      "max_conns",
       "query_timeout_ms",
     ];
     required_options.forEach((option) => {

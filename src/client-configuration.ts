@@ -1,4 +1,4 @@
-import { ValueFormat } from "./wire-protocol";
+import type { ValueFormat } from "./wire-protocol";
 
 /**
  * Configuration for a client.
@@ -12,12 +12,12 @@ export interface ClientConfiguration {
    * is, the more likely the client is to abort the request before the server
    * can report a legitimate response or error.
    */
-  client_timeout_buffer_ms: number;
+  client_timeout_buffer_ms?: number;
 
   /**
    * The {@link URL} of Fauna to call. See {@link endpoints} for some default options.
    */
-  endpoint: URL;
+  endpoint?: URL;
 
   /**
    * Determines the encoded format expected for the query `arguments` field, and
@@ -35,24 +35,40 @@ export interface ClientConfiguration {
    * the typing of your data. e.g. a "Date" will no longer be recognized by the
    * Fauna as a "Date", but will instead be treated as a string.
    */
-  format: ValueFormat;
+  format?: ValueFormat;
 
   /**
    * Time in milliseconds the client will keep an HTTP2 session open after all
    * requests are completed. The default is 5000 ms.
    */
-  http2_session_idle_ms: number;
+  http2_session_idle_ms?: number;
 
   /**
-   * The maximum number of connections to a make to Fauna.
+   * The maximum number of HTTP2 streams to execute in parallel
+   * to Fauna per HTTP2 session.
+   * Only relevant to certain HTTP2 clients.
+   * @remarks
+   * Relevant to clients using the {@link NodeHTTP2Client} provided,
+   * or any custom HTTP2Clients you implement that support this feature.
    */
-  max_conns: number;
+  http2_max_streams?: number;
+
+  /**
+   * When true will keep executing a request even if the page
+   * that fired the request is no longer executing. Only relevant
+   * to underlying clients using the {@link https://fetch.spec.whatwg.org/ | Fetch standard}.
+   * By default set to false.
+   * @remarks
+   * Relevant to clients using the {@link FetchClient} provided,
+   * or any custom HTTP Clients you implement using the Fetch standard.
+   */
+  fetch_keepalive?: boolean;
 
   /**
    * A secret for your Fauna DB, used to authorize your queries.
    * @see https://docs.fauna.com/fauna/current/security/keys
    */
-  secret: string;
+  secret?: string;
 
   // Query options
 
@@ -62,7 +78,7 @@ export interface ClientConfiguration {
    * Default is undefined which let's Fauna determine the query timeout to apply. This
    * is recommended for most queries. The default is 5000 ms.
    */
-  query_timeout_ms: number;
+  query_timeout_ms?: number;
 
   /**
    * If true, unconditionally run the query as strictly serialized.

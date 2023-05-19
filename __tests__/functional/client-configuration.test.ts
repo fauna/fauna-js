@@ -54,7 +54,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     });
     const client = getClient({
       endpoint: endpoints["my-alternative-port"],
-      max_conns: 5,
       secret: "secret",
       query_timeout_ms: 60_000,
     });
@@ -117,7 +116,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
 
       const client = getClient(
         {
-          max_conns: 5,
           query_timeout_ms: 5000,
           [fieldName]: fieldValue,
         },
@@ -141,7 +139,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     ${"endpoint"}
     ${"format"}
     ${"http2_session_idle_ms"}
-    ${"max_conns"}
     ${"query_timeout_ms"}
   `(
     "throws if $option provided is undefined",

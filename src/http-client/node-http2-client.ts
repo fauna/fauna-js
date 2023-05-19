@@ -26,16 +26,22 @@ export class NodeHTTP2Client implements HTTPClient {
   static #clients: Map<string, NodeHTTP2Client> = new Map();
 
   #http2_session_idle_ms: number;
+  #http2_max_streams: number;
   #url: string;
   #numberOfUsers = 0;
   #session: ClientHttp2Session | null;
 
-  private constructor({ http2_session_idle_ms, url }: HTTPClientOptions) {
+  private constructor({
+    http2_session_idle_ms,
+    url,
+    http2_max_streams,
+  }: HTTPClientOptions) {
     if (http2 === undefined) {
       throw new Error("Your platform does not support Node's http2 library");
     }
 
     this.#http2_session_idle_ms = http2_session_idle_ms;
+    this.#http2_max_streams = http2_max_streams;
     this.#url = url;
     this.#session = null;
   }
@@ -131,7 +137,9 @@ export class NodeHTTP2Client implements HTTPClient {
     // create the session if it does not exist or is closed
     if (!this.#session || this.#session.closed) {
       const new_session: ClientHttp2Session = http2
-        .connect(this.#url)
+        .connect(this.#url, {
+          peerMaxConcurrentStreams: this.#http2_max_streams,
+        })
         .once("error", () => this.#closeForAll())
         .once("goaway", () => this.#closeForAll());
 

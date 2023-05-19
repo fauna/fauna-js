@@ -473,6 +473,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       "format",
       "http2_session_idle_ms",
       "query_timeout_ms",
+      "fetch_keepalive",
+      "http2_max_streams",
     ];
     required_options.forEach((option) => {
       if (config[option] === undefined) {
@@ -481,6 +483,10 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         );
       }
     });
+
+    if (config.http2_max_streams <= 0) {
+      throw new RangeError(`'http2_max_streams' must be greater than zero.`);
+    }
 
     if (config.client_timeout_buffer_ms <= 0) {
       throw new RangeError(

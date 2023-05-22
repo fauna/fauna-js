@@ -149,6 +149,31 @@ describe("query", () => {
     }
   );
 
+  it("can send arguments directly", async () => {
+    const foo = {
+      double: 4.14,
+      int: 32,
+      string: "foo",
+      null: null,
+      object: { foo: "bar" },
+      array: [1, 2, 3],
+      "@tagged": "tagged",
+    };
+
+    const response = await client.query<typeof foo>(fql`foo`, {
+      arguments: { foo },
+    });
+    const foo2 = response.data;
+
+    expect(foo2.double).toBe(4.14);
+    expect(foo2.int).toBe(32);
+    expect(foo2.string).toBe("foo");
+    expect(foo2.null).toBeNull();
+    expect(foo2.object).toStrictEqual({ foo: "bar" });
+    expect(foo2.array).toStrictEqual([1, 2, 3]);
+    expect(foo2["@tagged"]).toBe("tagged");
+  });
+
   it("throws a QueryCheckError if the query is invalid", async () => {
     expect.assertions(4);
     try {
@@ -422,7 +447,7 @@ describe("query can encode / decode QueryValue correctly", () => {
         Collection.create({ name: ${collectionName}})
       }`);
     // whack in undefined
-    // @ts-ignore
+    // @ts-expect-error Type 'undefined' is not assignable to type 'QueryValue'
     let toughInput: QueryValue = {
       foo: "bar",
       shouldnt_exist: undefined,
@@ -441,7 +466,7 @@ describe("query can encode / decode QueryValue correctly", () => {
   });
 
   it("treats undefined as unprovided passed directly as value", async () => {
-    expect.assertions(2);
+    expect.assertions(3);
     const client = getClient();
     const collectionName = "UndefinedTest";
     await client.query(fql`
@@ -449,7 +474,7 @@ describe("query can encode / decode QueryValue correctly", () => {
         Collection.create({ name: ${collectionName}})
       }`);
     // whack in undefined
-    // @ts-ignore
+    // @ts-expect-error Type 'undefined' is not assignable to type 'QueryValue'
     let undefinedValue: QueryValue = undefined;
     try {
       const docCreated = await client.query(fql`
@@ -462,11 +487,12 @@ describe("query can encode / decode QueryValue correctly", () => {
           }
         })`);
     } catch (e) {
-      if (e instanceof TypeError) {
-        expect(e.name).toBe("TypeError");
+      if (e instanceof ClientError) {
+        expect(e.name).toBe("ClientError");
         expect(e.message).toBe(
-          "Passing undefined as a QueryValue is not supported"
+          "A client level error occurred. Fauna was not called."
         );
+        expect(e.cause).toBeDefined();
       }
     }
   });

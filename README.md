@@ -210,11 +210,11 @@ console.assert(user_doc.email === "alice@site.example");
 Options are available to configure queries on each request.
 
 ```typescript
-import { fql, Client, type QueryRequestHeaders } from "fauna";
+import { fql, Client, type QueryOptions } from "fauna";
 
 const client = new Client();
 
-const options: QueryRequestHeaders = {
+const options: QueryOptions = {
   format: "tagged",
   linearized: false,
   query_timeout_ms: 60_000,

@@ -16,7 +16,7 @@ import {
 /**
  * A request to make to Fauna.
  */
-export interface QueryRequest extends QueryRequestHeaders {
+export interface QueryRequest {
   /** The query */
   query: string | QueryInterpolation;
 
@@ -24,49 +24,6 @@ export interface QueryRequest extends QueryRequestHeaders {
    * value associated with an argument key.
    */
   arguments?: QueryValueObject;
-}
-
-export interface QueryRequestHeaders {
-  /**
-   * Determines the encoded format expected for the query `arguments` field, and
-   * the `data` field of a successful response.
-   */
-  format?: ValueFormat;
-  /**
-   * If true, unconditionally run the query as strictly serialized.
-   * This affects read-only transactions. Transactions which write
-   * will always be strictly serialized.
-   * Overrides the optional setting for the client.
-   */
-  linearized?: boolean;
-  /**
-   * The timeout to use in this query in milliseconds.
-   * Overrides the timeout for the client.
-   */
-  query_timeout_ms?: number;
-  /**
-   * The max number of times to retry the query if contention is encountered.
-   * Overrides the optional setting for the client.
-   */
-  max_contention_retries?: number;
-
-  /**
-   * Tags provided back via logging and telemetry.
-   * Overrides the optional setting on the client.
-   */
-  query_tags?: Record<string, string>;
-  /**
-   * A traceparent provided back via logging and telemetry.
-   * Must match format: https://www.w3.org/TR/trace-context/#traceparent-header
-   * Overrides the optional setting for the client.
-   */
-  traceparent?: string;
-  /**
-   * Enable or disable typechecking of the query before evaluation. If no value
-   * is provided, the value of `typechecked` in the database configuration will
-   * be used.
-   */
-  typecheck?: boolean;
 }
 
 /**

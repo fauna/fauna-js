@@ -1,4 +1,8 @@
-import { ClientConfiguration, endpoints } from "./client-configuration";
+import {
+  ClientConfiguration,
+  endpoints,
+  type QueryOptions,
+} from "./client-configuration";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -30,23 +34,28 @@ import {
   isQueryFailure,
   isQuerySuccess,
   type QueryFailure,
-  type QueryRequest,
-  type QueryRequestHeaders,
   type QuerySuccess,
   type QueryValue,
-  type ValueFormat,
 } from "./wire-protocol";
 
-interface RequiredClientConfig {
-  client_timeout_buffer_ms: number;
-  endpoint: URL;
-  format: ValueFormat;
-  http2_session_idle_ms: number;
-  http2_max_streams: number;
-  fetch_keepalive: boolean;
-  secret: string;
-  query_timeout_ms: number;
-}
+type RequiredQueryOptions = QueryOptions &
+  Required<Pick<QueryOptions, "format" | "query_timeout_ms">>;
+
+type RequiredClientConfig = ClientConfiguration &
+  Required<
+    Pick<
+      ClientConfiguration,
+      | "client_timeout_buffer_ms"
+      | "endpoint"
+      | "fetch_keepalive"
+      | "http2_max_streams"
+      | "http2_session_idle_ms"
+      | "secret"
+      // required default query options
+      | "format"
+      | "query_timeout_ms"
+    >
+  >;
 
 const DEFAULT_CLIENT_CONFIG: Omit<
   ClientConfiguration & RequiredClientConfig,
@@ -69,7 +78,7 @@ export class Client {
   static readonly #driverEnvHeader = getDriverEnv();
 
   /** The {@link ClientConfiguration} */
-  readonly #clientConfiguration: ClientConfiguration & RequiredClientConfig;
+  readonly #clientConfiguration: RequiredClientConfig;
   /** The underlying {@link HTTPClient} client. */
   readonly #httpClient: HTTPClient;
   /** The last transaction timestamp this client has seen */
@@ -213,7 +222,7 @@ export class Client {
    * @param request - a {@link Query} to execute in Fauna.
    *  Note, you can embed header fields in this object; if you do that there's no need to
    *  pass the headers parameter.
-   * @param headers - optional {@link QueryRequestHeaders} to apply on top of the request input.
+   * @param headers - optional {@link QueryOptions} to apply on top of the request input.
    *   Values in this headers parameter take precedence over the same values in the {@link ClientConfiguration}.
    * @returns Promise&lt;{@link QuerySuccess}&gt;.
    *
@@ -233,8 +242,8 @@ export class Client {
    * due to an internal error.
    */
   async query<T extends QueryValue>(
-    request: Query,
-    headers?: QueryRequestHeaders
+    query: Query,
+    options?: QueryOptions
   ): Promise<QuerySuccess<T>> {
     if (this.#isClosed) {
       throw new ClientClosedError(
@@ -242,7 +251,7 @@ export class Client {
       );
     }
 
-    return this.#query(request.toQuery(headers));
+    return this.#query(query, options);
   }
 
   #getError(e: any): ClientError | NetworkError | ProtocolError | ServiceError {
@@ -335,49 +344,49 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
   }
 
-  async #query<T extends QueryValue = any>(
-    queryRequest: QueryRequest
+  async #query<T extends QueryValue>(
+    query: Query,
+    options?: QueryOptions
   ): Promise<QuerySuccess<T>> {
     try {
+      const requestConfig: RequiredQueryOptions = {
+        ...this.#clientConfiguration,
+        ...options,
+      };
+
       const headers = {
         Authorization: `Bearer ${this.#clientConfiguration.secret}`,
       };
-      this.#setHeaders(
-        { ...this.clientConfiguration, ...queryRequest },
-        headers
-      );
+      this.#setHeaders(requestConfig, headers);
 
-      const requestConfig: QueryRequestHeaders = {
-        ...this.#clientConfiguration,
-        ...queryRequest,
-      };
+      const isTaggedFormat = requestConfig.format === "tagged";
 
-      const isTaggedFormat =
-        requestConfig.format === "tagged" || queryRequest.format === "tagged";
-      const queryArgs = isTaggedFormat
-        ? TaggedTypeFormat.encode(queryRequest.arguments)
-        : queryRequest.arguments;
+      const queryArgs = requestConfig.arguments
+        ? isTaggedFormat
+          ? TaggedTypeFormat.encode(requestConfig.arguments)
+          : requestConfig.arguments
+        : undefined;
+
+      // QueryInterpolation values must always be encoded.
+      // TODO: The Query implementation never set the QueryRequest arguments.
+      //   When we separate query building from query encoding we should be able
+      //   to simply do `const queryInterpolation: TaggedTypeFormat.encode(query)`
+      const queryInterpolation = query.toQuery().query;
 
       const requestData = {
-        query: queryRequest.query,
+        query: queryInterpolation,
         arguments: queryArgs,
       };
 
-      // TODO: We know we are providing a default for query_timeout_ms, so can
-      // cast to a defined value. Types for QueryRequest is too tangled up with
-      // QueryRequestHeaders to set query_timeout_ms as a mandatory field. #144
-      // should fix that.
       const client_timeout_ms =
-        (requestConfig.query_timeout_ms as number) +
+        requestConfig.query_timeout_ms +
         this.#clientConfiguration.client_timeout_buffer_ms;
 
       const fetchResponse = await this.#httpClient.request({
-        // required
+        client_timeout_ms,
         data: requestData,
         headers,
         method: "POST",
-        // optional
-        client_timeout_ms,
       });
 
       let parsedResponse;
@@ -422,7 +431,10 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
   }
 
-  #setHeaders(fromObject: QueryRequestHeaders, headerObject: any): void {
+  #setHeaders(
+    fromObject: RequiredQueryOptions,
+    headerObject: Record<string, string | number>
+  ): void {
     for (const entry of Object.entries(fromObject)) {
       if (
         [

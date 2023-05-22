@@ -1,8 +1,9 @@
 export { Client } from "./client";
 export {
-  type ClientConfiguration,
-  type Endpoints,
   endpoints,
+  type ClientConfiguration,
+  type QueryOptions,
+  type Endpoints,
 } from "./client-configuration";
 export {
   AbortError,
@@ -31,7 +32,6 @@ export {
   type QueryInfo,
   type QueryInterpolation,
   type QueryRequest,
-  type QueryRequestHeaders,
   type QueryStats,
   type QuerySuccess,
   type Span,

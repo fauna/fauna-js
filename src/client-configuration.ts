@@ -1,7 +1,7 @@
 import type { QueryValueObject, ValueFormat } from "./wire-protocol";
 
 /**
- * Configuration for a client. The query options provided are be used as
+ * Configuration for a client. The options provided are be used as
  * default options for each query.
  */
 export interface ClientConfiguration {
@@ -113,7 +113,8 @@ export interface ClientConfiguration {
 }
 
 /**
- * Options for queries. Each query can be made with different options.
+ * Options for queries. Each query can be made with different options. Settings here
+ * take precedence over those in {@link ClientConfiguration}.
  */
 export interface QueryOptions {
   /** Optional arguments. Variables in the query will be initialized to the
@@ -124,7 +125,7 @@ export interface QueryOptions {
   /**
    * Determines the encoded format expected for the query `arguments` field, and
    * the `data` field of a successful response.
-   * Overrides the optional setting for the client.
+   * Overrides the optional setting on the {@link ClientConfiguration}.
    */
   format?: ValueFormat;
 
@@ -132,32 +133,32 @@ export interface QueryOptions {
    * If true, unconditionally run the query as strictly serialized.
    * This affects read-only transactions. Transactions which write
    * will always be strictly serialized.
-   * Overrides the optional setting for the client.
+   * Overrides the optional setting on the {@link ClientConfiguration}.
    */
   linearized?: boolean;
 
   /**
    * The max number of times to retry the query if contention is encountered.
-   * Overrides the optional setting for the client.
+   *Overrides the optional setting on the {@link ClientConfiguration}.
    */
   max_contention_retries?: number;
 
   /**
    * Tags provided back via logging and telemetry.
-   * Overrides the optional setting on the client.
+   * Overrides the optional setting on the {@link ClientConfiguration}.
    */
   query_tags?: Record<string, string>;
 
   /**
    * The timeout to use in this query in milliseconds.
-   * Overrides the timeout for the client.
+   * Overrides the optional setting on the {@link ClientConfiguration}.
    */
   query_timeout_ms?: number;
 
   /**
    * A traceparent provided back via logging and telemetry.
    * Must match format: https://www.w3.org/TR/trace-context/#traceparent-header
-   * Overrides the optional setting for the client.
+   * Overrides the optional setting on the {@link ClientConfiguration}.
    */
   traceparent?: string;
 
@@ -165,7 +166,7 @@ export interface QueryOptions {
    * Enable or disable typechecking of the query before evaluation. If no value
    * is provided, the value of `typechecked` in the database configuration will
    * be used.
-   * Overrides the optional setting for the client.
+   * Overrides the optional setting on the {@link ClientConfiguration}.
    */
   typecheck?: boolean;
 }

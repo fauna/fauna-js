@@ -4,7 +4,7 @@ import type {
   QueryValue,
   QueryInterpolation,
   QueryRequest,
-  QueryRequestHeaders,
+  QueryOptions,
 } from "./wire-protocol";
 
 /**
@@ -56,7 +56,7 @@ export class Query {
   /**
    * Converts this Query to a {@link QueryRequest} you can send
    * to Fauna.
-   * @param requestHeaders - optional {@link QueryRequestHeaders} to include
+   * @param requestHeaders - optional {@link QueryOptions} to include
    *   in the request (and thus override the defaults in your {@link ClientConfiguration}.
    *   If not passed in, no headers will be set as overrides.
    * @returns a {@link QueryRequest}.
@@ -69,11 +69,11 @@ export class Query {
    *  { query: { fql: ["'foo'.length == ", { value: { "@int": "8" } }, ""] }}
    * ```
    */
-  toQuery(requestHeaders: QueryRequestHeaders = {}): QueryRequest {
+  toQuery(requestHeaders: QueryOptions = {}): QueryRequest {
     return { ...this.#render(requestHeaders), ...requestHeaders };
   }
 
-  #render(requestHeaders: QueryRequestHeaders): QueryRequest {
+  #render(requestHeaders: QueryOptions): QueryRequest {
     if (this.#queryFragments.length === 1) {
       return { query: { fql: [this.#queryFragments[0]] }, arguments: {} };
     }

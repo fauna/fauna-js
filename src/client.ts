@@ -1,8 +1,4 @@
-import {
-  ClientConfiguration,
-  endpoints,
-  type QueryOptions,
-} from "./client-configuration";
+import { ClientConfiguration, endpoints } from "./client-configuration";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -35,7 +31,7 @@ import {
   isQuerySuccess,
   QueryInterpolation,
   type QueryFailure,
-  type QueryRequest,
+  type QueryOptions,
   type QuerySuccess,
   type QueryValue,
 } from "./wire-protocol";

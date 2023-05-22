@@ -1,10 +1,10 @@
-import { QueryOptions } from "./client-configuration";
 import { TaggedTypeFormat } from "./tagged-type";
 import type {
   QueryValueObject,
   QueryValue,
   QueryInterpolation,
   QueryRequest,
+  QueryOptions,
 } from "./wire-protocol";
 
 /**

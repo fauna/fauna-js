@@ -2,7 +2,6 @@ export { Client } from "./client";
 export {
   endpoints,
   type ClientConfiguration,
-  type QueryOptions,
   type Endpoints,
 } from "./client-configuration";
 export {
@@ -31,6 +30,7 @@ export {
   type QueryFailure,
   type QueryInfo,
   type QueryInterpolation,
+  type QueryOptions,
   type QueryRequest,
   type QueryStats,
   type QuerySuccess,

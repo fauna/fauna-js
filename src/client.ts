@@ -33,13 +33,12 @@ import { EmbeddedSet, Page, SetIterator } from "./values";
 import {
   isQueryFailure,
   isQuerySuccess,
+  QueryInterpolation,
   type QueryFailure,
+  type QueryRequest,
   type QuerySuccess,
   type QueryValue,
 } from "./wire-protocol";
-
-type RequiredQueryOptions = QueryOptions &
-  Required<Pick<QueryOptions, "format" | "query_timeout_ms">>;
 
 type RequiredClientConfig = ClientConfiguration &
   Required<
@@ -251,7 +250,13 @@ export class Client {
       );
     }
 
-    return this.#query(query, options);
+    // QueryInterpolation values must always be encoded.
+    // TODO: The Query implementation never set the QueryRequest arguments.
+    //   When we separate query building from query encoding we should be able
+    //   to simply do `const queryInterpolation: TaggedTypeFormat.encode(query)`
+    const queryInterpolation = query.toQuery(options).query;
+
+    return this.#query(queryInterpolation, options);
   }
 
   #getError(e: any): ClientError | NetworkError | ProtocolError | ServiceError {
@@ -345,11 +350,11 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   }
 
   async #query<T extends QueryValue>(
-    query: Query,
+    queryInterpolation: string | QueryInterpolation,
     options?: QueryOptions
   ): Promise<QuerySuccess<T>> {
     try {
-      const requestConfig: RequiredQueryOptions = {
+      const requestConfig = {
         ...this.#clientConfiguration,
         ...options,
       };
@@ -366,12 +371,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
           ? TaggedTypeFormat.encode(requestConfig.arguments)
           : requestConfig.arguments
         : undefined;
-
-      // QueryInterpolation values must always be encoded.
-      // TODO: The Query implementation never set the QueryRequest arguments.
-      //   When we separate query building from query encoding we should be able
-      //   to simply do `const queryInterpolation: TaggedTypeFormat.encode(query)`
-      const queryInterpolation = query.toQuery().query;
 
       const requestData = {
         query: queryInterpolation,
@@ -432,7 +431,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   }
 
   #setHeaders(
-    fromObject: RequiredQueryOptions,
+    fromObject: QueryOptions,
     headerObject: Record<string, string | number>
   ): void {
     for (const entry of Object.entries(fromObject)) {

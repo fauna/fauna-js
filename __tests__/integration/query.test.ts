@@ -466,7 +466,7 @@ describe("query can encode / decode QueryValue correctly", () => {
   });
 
   it("treats undefined as unprovided passed directly as value", async () => {
-    expect.assertions(3);
+    expect.assertions(2);
     const client = getClient();
     const collectionName = "UndefinedTest";
     await client.query(fql`
@@ -487,12 +487,11 @@ describe("query can encode / decode QueryValue correctly", () => {
           }
         })`);
     } catch (e) {
-      if (e instanceof ClientError) {
-        expect(e.name).toBe("ClientError");
+      if (e instanceof TypeError) {
+        expect(e.name).toBe("TypeError");
         expect(e.message).toBe(
-          "A client level error occurred. Fauna was not called."
+          "Passing undefined as a QueryValue is not supported"
         );
-        expect(e.cause).toBeDefined();
       }
     }
   });

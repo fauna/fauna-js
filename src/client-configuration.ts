@@ -1,7 +1,7 @@
 import type { ValueFormat } from "./wire-protocol";
 
 /**
- * Configuration for a client. The options provided are be used as
+ * Configuration for a client. The options provided are used as the
  * default options for each query.
  */
 export interface ClientConfiguration {

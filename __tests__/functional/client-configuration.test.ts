@@ -122,15 +122,18 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
         httpClient
       );
       await client.query<number>(fql`"taco".length`);
+      client.close();
     }
   );
 
   it("can accept endpoints with or without a trailing slash.", async () => {
     const client1 = getClient({ endpoint: new URL("http://localhost:8443/") });
     await client1.query<number>(fql`"taco".length`);
+    client1.close();
 
     const client2 = getClient({ endpoint: new URL("http://localhost:8443") });
     await client2.query<number>(fql`"taco".length`);
+    client2.close();
   });
 
   it.each`
@@ -142,35 +145,45 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     ${"query_timeout_ms"}
     ${"http2_max_streams"}
     ${"fetch_keepalive"}
+    ${"long_type"}
   `(
     "throws if $option provided is undefined",
     async ({ option }: { option: keyof ClientConfiguration }) => {
       expect.assertions(1);
+      let client: Client | undefined = undefined;
       try {
-        const config: Partial<ClientConfiguration> = {};
+        const config: ClientConfiguration = {};
         config[option] = undefined;
-        getClient(config);
+        client = getClient(config);
       } catch (e: any) {
         expect(e).toBeInstanceOf(TypeError);
+      } finally {
+        client?.close();
       }
     }
   );
 
   it("throws a RangeError if 'client_timeout_buffer_ms' is less than or equal to zero", async () => {
     expect.assertions(1);
+    let client: Client | undefined = undefined;
     try {
-      getClient({ client_timeout_buffer_ms: 0 });
+      client = getClient({ client_timeout_buffer_ms: 0 });
     } catch (e: any) {
       expect(e).toBeInstanceOf(RangeError);
+    } finally {
+      client?.close();
     }
   });
 
   it("throws a RangeError if 'query_timeout_ms' is less than or equal to zero", async () => {
     expect.assertions(1);
+    let client: Client | undefined = undefined;
     try {
-      getClient({ query_timeout_ms: 0 });
+      client = getClient({ query_timeout_ms: 0 });
     } catch (e: any) {
       expect(e).toBeInstanceOf(RangeError);
+    } finally {
+      client?.close();
     }
   });
 

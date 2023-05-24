@@ -172,6 +172,7 @@ export class Client {
    * iteration
    * @param iterable - a {@link Query} or an existing fauna Set ({@link Page} or
    * {@link EmbeddedSet})
+   * @param options - a {@link QueryOptions} to apply to the queries. Optional.
    * @returns A {@link SetIterator} that lazily fetches new pages of data on
    * each iteration
    *
@@ -204,22 +205,23 @@ export class Client {
    * ```
    */
   paginate<T extends QueryValue>(
-    iterable: Page<T> | EmbeddedSet | Query
+    iterable: Page<T> | EmbeddedSet | Query,
+    options?: QueryOptions
   ): SetIterator<T> {
     if (iterable instanceof Query) {
-      return SetIterator.fromQuery(this, iterable);
+      return SetIterator.fromQuery(this, iterable, options);
     }
-    return SetIterator.fromPageable(this, iterable) as SetIterator<T>;
+    return SetIterator.fromPageable(this, iterable, options) as SetIterator<T>;
   }
 
   /**
    * Queries Fauna.
    *
    * @typeParam T - The expected type of the response from Fauna
-   * @param request - a {@link Query} to execute in Fauna.
+   * @param query - a {@link Query} to execute in Fauna.
    *  Note, you can embed header fields in this object; if you do that there's no need to
    *  pass the headers parameter.
-   * @param headers - optional {@link QueryOptions} to apply on top of the request input.
+   * @param options - optional {@link QueryOptions} to apply on top of the request input.
    *   Values in this headers parameter take precedence over the same values in the {@link ClientConfiguration}.
    * @returns Promise&lt;{@link QuerySuccess}&gt;.
    *

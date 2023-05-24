@@ -1,5 +1,11 @@
-import { DocumentT, fql, Page } from "../../src";
-import { getClient } from "../client";
+import {
+  DocumentT,
+  fql,
+  getDefaultHTTPClient,
+  HTTPClient,
+  Page,
+} from "../../src";
+import { getClient, getDefaultHTTPClientOptions } from "../client";
 
 const client = getClient({
   query_timeout_ms: 60_000,
@@ -193,5 +199,68 @@ describe("SetIterator", () => {
       foundItems.add(item.value);
     }
     expect(foundItems).toEqual(bigItems);
+  });
+
+  it("each page respects QueryOptions using an existing Page", async () => {
+    expect.assertions(3);
+
+    const httpClient: HTTPClient = {
+      async request(req) {
+        expect(req.headers["x-query-timeout-ms"]).toBe("12345");
+
+        return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(req);
+      },
+      close() {
+        return;
+      },
+    };
+    const testClient = getClient({}, httpClient);
+
+    const response = await testClient.query<Page<MyDoc>>(
+      fql`IterTestBig.all()`,
+      {
+        query_timeout_ms: 12345,
+      }
+    );
+    const page = response.data;
+    const setIterator = testClient.paginate(page, {
+      query_timeout_ms: 12345,
+    });
+
+    const foundItems = new Set<number>();
+    for await (const item of setIterator.flatten()) {
+      foundItems.add(item.value);
+    }
+    expect(foundItems).toEqual(bigItems);
+
+    testClient.close();
+  });
+
+  it("each page respects QueryOptions using an a query", async () => {
+    expect.assertions(3);
+
+    const httpClient: HTTPClient = {
+      async request(req) {
+        expect(req.headers["x-query-timeout-ms"]).toBe("12345");
+
+        return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(req);
+      },
+      close() {
+        return;
+      },
+    };
+    const testClient = getClient({}, httpClient);
+
+    const setIterator = testClient.paginate<MyDoc>(fql`IterTestBig.all()`, {
+      query_timeout_ms: 12345,
+    });
+
+    const foundItems = new Set<number>();
+    for await (const item of setIterator.flatten()) {
+      foundItems.add(item.value);
+    }
+    expect(foundItems).toEqual(bigItems);
+
+    testClient.close();
   });
 });

@@ -204,12 +204,13 @@ export class Client {
    * ```
    */
   paginate<T extends QueryValue>(
-    iterable: Page<T> | EmbeddedSet | Query
+    iterable: Page<T> | EmbeddedSet | Query,
+    options?: QueryOptions
   ): SetIterator<T> {
     if (iterable instanceof Query) {
-      return SetIterator.fromQuery(this, iterable);
+      return SetIterator.fromQuery(this, iterable, options);
     }
-    return SetIterator.fromPageable(this, iterable) as SetIterator<T>;
+    return SetIterator.fromPageable(this, iterable, options) as SetIterator<T>;
   }
 
   /**

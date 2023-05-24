@@ -1,6 +1,6 @@
 import { Client } from "../client";
 import { Query, fql } from "../query-builder";
-import { QueryValue } from "../wire-protocol";
+import { QueryOptions, QueryValue } from "../wire-protocol";
 
 /**
  * A materialized view of a Set.
@@ -66,12 +66,14 @@ export class SetIterator<T extends QueryValue>
    */
   constructor(
     client: Client,
-    initial: Page<T> | EmbeddedSet | (() => Promise<T | Page<T> | EmbeddedSet>)
+    initial: Page<T> | EmbeddedSet | (() => Promise<T | Page<T> | EmbeddedSet>),
+    options?: QueryOptions
   ) {
+    options = options ?? {};
     if (initial instanceof Function) {
-      this.#generator = generateFromThunk(client, initial);
+      this.#generator = generateFromThunk(client, initial, options);
     } else if (initial instanceof Page || initial instanceof EmbeddedSet) {
-      this.#generator = generatePages(client, initial);
+      this.#generator = generatePages(client, initial, options);
     } else {
       throw new TypeError(
         `Expected 'Page<T> | EmbeddedSet | (() => Promise<T | Page<T> | EmbeddedSet>)', but received ${JSON.stringify(
@@ -89,12 +91,20 @@ export class SetIterator<T extends QueryValue>
    */
   static fromQuery<T extends QueryValue>(
     client: Client,
-    query: Query
+    query: Query,
+    options?: QueryOptions
   ): SetIterator<T> {
-    return new SetIterator<T>(client, async () => {
-      const response = await client.query<T | Page<T> | EmbeddedSet>(query);
-      return response.data;
-    });
+    return new SetIterator<T>(
+      client,
+      async () => {
+        const response = await client.query<T | Page<T> | EmbeddedSet>(
+          query,
+          options
+        );
+        return response.data;
+      },
+      options
+    );
   }
 
   /**
@@ -106,9 +116,10 @@ export class SetIterator<T extends QueryValue>
    */
   static fromPageable<T extends QueryValue>(
     client: Client,
-    pageable: Page<T> | EmbeddedSet
+    pageable: Page<T> | EmbeddedSet,
+    options?: QueryOptions
   ): SetIterator<T> {
-    return new SetIterator<T>(client, pageable);
+    return new SetIterator<T>(client, pageable, options);
   }
 
   /**
@@ -193,7 +204,8 @@ export class FlattenedSetIterator<T extends QueryValue>
  */
 async function* generatePages<T extends QueryValue>(
   client: Client,
-  initial: Page<T> | EmbeddedSet
+  initial: Page<T> | EmbeddedSet,
+  options: QueryOptions
 ): AsyncGenerator<T[], void, unknown> {
   let currentPage = initial;
 
@@ -204,7 +216,7 @@ async function* generatePages<T extends QueryValue>(
   while (currentPage.after) {
     // cursor means there is more data to fetch
     const query = fql`Set.paginate(${currentPage.after})`;
-    const response = await client.query<Page<T>>(query);
+    const response = await client.query<Page<T>>(query, options);
     const nextPage = response.data;
 
     currentPage = nextPage;
@@ -219,14 +231,16 @@ async function* generatePages<T extends QueryValue>(
  */
 async function* generateFromThunk<T extends QueryValue>(
   client: Client,
-  thunk: () => Promise<T | Page<T> | EmbeddedSet>
+  thunk: () => Promise<T | Page<T> | EmbeddedSet>,
+  options: QueryOptions
 ): AsyncGenerator<T[], void, unknown> {
   const result = await thunk();
 
   if (result instanceof Page || result instanceof EmbeddedSet) {
     for await (const page of generatePages(
       client,
-      result as Page<T> | EmbeddedSet
+      result as Page<T> | EmbeddedSet,
+      options
     )) {
       yield page;
     }

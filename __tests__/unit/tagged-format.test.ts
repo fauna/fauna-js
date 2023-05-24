@@ -21,7 +21,7 @@ describe.each`
 `("tagged format with long_type $long_type", ({ long_type }) => {
   const decodeOptions = { long_type };
   it("can be decoded", () => {
-    const allTypes: string = `{
+    const allTypes = `{
       "name": "fir",
       "age": { "@int": "200" },
       "birthdate": { "@date": "1823-02-08" },
@@ -124,6 +124,7 @@ describe.each`
     expect(result.measurements[1].employee).toEqual(5);
     expect(result.measurements[1].time).toBeInstanceOf(TimeStub);
     expect(result.molecules).toEqual(
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
       long_type === "number" ? 999999999999999999 : BigInt("999999999999999999")
     );
     expect(result.null).toBeNull();
@@ -138,10 +139,10 @@ describe.each`
   });
 
   it("can be encoded", () => {
-    let bugs_mod = new Module("Bugs");
-    let collection_mod = new Module("Collection");
+    const bugs_mod = new Module("Bugs");
+    const collection_mod = new Module("Collection");
 
-    let result = JSON.stringify(
+    const result = JSON.stringify(
       TaggedTypeFormat.encode({
         // literals
         double: 4.14,
@@ -232,7 +233,7 @@ describe.each`
   });
 
   it("handles conflicts", () => {
-    var result = TaggedTypeFormat.encode({
+    const result = TaggedTypeFormat.encode({
       date: { "@date": DateStub.from("2022-11-01") },
       time: { "@time": TimeStub.from("2022-11-02T05:00:00.000Z") },
       int: { "@int": 1 },
@@ -289,12 +290,12 @@ describe.each`
     ${-(2 ** 31)}                  | ${-(2 ** 31)}                      | ${"number"}  | ${"@int"}    | ${"-(2**31)"}
     ${0}                           | ${0}                               | ${"number"}  | ${"@int"}    | ${"0 (Int)"}
     ${1}                           | ${1}                               | ${"number"}  | ${"@int"}    | ${"1 (Int)"}
-    ${BigInt("0")}                 | ${BigInt("0")}                     | ${"number"}  | ${"@int"}    | ${"0 (Long)"}
+    ${BigInt("0")}                 | ${0}                               | ${"number"}  | ${"@int"}    | ${"0 (Long)"}
     ${2 ** 31 - 1}                 | ${2 ** 31 - 1}                     | ${"number"}  | ${"@int"}    | ${"2**31 - 1"}
     ${2 ** 31}                     | ${BigInt(2 ** 31)}                 | ${long_type} | ${"@long"}   | ${"2**31"}
     ${Number.MAX_SAFE_INTEGER}     | ${BigInt(Number.MAX_SAFE_INTEGER)} | ${long_type} | ${"@long"}   | ${"2**53 - 1"}
     ${Number.MAX_SAFE_INTEGER + 1} | ${Number.MAX_SAFE_INTEGER + 1}     | ${"number"}  | ${"@double"} | ${"2**53"}
-    ${LONG_MAX}                    | ${LONG_MAX}                        | ${"bigint"}  | ${"@long"}   | ${"2**64 - 1"}
+    ${LONG_MAX}                    | ${LONG_MAX}                        | ${long_type} | ${"@long"}   | ${"2**64 - 1"}
     ${1.3 ** 63}                   | ${1.3 ** 63}                       | ${"number"}  | ${"@double"} | ${"1.3**63"}
     ${1.3}                         | ${1.3}                             | ${"number"}  | ${"@double"} | ${"1.3"}
   `(
@@ -303,6 +304,12 @@ describe.each`
       if (long_type === "number" && typeof expected === "bigint") {
         expected = Number(expected);
         input = Number(expected);
+        if (
+          expected > Number.MAX_SAFE_INTEGER ||
+          expected < Number.MIN_SAFE_INTEGER
+        ) {
+          tag = "@double";
+        }
       }
       testCase;
       const encoded = TaggedTypeFormat.encode(input);

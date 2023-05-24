@@ -62,7 +62,8 @@ export class SetIterator<T extends QueryValue>
    * @param initial - An existing fauna Set ({@link Page} or
    * {@link EmbeddedSet}) or function which returns a promise. If the Promise
    * resolves to a {@link Page} or {@link EmbeddedSet} then the iterator will
-   * use the client to fetch additional pages of data
+   * use the client to fetch additional pages of data.
+   * @param options - a {@link QueryOptions} to apply to the queries. Optional.
    */
   constructor(
     client: Client,

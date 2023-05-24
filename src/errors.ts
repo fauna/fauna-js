@@ -8,7 +8,7 @@ import type {
 /**
  * A common error base class for all other errors.
  */
-abstract class FaunaError extends Error {
+export abstract class FaunaError extends Error {
   constructor(...args: any[]) {
     super(...args);
   }

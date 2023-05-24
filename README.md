@@ -26,6 +26,10 @@ This driver can only be used with FQL X, and is not compatible with earlier vers
   - [Typescript Support](#typescript-support)
   - [Query Options](#query-options)
   - [Client Configuration](#client-configuration)
+    - [Timeouts](#timeouts)
+      - [Query Timeout](#query-timeout)
+      - [Client Timeout](#client-timeout)
+      - [HTTP/2 Session Idle Timeout](#http2-session-idle-timeout)
     - [Using environment variables](#using-environment-variables)
   - [Query Statistics](#query-statistics)
 - [Contributing](#contributing)
@@ -257,8 +261,12 @@ import { Client, endpoints, type ClientConfiguration } from "fauna";
 
 const config: ClientConfiguration = {
   // configure client
-  secret: YOUR_FAUNA_SECRET,
+  client_timeout_buffer_ms: 5000,
   endpoint: endpoints.default,
+  fetch_keepalive: false,
+  http2_max_streams: 100,
+  http2_session_idle_ms: 5000,
+  secret: YOUR_FAUNA_SECRET,
 
   // set default query options
   format: "tagged",
@@ -273,6 +281,34 @@ const config: ClientConfiguration = {
 
 const client = new Client(config);
 ```
+
+### Timeouts
+
+There are a few different timeout settings that can be configured
+
+#### Query Timeout
+The query timeout is the time, in milliseconds, that Fauna will spend executing your query before aborting with a 503 Timeout error.
+
+Configure the query timeout using the `query_timeout_ms` option. The default value if you do not provide one is 5000 ms (5 seconds).
+
+#### Client Timeout
+The client timeout is the time, in milliseconds, that the client will wait for a network response before canceling the request and throwing and error.
+
+The client timeout is always the query timeout plus an additional buffer. This ensures that the client always weights for at least as long Fauna could work on your query and account for network latency. The client timeout buffer is configured by setting the `client_timeout_buffer_ms` option. The default value if you do not provide on is 5000 ms (5 seconds).
+
+#### HTTP/2 Session Idle Timeout
+The HTTP/2 session idle timeout is the time, in milliseconds, that an HTTP/2 session will remain open after there is no more pending communication. Once the session idle time has elapsed the session is considered idle and the session is closed. Subsequent requests will create a new session.
+
+Configure the HTTP/2 session idle timeout using the `http2_session_idle_ms` option. The default value if you do not provide one is 5000 ms (5 seconds).
+
+This setting only applies to clients using HTTP/2 implementations; for example, the default client for Node.js runtimes.
+
+> **Note**
+> Your application process may continue executing after all requests are completed for the duration of the session idle timeout. To prevent this, it is recommended to call `Client.close()` once all requests are complete. It is not recommended to set `http2_session_idle_ms` to small values.
+
+> **Warning**
+> Setting `http2_session_idle_ms` to small values can lead to a race condition where requests cannot be completed and you received a `ERR_HTTP2_GOAWAY_SESSION` error.
+
 
 ### Using environment variables
 

@@ -11,6 +11,7 @@ export {
   ClientError,
   ClientClosedError,
   ContendedTransactionError,
+  FaunaError,
   InvalidRequestError,
   NetworkError,
   ProtocolError,

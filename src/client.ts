@@ -48,6 +48,7 @@ type RequiredClientConfig = ClientConfiguration &
       | "secret"
       // required default query options
       | "format"
+      | "long_type"
       | "query_timeout_ms"
     >
   >;
@@ -61,6 +62,7 @@ const DEFAULT_CLIENT_CONFIG: Omit<
   format: "tagged",
   http2_session_idle_ms: 5000,
   http2_max_streams: 100,
+  long_type: "number",
   fetch_keepalive: false,
   query_timeout_ms: 5000,
 };
@@ -377,7 +379,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         requestConfig.query_timeout_ms +
         this.#clientConfiguration.client_timeout_buffer_ms;
 
-      const fetchResponse = await this.#httpClient.request({
+      const response = await this.#httpClient.request({
         client_timeout_ms,
         data: requestData,
         headers,
@@ -387,10 +389,12 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       let parsedResponse;
       try {
         parsedResponse = {
-          ...fetchResponse,
+          ...response,
           body: isTaggedFormat
-            ? TaggedTypeFormat.decode(fetchResponse.body)
-            : JSON.parse(fetchResponse.body),
+            ? TaggedTypeFormat.decode(response.body, {
+                long_type: requestConfig.long_type,
+              })
+            : JSON.parse(response.body),
         };
         if (parsedResponse.body.query_tags) {
           const tags_array = (parsedResponse.body.query_tags as string)
@@ -401,7 +405,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       } catch (error: unknown) {
         throw new ProtocolError({
           message: `Error parsing response as JSON: ${error}`,
-          httpStatus: fetchResponse.status,
+          httpStatus: response.status,
         });
       }
 
@@ -474,11 +478,12 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   #validateConfiguration() {
     const config = this.#clientConfiguration;
 
-    const required_options: (keyof ClientConfiguration)[] = [
+    const required_options: (keyof RequiredClientConfig)[] = [
       "client_timeout_buffer_ms",
       "endpoint",
       "format",
       "http2_session_idle_ms",
+      "long_type",
       "query_timeout_ms",
       "fetch_keepalive",
       "http2_max_streams",

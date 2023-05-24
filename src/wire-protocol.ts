@@ -52,6 +52,16 @@ export interface QueryOptions {
   linearized?: boolean;
 
   /**
+   * Controls what Javascript type to deserialize {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#long | Fauna longs} to.
+   * Use 'number' to deserialize longs to number. Use 'bigint' to deserialize to bigint. Defaults to 'number'.
+   * Note, for extremely large maginitude numbers Javascript's number will lose precision; as Javascript's
+   * 'number' can only support +/- 2^53-1 whereas Fauna's long is 64 bit. If this is detected, a warning will
+   * be logged to the console and precision loss will occur.
+   * If your application uses extremely large magnitude numbers use 'bigint'.
+   */
+  long_type?: "number" | "bigint";
+
+  /**
    * The max number of times to retry the query if contention is encountered.
    *Overrides the optional setting on the {@link ClientConfiguration}.
    */

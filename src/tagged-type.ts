@@ -13,6 +13,10 @@ import {
 } from "./values";
 import { QueryValueObject, QueryValue } from "./wire-protocol";
 
+export interface DecodeOptions {
+  long_type: "number" | "bigint";
+}
+
 /**
  * TaggedType provides the encoding/decoding of the Fauna Tagged Type formatting
  */
@@ -33,7 +37,7 @@ export class TaggedTypeFormat {
    * @param input - JSON string result from Fauna
    * @returns object of result of FQL query
    */
-  static decode(input: string): any {
+  static decode(input: string, decodeOptions: DecodeOptions): any {
     return JSON.parse(input, (_, value: any) => {
       if (value == null) return null;
       if (value["@mod"]) {
@@ -71,7 +75,18 @@ export class TaggedTypeFormat {
       } else if (value["@int"]) {
         return Number(value["@int"]);
       } else if (value["@long"]) {
-        return BigInt(value["@long"]);
+        const bigInt = BigInt(value["@long"]);
+        if (decodeOptions.long_type === "number") {
+          if (
+            bigInt > Number.MAX_SAFE_INTEGER ||
+            bigInt < Number.MIN_SAFE_INTEGER
+          ) {
+            console.warn(`Value is too large to be represented as a number. \
+Returning as Number with loss of precision. Use long_type 'bigint' instead.`);
+          }
+          return Number(bigInt);
+        }
+        return bigInt;
       } else if (value["@double"]) {
         return Number(value["@double"]);
       } else if (value["@date"]) {
@@ -102,15 +117,19 @@ type TaggedTime = { "@time": string };
 
 export const LONG_MIN = BigInt("-9223372036854775808");
 export const LONG_MAX = BigInt("9223372036854775807");
+export const INT_MIN = -(2 ** 31);
+export const INT_MAX = 2 ** 31 - 1;
 
 const encodeMap = {
-  bigint: (value: bigint): TaggedLong => {
+  bigint: (value: bigint): TaggedLong | TaggedInt => {
     if (value < LONG_MIN || value > LONG_MAX) {
       throw new RangeError(
-        "Precision loss when converting BigInt to Fauna type"
+        "BigInt value exceeds max magnitude for a 64-bit Fauna long. Use a 'number' to represent doubles beyond that limit."
       );
     }
-
+    if (value >= INT_MIN && value <= INT_MAX) {
+      return { "@int": value.toString() };
+    }
     return {
       "@long": value.toString(),
     };
@@ -126,7 +145,7 @@ const encodeMap = {
     if (`${value}`.includes(".")) {
       return { "@double": value.toString() };
     } else {
-      if (value >= -(2 ** 31) && value <= 2 ** 31 - 1) {
+      if (value >= INT_MIN && value <= INT_MAX) {
         return { "@int": value.toString() };
       } else if (Number.isSafeInteger(value)) {
         return {

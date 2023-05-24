@@ -33,7 +33,9 @@ describe("query using template format", () => {
   it("succeeds with a Long variable", async () => {
     const long = BigInt(2 ** 60);
     const queryBuilder = fql`${long} + ${long}`;
-    const response = await client.query(queryBuilder);
+    const response = await client.query(queryBuilder, {
+      long_type: "bigint",
+    });
     expect(response.data).toBe(long + long);
   });
 

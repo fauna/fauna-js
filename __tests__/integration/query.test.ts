@@ -1,6 +1,7 @@
 import {
   AbortError,
   AuthenticationError,
+  Client,
   ClientConfiguration,
   ClientError,
   fql,
@@ -22,9 +23,7 @@ import {
 } from "../../src";
 import { getClient, getDefaultHTTPClientOptions } from "../client";
 
-const client = getClient({
-  query_timeout_ms: 60_000,
-});
+let client: Client;
 
 const dummyResponse: HTTPResponse = {
   body: JSON.stringify({
@@ -44,7 +43,11 @@ const dummyResponse: HTTPResponse = {
   status: 200,
 };
 
-afterAll(() => {
+beforeEach(() => {
+  client = getClient({ query_timeout_ms: 60_000 });
+});
+
+afterEach(() => {
   client.close();
 });
 
@@ -146,6 +149,7 @@ describe("query", () => {
       const myClient = getClient(clientConfiguration, httpClient);
       const headers = { [fieldName]: fieldValue };
       await myClient.query<number>(fql`"taco".length`, headers);
+      myClient.close();
     }
   );
 
@@ -228,6 +232,7 @@ describe("query", () => {
 
   it("throws an InvalidRequestError when request is invalid", async () => {
     expect.assertions(2);
+    let badClient: Client | undefined = undefined;
     try {
       const httpClient: HTTPClient = {
         async request(req) {
@@ -241,13 +246,15 @@ describe("query", () => {
         },
         close() {},
       };
-      const bad_client = getClient({}, httpClient);
-      await bad_client.query(fql`"dummy"`);
+      badClient = getClient({}, httpClient);
+      await badClient.query(fql`"dummy"`);
     } catch (e) {
       if (e instanceof InvalidRequestError) {
         expect(e.httpStatus).toBe(400);
         expect(e.code).toBe("invalid_request");
       }
+    } finally {
+      badClient?.close();
     }
   });
 
@@ -280,6 +287,8 @@ describe("query", () => {
         expect(e.httpStatus).toBe(440);
         expect(e.code).toBe("time_out");
       }
+    } finally {
+      badClient.close();
     }
 
     const actual = await client.query(fql`Collection.byName('Wah')`, {
@@ -303,6 +312,8 @@ describe("query", () => {
         expect(e.httpStatus).toBe(401);
         expect(e.queryInfo?.summary).toBeUndefined();
       }
+    } finally {
+      badClient.close();
     }
   });
 
@@ -324,6 +335,8 @@ describe("query", () => {
         expect(e.message).toBe("The network connection encountered a problem.");
         expect(e.cause).toBeDefined();
       }
+    } finally {
+      badClient.close();
     }
   });
 
@@ -376,6 +389,8 @@ describe("query", () => {
           "A client level error occurred. Fauna was not called."
         );
       }
+    } finally {
+      badClient.close();
     }
   });
 
@@ -393,6 +408,8 @@ describe("query", () => {
         expect(e.httpStatus).toBeGreaterThanOrEqual(400);
         expect(e.message).toBeDefined();
       }
+    } finally {
+      badClient.close();
     }
   });
 
@@ -435,6 +452,7 @@ describe("query", () => {
 
     // okay to make a new query
     await client.query(fql`"hello"`);
+    client.close();
   });
 });
 
@@ -477,7 +495,7 @@ describe("query can encode / decode QueryValue correctly", () => {
     // @ts-expect-error Type 'undefined' is not assignable to type 'QueryValue'
     let undefinedValue: QueryValue = undefined;
     try {
-      const docCreated = await client.query(fql`
+      await client.query(fql`
         ${new Module(collectionName)}.create({
           foo: "bar",
           shouldnt_exist: ${undefinedValue},
@@ -493,6 +511,8 @@ describe("query can encode / decode QueryValue correctly", () => {
           "Passing undefined as a QueryValue is not supported"
         );
       }
+    } finally {
+      client.close();
     }
   });
 });

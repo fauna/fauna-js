@@ -245,7 +245,7 @@ const options: QueryOptions = {
 
 const response = await client.query(fql`"Hello, ${name}!"`, options);
 
-client.close()
+client.close();
 ```
 
 ## Client Configuration

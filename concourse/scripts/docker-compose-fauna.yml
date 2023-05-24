@@ -8,7 +8,7 @@ services:
       - "8443:8443"
 
   node-lts:
-    image: node:18.15-alpine3.16
+    image: node:18.16-alpine3.16
     container_name: node-lts
     depends_on:
       - faunadb
@@ -27,7 +27,7 @@ services:
         yarn test:integration
 
   node-current:
-    image: node:19.8-alpine3.16
+    image: node:20.2-alpine3.16
     container_name: node-current
     depends_on:
       - faunadb

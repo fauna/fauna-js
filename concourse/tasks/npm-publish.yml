@@ -5,7 +5,7 @@ image_resource:
   type: docker-image
   source:
     repository: node
-    tag: 19.8-alpine3.16
+    tag: 20.2-alpine3.16
 
 params:
   NPM_TOKEN:

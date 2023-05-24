@@ -81,8 +81,8 @@ This Driver supports and is tested on:
   - Safari
   - Edge
 - Node.js - [Current and Active LTS](https://nodejs.org/en/about/releases/)
-  - Current - v19
-  - Active LTS - v18
+  - Current - v20
+  - LTS - v18
 - Cloudflare Workers
 - AWS Lambda
 - Netlify

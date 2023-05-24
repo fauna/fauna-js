@@ -1,5 +1,5 @@
-import { HTTPClient, fql, getDefaultHTTPClient } from "../../src";
-import { getClient, getDefaultHTTPClientOptions } from "../client";
+import { fql } from "../../src";
+import { getClient } from "../client";
 
 const client = getClient({
   query_timeout_ms: 60_000,

@@ -232,7 +232,7 @@ import { fql, Client, type QueryOptions } from "fauna";
 const client = new Client();
 
 const options: QueryOptions = {
-  arguments: { name: "Alice" };
+  arguments: { name: "Alice" },
   format: "tagged",
   long_type: "number",
   linearized: false,

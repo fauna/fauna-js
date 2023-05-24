@@ -299,7 +299,7 @@ describe.each`
     ${1.3 ** 63}                   | ${1.3 ** 63}                       | ${"number"}  | ${"@double"} | ${"1.3**63"}
     ${1.3}                         | ${1.3}                             | ${"number"}  | ${"@double"} | ${"1.3"}
   `(
-    `Properly encodes and decodes number $testCase in long_type`,
+    `Properly encodes and decodes number $testCase`,
     async ({ input, expected, expectedType, tag, testCase }) => {
       if (long_type === "number" && typeof expected === "bigint") {
         expected = Number(expected);

@@ -124,7 +124,7 @@ const encodeMap = {
   bigint: (value: bigint): TaggedLong | TaggedInt => {
     if (value < LONG_MIN || value > LONG_MAX) {
       throw new RangeError(
-        "Precision loss when converting BigInt to Fauna type"
+        "BigInt value exceeds max magnitude for a 64-bit Fauna long. Use a 'number' to represent doubles beyond that limit."
       );
     }
     if (value >= INT_MIN && value <= INT_MAX) {

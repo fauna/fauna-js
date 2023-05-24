@@ -483,7 +483,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       "endpoint",
       "format",
       "http2_session_idle_ms",
-      "http2_max_streams",
       "long_type",
       "query_timeout_ms",
       "fetch_keepalive",

@@ -171,9 +171,9 @@ export class NamedDocument<
 
 /**
  * A Fauna module, such as a Collection, Database, Function, Role, etc.
- * Every module is usable directly in your FQL X code.
+ * Every module is usable directly in your FQL code.
  *
- * The example below shows FQL X code that gets all documents for a hypothetical
+ * The example below shows FQL code that gets all documents for a hypothetical
  * 'Users' collection by creating a Module for user and then calling .all().
  *
  * You can also create modules for databases, functions, roles and other

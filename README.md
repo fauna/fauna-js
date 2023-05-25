@@ -1,5 +1,5 @@
 > **WARNING**
-> This driver is in beta release and not recommended for production use. It operates with the Fauna database service via an API which is also in beta release, and is not recommended for production use. This driver is not compatible with v4 or earlier versions of Fauna. Please feel free to contact product@fauna.com to learn about our special Early Access program for FQL X.
+> This driver is in beta release and not recommended for production use. It operates with the Fauna database service via an API which is also in beta release, and is not recommended for production use. This driver is not compatible with v4 or earlier versions of Fauna. Please feel free to contact product@fauna.com to learn about our special Early Access program for FQL v10.
 
 # A JavaScript driver for [Fauna](https://fauna.com).
 
@@ -8,7 +8,7 @@
 
 See the [Fauna Documentation](https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/) for additional information how to configure and query your databases.
 
-This driver can only be used with FQL X, and is not compatible with earlier versions of FQL. To query your databases with earlier API versions, see the [faunadb](https://www.npmjs.com/package/faunadb) package.
+This driver can only be used with FQL v10, and is not compatible with earlier versions of FQL. To query your databases with earlier API versions, see the [faunadb](https://www.npmjs.com/package/faunadb) package.
 
 <details>
 <summary>Table of Contents</summary>
@@ -51,7 +51,7 @@ const client = new Client({
 });
 
 try {
-  // build queries using the fql function
+  // build queries using the `fql` function
   const collectionQuery = fql`Collection.create({ name: "Dogs" })`;
   // execute the query
   const collectionResponse = await client.query(collection_query);
@@ -163,8 +163,8 @@ client.close();
 This has several advantages:
 
 - You can use `fql` to build a library of subqueries applicable to your domain - and combinable in whatever way you need
-- injection attacks are not possible if you pass input variables into the interpolated (`${i'm interpoloated}`) parts of the query.
-- the driver speaks "pure FQL X" - you can try out some FQL X on the dashboard's terminal and paste it directly into your app like fql\`copied from terminal...\` and the query will work as is.
+- Injection attacks are not possible if you pass input variables into the interpolated (`` `${interpoloated_argument}` ``) parts of the query.
+- The driver speaks "pure" FQL - you can try out some FQL queries on the dashboard's terminal and paste it directly into your app like `` fql`copied from terminal...`  `` and the query will work as is.
 
 ## Connecting from the browser
 
@@ -287,6 +287,7 @@ const client = new Client(config);
 There are a few different timeout settings that can be configured; each comes with a default setting. We recommend that most applications simply stick to the defaults.
 
 #### Query Timeout
+
 The query timeout is the time, in milliseconds, that Fauna will spend executing your query before aborting with a 503 Timeout error. If a query timeout occurs, the driver will throw an instance of `ServiceTimeoutError`.
 
 The query timeout can be set using the `ClientConfiguration.query_timeout_ms` option. The default value if you do not provide one is 5000 ms (5 seconds).
@@ -302,6 +303,7 @@ const response = await client.query(myQuery, { query_timeout_ms: 20_000 });
 ```
 
 #### Client Timeout
+
 The client timeout is the time, in milliseconds, that the client will wait for a network response before canceling the request. If a client timeout occurs, the driver will throw an instance of `NetworkError`.
 
 The client timeout is always the query timeout plus an additional buffer. This ensures that the client always waits for at least as long Fauna could work on your query and account for network latency. The client timeout buffer is configured by setting the `client_timeout_buffer_ms` option. The default value for the buffer if you do not provide on is 5000 ms (5 seconds), therefore the default client timeout is 10000 ms (10 s) when considering the default query timeout.
@@ -311,6 +313,7 @@ const client = new Client({ client_timeout_buffer_ms: 6000 });
 ```
 
 #### HTTP/2 Session Idle Timeout
+
 The HTTP/2 session idle timeout is the time, in milliseconds, that an HTTP/2 session will remain open after there is no more pending communication. Once the session idle time has elapsed the session is considered idle and the session is closed. Subsequent requests will create a new session; the session idle timeout does not result in an error.
 
 Configure the HTTP/2 session idle timeout using the `http2_session_idle_ms` option. The default value if you do not provide one is 5000 ms (5 seconds).
@@ -326,7 +329,6 @@ const client = new Client({ http2_session_idle_ms: 6000 });
 
 > **Warning**
 > Setting `http2_session_idle_ms` to small values can lead to a race condition where requests cannot be transmitted before the session is closed, yielding `ERR_HTTP2_GOAWAY_SESSION` errors.
-
 
 ### Using environment variables
 

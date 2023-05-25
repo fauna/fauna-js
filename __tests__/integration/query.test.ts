@@ -52,7 +52,7 @@ afterEach(() => {
 });
 
 describe("query", () => {
-  it("Can query an FQL-x endpoint", async () => {
+  it("Can query an FQL v10 endpoint", async () => {
     const result = await client.query<number>(fql`"taco".length`);
 
     expect(result.data).toBe(4);

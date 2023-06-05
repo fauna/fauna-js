@@ -296,10 +296,7 @@ export class Client {
   }
 
   #getSecret(partialClientConfig?: ClientConfiguration): string {
-    const fallback =
-      process?.env !== null && typeof process.env === "object"
-        ? process.env["FAUNA_SECRET"]
-        : undefined;
+    const fallback = process?.env?.FAUNA_SECRET;
 
     const maybeSecret = partialClientConfig?.secret || fallback;
     if (maybeSecret === undefined) {

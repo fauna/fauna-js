@@ -245,7 +245,7 @@ const getNodeRuntimeEnv = (): string => {
       typeof process !== "undefined" &&
       process &&
       process.env &&
-      typeof process.env !== undefined
+      typeof process.env === "object"
     )
   ) {
     return "unknown";

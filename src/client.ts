@@ -298,6 +298,7 @@ export class Client {
   #getSecret(partialClientConfig?: ClientConfiguration): string {
     let fallback = undefined;
     if (
+      typeof process !== "undefined" &&
       process &&
       typeof process === "object" &&
       process.env &&

@@ -16,7 +16,11 @@ export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;
 
 const nodeHttp2IsSupported = () => {
-  if (typeof process !== "undefined" && process.release?.name === "node") {
+  if (
+    typeof process !== "undefined" &&
+    process &&
+    process.release?.name === "node"
+  ) {
     try {
       require("node:http2");
       return true;

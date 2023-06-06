@@ -240,8 +240,15 @@ const crossGlobal =
  */
 const getNodeRuntimeEnv = (): string => {
   // return early if process variables are not available
-  if (typeof process?.env !== "object" || process.env === null) {
-    return "unkown";
+  if (
+    !(
+      typeof process !== "undefined" &&
+      process &&
+      process.env &&
+      typeof process.env !== undefined
+    )
+  ) {
+    return "unknown";
   }
 
   const runtimeEnvs = [

@@ -129,6 +129,8 @@ export type QueryStats = {
 export type QueryInfo = {
   /** The last transaction timestamp of the query. A Unix epoch in microseconds. */
   txn_ts?: number;
+  /** The schema version that was used for the query execution. */
+  schema_version?: number;
   /** A readable summary of any warnings or logs emitted by the query. */
   summary?: string;
   /** The value of the x-query-tags header, if it was provided. */

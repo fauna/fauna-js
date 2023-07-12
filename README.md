@@ -54,7 +54,7 @@ try {
   // build queries using the `fql` function
   const collectionQuery = fql`Collection.create({ name: "Dogs" })`;
   // execute the query
-  const collectionResponse = await client.query(collection_query);
+  const collectionResponse = await client.query(collectionQuery);
 
   // define some data in your app
   const dog = { name: "Scout" };
@@ -69,7 +69,7 @@ try {
   `;
 
   // execute the query
-  const response = await client.query(document_query);
+  const response = await client.query(documentQuery);
 } catch (error) {
   if (error instanceof FaunaError) {
     // handle errors

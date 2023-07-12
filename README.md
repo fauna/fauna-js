@@ -54,7 +54,7 @@ try {
   // build queries using the `fql` function
   const collectionQuery = fql`Collection.create({ name: "Dogs" })`;
   // execute the query
-  const collectionResponse = await client.query(collection_query);
+  const collectionResponse = await client.query(collectionQuery);
 
   // define some data in your app
   const dog = { name: "Scout" };
@@ -69,7 +69,7 @@ try {
   `;
 
   // execute the query
-  const response = await client.query(document_query);
+  const response = await client.query(documentQuery);
 } catch (error) {
   if (error instanceof FaunaError) {
     // handle errors
@@ -237,13 +237,13 @@ const options: QueryOptions = {
   long_type: "number",
   linearized: false,
   max_contention_retries: 5,
-  query_tags: { name: "readme query" },
+  query_tags: { name: "readme_query" },
   query_timeout_ms: 60_000,
   traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
   typecheck: true,
 };
 
-const response = await client.query(fql`"Hello, ${name}!"`, options);
+const response = await client.query(fql`"Hello, #{name}!"`, options);
 
 client.close();
 ```

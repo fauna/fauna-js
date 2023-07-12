@@ -237,13 +237,13 @@ const options: QueryOptions = {
   long_type: "number",
   linearized: false,
   max_contention_retries: 5,
-  query_tags: { name: "readme query" },
+  query_tags: { name: "readme_query" },
   query_timeout_ms: 60_000,
   traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
   typecheck: true,
 };
 
-const response = await client.query(fql`"Hello, ${name}!"`, options);
+const response = await client.query(fql`"Hello, #{name}!"`, options);
 
 client.close();
 ```

@@ -19,25 +19,55 @@ export const getDriverEnv = (): string => {
     runtime: "unknown",
   };
 
-  let isServiceWorker = false;
   try {
-    isServiceWorker = global instanceof ServiceWorkerGlobalScope;
-  } catch (_) {
-    // okay if this fails
-  }
+    /**
+     * Determine if we're executing in a Node environment
+     */
+    const isNode =
+      typeof window === "undefined" &&
+      typeof process !== "undefined" &&
+      process.versions != null &&
+      process.versions.node != null;
 
-  if (isNode()) {
-    driverEnv.runtime = ["nodejs", process.version].join("-");
-    driverEnv.env = getNodeRuntimeEnv();
-    driverEnv.os = [os.platform(), os.release()].join("-");
-  } else if (isServiceWorker) {
-    driverEnv.runtime = getBrowserDetails(navigator);
-    driverEnv.env = "Service Worker";
-    driverEnv.os = getBrowserOsDetails(navigator);
-  } else {
-    driverEnv.runtime = getBrowserDetails(navigator);
-    driverEnv.env = "browser";
-    driverEnv.os = getBrowserOsDetails(navigator);
+    /**
+     * Determine if we're executing in a Node environment
+     */
+    const isBrowser =
+      typeof window !== "undefined" && typeof window.document !== "undefined";
+
+    /**
+     * Determine if we're executing in a Service Worker environment
+     */
+    const isServiceWorker =
+      typeof self === "object" &&
+      self.constructor &&
+      self.constructor.name === "DedicatedWorkerGlobalScope";
+
+    /**
+     * Determine if we're executing in Vercel's Edge Runtime
+     * @see {@link https://vercel.com/docs/concepts/functions/edge-functions/edge-runtime#check-if-you're-running-on-the-edge-runtime}
+     */
+    // @ts-expect-error Cannot find name 'EdgeRuntime'
+    const isVercelEdgeRuntime = typeof EdgeRuntime !== "string";
+
+    if (isNode) {
+      driverEnv.runtime = ["nodejs", process.version].join("-");
+      driverEnv.env = getNodeRuntimeEnv();
+      driverEnv.os = [os.platform(), os.release()].join("-");
+    } else if (isServiceWorker) {
+      driverEnv.runtime = getBrowserDetails(navigator);
+      driverEnv.env = "Service Worker";
+      driverEnv.os = getBrowserOsDetails(navigator);
+    } else if (isBrowser) {
+      driverEnv.runtime = getBrowserDetails(navigator);
+      driverEnv.env = "browser";
+      driverEnv.os = getBrowserOsDetails(navigator);
+    } else if (isVercelEdgeRuntime) {
+      driverEnv.runtime = "Vercel Edge Runtime";
+      driverEnv.env = "edge";
+    }
+  } catch (e) {
+    // ignore errors trying to report on user environment
   }
 
   return (
@@ -48,15 +78,6 @@ export const getDriverEnv = (): string => {
       .join("; ")
   );
 };
-
-/**
- * Predicate to determine if we're executing in a Node environment or not
- */
-const isNode = (): boolean =>
-  typeof window === "undefined" &&
-  typeof process !== "undefined" &&
-  process.versions != null &&
-  process.versions.node != null;
 
 /**
  * Get browser environment details

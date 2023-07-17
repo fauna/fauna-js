@@ -135,7 +135,7 @@ export class NodeHTTP2Client implements HTTPClient {
 
   #connect() {
     // create the session if it does not exist or is closed
-    if (!this.#session || this.#session.closed) {
+    if (!this.#session || this.#session.closed || this.#session.destroyed) {
       const new_session: ClientHttp2Session = http2
         .connect(this.#url, {
           peerMaxConcurrentStreams: this.#http2_max_streams,

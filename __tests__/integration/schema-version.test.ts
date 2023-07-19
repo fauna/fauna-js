@@ -1,6 +1,5 @@
-import { fql } from "../../src";
+import { Client, fql } from "../../src";
 import { newDB } from "../client";
-import { Client } from "../../src";
 
 describe("schema version is returned by the client", () => {
   let client: Client;

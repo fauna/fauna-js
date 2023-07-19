@@ -1,4 +1,10 @@
-import { Client, ClientConfiguration, endpoints, HTTPClient } from "../src";
+import {
+  Client,
+  ClientConfiguration,
+  endpoints,
+  fql,
+  HTTPClient,
+} from "../src";
 import { HTTPClientOptions } from "../src/http-client/http-client";
 
 export const getClient = (
@@ -35,4 +41,19 @@ export const getDefaultHTTPClientOptions = (): HTTPClientOptions => {
     http2_max_streams: 100,
     fetch_keepalive: false,
   };
+};
+
+export const newDB = async (name: string): Promise<Client> => {
+  const parentClient = getClient();
+
+  const secretQ = await parentClient.query<string>(fql`
+    if (Database.byName(${name}).exists()) {
+      Key.where(.database == ${name}).forEach(.delete())
+      Database.byName(${name})!.delete()
+    }
+    Database.create({ name: ${name} })
+    Key.create({ role: "admin", database: ${name} }).secret
+  `);
+
+  return getClient({ secret: secretQ.data });
 };

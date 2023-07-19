@@ -1,15 +1,17 @@
-import { fql } from "../../src";
-import { getClient } from "../client";
+import { Client, fql } from "../../src";
+import { newDB } from "../client";
 
 describe("schema version is returned by the client", () => {
-  const client = getClient();
+  let client: Client;
+
+  // make a fresh db each run
+  beforeAll(async () => {
+    client = await newDB("SchemaTest");
+  });
+
   it("returns the schema version", async () => {
     const resTs = await client.query(fql`
-      if (Collection.byName("TestColl") == null) {
-        Collection.create({ name: "TestColl" })
-      } else {
-        TestColl.definition.update({})
-      }
+      Collection.create({ name: "TestColl" })
     `);
 
     const expectedSchemaVersion = resTs.txn_ts;

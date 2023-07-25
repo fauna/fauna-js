@@ -298,6 +298,7 @@ describe.each`
     ${LONG_MAX}                    | ${LONG_MAX}                        | ${long_type} | ${"@long"}   | ${"2**64 - 1"}
     ${1.3 ** 63}                   | ${1.3 ** 63}                       | ${"number"}  | ${"@double"} | ${"1.3**63"}
     ${1.3}                         | ${1.3}                             | ${"number"}  | ${"@double"} | ${"1.3"}
+    ${0.000000008}                 | ${0.000000008}                     | ${"number"}  | ${"@double"} | ${"0.000000008"}
   `(
     `Properly encodes and decodes number $testCase`,
     async ({ input, expected, expectedType, tag, testCase }) => {

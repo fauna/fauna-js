@@ -142,7 +142,7 @@ const encodeMap = {
       throw new RangeError(`Cannot convert ${value} to a Fauna type.`);
     }
 
-    if (`${value}`.includes(".")) {
+    if (!Number.isInteger(value)) {
       return { "@double": value.toString() };
     } else {
       if (value >= INT_MIN && value <= INT_MAX) {

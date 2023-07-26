@@ -2,10 +2,6 @@ name: Validate Driver
 
 on:
   pull_request:
-    paths:
-      - ".github/workflows/pr_validate.yml"
-      - "**.ts"
-      - "yarn.lock"
 
 jobs:
   validate:

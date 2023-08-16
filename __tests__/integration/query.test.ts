@@ -477,7 +477,6 @@ describe("query can encode / decode QueryValue correctly", () => {
     const docCreated = await client.query<any>(
       fql`UndefinedTest.create(${toughInput})`
     );
-    client.close();
     expect(docCreated.data.should_exist).toBeUndefined();
     expect(docCreated.data.nested_object.i_dont_exist).toBeUndefined();
     expect(docCreated.data.foo).toBe("bar");
@@ -490,7 +489,7 @@ describe("query can encode / decode QueryValue correctly", () => {
     // @ts-expect-error Type 'undefined' is not assignable to type 'QueryValue'
     let undefinedValue: QueryValue = undefined;
     try {
-      client.query(fql`{ foo: ${undefinedValue} }`);
+      await client.query(fql`{ foo: ${undefinedValue} }`);
     } catch (e) {
       if (e instanceof TypeError) {
         expect(e.name).toBe("TypeError");
@@ -498,8 +497,6 @@ describe("query can encode / decode QueryValue correctly", () => {
           "Passing undefined as a QueryValue is not supported"
         );
       }
-    } finally {
-      client.close();
     }
   });
 });

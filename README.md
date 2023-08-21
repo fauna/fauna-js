@@ -82,10 +82,10 @@ try {
 This Driver supports and is tested on:
 
 - Browsers - Stable versions of
-  - Chrome
-  - Firefox
-  - Safari
-  - Edge
+  - Chrome 69+ 
+  - Firefox 62+
+  - Safari 12.1+
+  - Edge 79+
 - Node.js - [Current and Active LTS](https://nodejs.org/en/about/releases/)
   - Current - v20
   - LTS - v18

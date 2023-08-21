@@ -1,14 +1,11 @@
-> **WARNING**
-> This driver is in beta release and not recommended for production use. It operates with the Fauna database service via an API which is also in beta release, and is not recommended for production use. This driver is not compatible with v4 or earlier versions of Fauna. Please feel free to contact product@fauna.com to learn about our special Early Access program for FQL v10.
-
-# A JavaScript driver for [Fauna](https://fauna.com).
+# The Official Javascript Driver for [Fauna](https://fauna.com).
 
 [![Npm Version](https://img.shields.io/npm/v/fauna.svg?maxAge=21600)](https://www.npmjs.com/package/fauna)
 [![License](https://img.shields.io/badge/license-MPL_2.0-blue.svg?maxAge=2592000)](https://raw.githubusercontent.com/fauna/fauna-js/main/LICENSE)
 
-See the [Fauna Documentation](https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/) for additional information how to configure and query your databases.
-
 This driver can only be used with FQL v10, and is not compatible with earlier versions of FQL. To query your databases with earlier API versions, see the [faunadb](https://www.npmjs.com/package/faunadb) package.
+
+See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additional information how to configure and query your databases.
 
 <details>
 <summary>Table of Contents</summary>
@@ -16,7 +13,7 @@ This driver can only be used with FQL v10, and is not compatible with earlier ve
 - [A JavaScript driver for Fauna.](#a-javascript-driver-for-fauna)
 - [Quick-Start](#quick-start)
 - [Supported Runtimes](#supported-runtimes)
-- [Installing](#installing)
+- [Installation](#installation)
   - [Package Manager](#package-manager)
   - [Via CDN](#via-cdn)
 - [Usage](#usage)
@@ -97,7 +94,7 @@ This Driver supports and is tested on:
 - Netlify
 - Vercel
 
-# Installing
+# Installation
 
 ## Package Manager
 

@@ -186,7 +186,7 @@ describe("query", () => {
       if (e instanceof QueryCheckError) {
         expect(e.httpStatus).toBe(400);
         expect(e.message).toBeDefined();
-        expect(e.code).toBeDefined();
+        expect(e.code).toBe("invalid_query");
         expect(e.queryInfo?.summary).toBeDefined();
       }
     }
@@ -195,7 +195,7 @@ describe("query", () => {
   it("throws a QueryRuntimeError if the query hits a runtime error", async () => {
     expect.assertions(3);
     try {
-      await client.query(fql`"taco".length + "taco"`);
+      await client.query(fql`2 + "2"`, { typecheck: false });
     } catch (e) {
       if (e instanceof QueryRuntimeError) {
         expect(e.httpStatus).toBe(400);
@@ -458,7 +458,6 @@ describe("query", () => {
 
 describe("query can encode / decode QueryValue correctly", () => {
   it("treats undefined as unprovided when in object", async () => {
-    const client = getClient();
     const collectionName = "UndefinedTest";
     await client.query(fql`
       if (Collection.byName(${collectionName}) == null) {
@@ -474,36 +473,23 @@ describe("query can encode / decode QueryValue correctly", () => {
         i_dont_exist: undefined,
       },
     };
-    const docCreated = await client.query<any>(fql`
-        ${new Module(collectionName)}.create(${toughInput})`);
-    client.close();
+    // Do not use a dynamic Collection name by using `${new Module(collectionName)}`. See ENG-5003
+    const docCreated = await client.query<any>(
+      fql`UndefinedTest.create(${toughInput})`
+    );
     expect(docCreated.data.should_exist).toBeUndefined();
     expect(docCreated.data.nested_object.i_dont_exist).toBeUndefined();
     expect(docCreated.data.foo).toBe("bar");
     expect(docCreated.data.nested_object.i_exist).toBe(true);
   });
 
-  it("treats undefined as unprovided passed directly as value", async () => {
+  it("undefined arguments throw a TypeError", async () => {
     expect.assertions(2);
-    const client = getClient();
-    const collectionName = "UndefinedTest";
-    await client.query(fql`
-      if (Collection.byName(${collectionName}) == null) {
-        Collection.create({ name: ${collectionName}})
-      }`);
     // whack in undefined
     // @ts-expect-error Type 'undefined' is not assignable to type 'QueryValue'
     let undefinedValue: QueryValue = undefined;
     try {
-      await client.query(fql`
-        ${new Module(collectionName)}.create({
-          foo: "bar",
-          shouldnt_exist: ${undefinedValue},
-          nested_object: {
-            i_exist: true,
-            i_dont_exist: ${undefinedValue}
-          }
-        })`);
+      await client.query(fql`{ foo: ${undefinedValue} }`);
     } catch (e) {
       if (e instanceof TypeError) {
         expect(e.name).toBe("TypeError");
@@ -511,8 +497,6 @@ describe("query can encode / decode QueryValue correctly", () => {
           "Passing undefined as a QueryValue is not supported"
         );
       }
-    } finally {
-      client.close();
     }
   });
 });

@@ -28,11 +28,21 @@ export class FetchClient implements HTTPClient {
     method,
     client_timeout_ms,
   }: HTTPRequest): Promise<HTTPResponse> {
+    const signal =
+      AbortSignal.timeout === undefined
+        ? (() => {
+            const controller = new AbortController();
+            const signal = controller.signal;
+            setTimeout(() => controller.abort(), client_timeout_ms);
+            return signal;
+          })()
+        : AbortSignal.timeout(client_timeout_ms);
+
     const response = await fetch(this.#url, {
       method,
       headers: { ...requestHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(data),
-      signal: AbortSignal.timeout(client_timeout_ms),
+      signal,
       keepalive: this.#keepalive,
     }).catch((error) => {
       throw new NetworkError("The network connection encountered a problem.", {

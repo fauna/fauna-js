@@ -3,8 +3,7 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: docker
-    variant: dind
+    repository: karlkfi/concourse-dcind
 
 params:
   FAUNA_ROOT_KEY:
@@ -16,9 +15,9 @@ inputs:
   - name: fauna-js-repository
 
 run:
-  path: dockerd-entrypoint.sh
+  path: entrypoint.sh
   args:
-    - sh
+    - bash
     - -ceu
     - |
       # start containers

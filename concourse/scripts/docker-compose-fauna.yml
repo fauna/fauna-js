@@ -2,7 +2,7 @@ version: "3.3"
 
 services:
   faunadb:
-    image: fauna/faunadb
+    image: fauna/faunadb:4.28
     container_name: faunadb
     ports:
       - "8443:8443"

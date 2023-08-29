@@ -101,7 +101,7 @@ describe("last_txn_ts tracking in client", () => {
     myClient.close();
   });
 
-  it("Ingores overrides  of the lastTxnTs that are less than the current value or undefined", async () => {
+  it("Ignores overrides  of the lastTxnTs that are less than the current value or undefined", async () => {
     let expectedLastTxn: number;
 
     const myClient = getClient({

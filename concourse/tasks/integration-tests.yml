@@ -16,7 +16,7 @@ inputs:
   - name: fauna-js-repository
 
 run:
-  path: entrypoint.sh
+  path: dockerd-entrypoint.sh
   args:
     - bash
     - -ceu

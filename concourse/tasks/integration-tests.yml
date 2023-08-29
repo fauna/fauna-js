@@ -3,7 +3,8 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: karlkfi/concourse-dcind
+    repository: docker
+    variant: dind
 
 params:
   FAUNA_ROOT_KEY:

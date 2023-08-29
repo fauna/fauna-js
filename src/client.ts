@@ -125,20 +125,19 @@ export class Client {
   /**
    * @returns the last transaction time seen by this client, or undefined if this client has not seen a transaction time.
    */
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore it's okay that #lastTxnTs could be undefined on get, but we want
-  //   to enforce that the user never intentionally set it to undefined.
   get lastTxnTs(): number | undefined {
     return this.#lastTxnTs;
   }
   /**
    * Sets the last transaction time of this client.
    * @param ts - the last transaction timestamp to set, as microseconds since
-   *   the epoch. If `ts` is less than the existing `#lastTxnTs` value, then no
-   *   change is made.
+   *   the epoch. If `ts` is less than the existing `#lastTxnTs` value or is
+   *   undefined , then no change is made.
    */
-  set lastTxnTs(ts: number) {
-    this.#lastTxnTs = this.#lastTxnTs ? Math.max(ts, this.#lastTxnTs) : ts;
+  set lastTxnTs(ts: number | undefined) {
+    if (ts !== undefined) {
+      this.#lastTxnTs = this.#lastTxnTs ? Math.max(ts, this.#lastTxnTs) : ts;
+    }
   }
 
   /**

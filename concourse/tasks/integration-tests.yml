@@ -18,7 +18,7 @@ inputs:
 run:
   path: dockerd-entrypoint.sh
   args:
-    - bash
+    - sh
     - -ceu
     - |
       # start containers

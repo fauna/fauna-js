@@ -98,5 +98,29 @@ describe("last_txn_ts tracking in client", () => {
     `);
     expect(resultThree.txn_ts).not.toBeUndefined();
     expect(resultThree.txn_ts).not.toEqual(resultTwo.txn_ts);
+    myClient.close();
+  });
+
+  it("Ingores overrides  of the lastTxnTs that are less than the current value or undefined", async () => {
+    let expectedLastTxn: number;
+
+    const myClient = getClient({
+      query_timeout_ms: 60_000,
+    });
+
+    expect(myClient.lastTxnTs).toBeUndefined();
+
+    const resultOne = await myClient.query(fql`
+      if (Collection.byName('Foozball') == null) {\
+        Collection.create({ name: 'Foozball' })\
+      }
+    `);
+    expect(myClient.lastTxnTs).toBeDefined();
+    expectedLastTxn = myClient.lastTxnTs!;
+    myClient.lastTxnTs = expectedLastTxn - 1;
+    expect(myClient.lastTxnTs).toEqual(expectedLastTxn);
+    myClient.lastTxnTs = undefined;
+    expect(myClient.lastTxnTs).toEqual(expectedLastTxn);
+    myClient.close();
   });
 });

@@ -55,10 +55,9 @@ type RequiredClientConfig = ClientConfiguration &
 
 const DEFAULT_CLIENT_CONFIG: Omit<
   ClientConfiguration & RequiredClientConfig,
-  "secret"
+  "secret" | "endpoint"
 > = {
   client_timeout_buffer_ms: 5000,
-  endpoint: endpoints.default,
   format: "tagged",
   http2_session_idle_ms: 5000,
   http2_max_streams: 100,
@@ -106,6 +105,7 @@ export class Client {
       ...DEFAULT_CLIENT_CONFIG,
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
+      endpoint: this.#getEndpoint(clientConfiguration),
     };
 
     this.#validateConfiguration();
@@ -295,7 +295,7 @@ export class Client {
   }
 
   #getSecret(partialClientConfig?: ClientConfiguration): string {
-    let fallback = undefined;
+    let env_secret = undefined;
     if (
       typeof process !== "undefined" &&
       process &&
@@ -303,18 +303,47 @@ export class Client {
       process.env &&
       typeof process.env === "object"
     ) {
-      fallback = process.env["FAUNA_SECRET"];
+      env_secret = process.env["FAUNA_SECRET"];
     }
 
-    const maybeSecret = partialClientConfig?.secret || fallback;
+    const maybeSecret = partialClientConfig?.secret ?? env_secret;
     if (maybeSecret === undefined) {
-      throw new Error(
+      throw new TypeError(
         "You must provide a secret to the driver. Set it \
 in an environmental variable named FAUNA_SECRET or pass it to the Client\
  constructor."
       );
     }
     return maybeSecret;
+  }
+
+  #getEndpoint(partialClientConfig?: ClientConfiguration): URL {
+    // If the user explicitly sets the endpoint to undefined, we should throw a
+    // TypeError, rather than override with the default endpoint.
+    if (
+      partialClientConfig &&
+      "endpoint" in partialClientConfig &&
+      partialClientConfig.endpoint === undefined
+    ) {
+      throw new TypeError(
+        `ClientConfiguration option endpoint must be defined.`
+      );
+    }
+
+    let env_endpoint: URL | undefined = undefined;
+    if (
+      typeof process !== "undefined" &&
+      process &&
+      typeof process === "object" &&
+      process.env &&
+      typeof process.env === "object"
+    ) {
+      env_endpoint = process.env["FAUNA_ENDPOINT"]
+        ? new URL(process.env["FAUNA_ENDPOINT"])
+        : undefined;
+    }
+
+    return partialClientConfig?.endpoint ?? env_endpoint ?? endpoints.default;
   }
 
   #getServiceError(failure: QueryFailure, httpStatus: number): ServiceError {

@@ -141,12 +141,11 @@ export class Client {
   }
 
   /**
-   * Return the {@link ClientConfiguration} of this client, save for the secret.
+   * Return the {@link ClientConfiguration} of this client.
    */
-  get clientConfiguration(): Omit<ClientConfiguration, "secret"> {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { secret, ...rest } = this.#clientConfiguration;
-    return rest;
+  get clientConfiguration(): ClientConfiguration {
+    const { ...copy } = this.#clientConfiguration;
+    return copy;
   }
 
   /**

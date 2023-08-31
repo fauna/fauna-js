@@ -13,8 +13,8 @@ import {
 
 describe("Client", () => {
   it("Allows setting a secret in query", async () => {
-    expect.assertions(1)
-  
+    expect.assertions(1);
+
     const client = getClient();
     try {
       await client.query(fql`Role.create({ name: "hi" })`, {

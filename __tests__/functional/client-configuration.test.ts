@@ -15,12 +15,25 @@ beforeEach(() => {
   process.env = { ...PROCESS_ENV };
 });
 
+afterEach(() => {
+  process.env = PROCESS_ENV;
+});
+
 describe("ClientConfiguration", () => {
   it("Client exposes a default client configuration", () => {
     process.env["FAUNA_SECRET"] = "foo";
     const client = new Client();
     expect(Buffer.from(JSON.stringify(client)).toString()).not.toContain(
       "secret"
+    );
+  });
+
+  it("can be initialized with an endpoint from the environment", async () => {
+    process.env["FAUNA_ENDPOINT"] = "https://localhost:9999/";
+
+    const client = new Client({ secret: "secret" });
+    expect(client.clientConfiguration.endpoint?.toString()).toEqual(
+      "https://localhost:9999/"
     );
   });
 

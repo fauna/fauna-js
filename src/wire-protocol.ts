@@ -93,6 +93,11 @@ export interface QueryOptions {
    * Overrides the optional setting on the {@link ClientConfiguration}.
    */
   typecheck?: boolean;
+
+  /**
+   * Secret to use instead of the client's secret.
+   */
+  secret?: string;
 }
 
 /**

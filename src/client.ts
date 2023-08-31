@@ -394,7 +394,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       };
 
       const headers = {
-        Authorization: `Bearer ${this.#clientConfiguration.secret}`,
+        Authorization: `Bearer ${requestConfig.secret}`,
       };
       this.#setHeaders(requestConfig, headers);
 

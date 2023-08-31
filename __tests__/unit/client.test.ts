@@ -1,4 +1,10 @@
-import { Client, ClientClosedError, fql, NodeHTTP2Client } from "../../src";
+import {
+  Client,
+  ClientClosedError,
+  QueryRuntimeError,
+  fql,
+  NodeHTTP2Client,
+} from "../../src";
 import {
   getClient,
   getDefaultHTTPClientOptions,
@@ -6,6 +12,26 @@ import {
 } from "../client";
 
 describe("Client", () => {
+  it("Allows setting a secret in query", async () => {
+    expect.assertions(1);
+
+    const client = getClient();
+    try {
+      await client.query(fql`Role.create({ name: "hi" })`, {
+        secret: client.clientConfiguration.secret + ":server",
+      });
+      throw new Error("shouldn't work");
+    } catch (e) {
+      if (e instanceof QueryRuntimeError) {
+        expect(e.message).toEqual(
+          "Insufficient privileges to perform the action."
+        );
+      } else {
+        throw new Error(`wrong error ${e}`);
+      }
+    }
+  });
+
   it("Refuses further requests after close", async () => {
     expect.assertions(1);
     const client = getClient();

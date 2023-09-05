@@ -82,7 +82,7 @@ try {
 This Driver supports and is tested on:
 
 - Browsers - Stable versions of
-  - Chrome 69+ 
+  - Chrome 69+
   - Firefox 62+
   - Safari 12.1+
   - Edge 79+
@@ -269,6 +269,8 @@ const config: ClientConfiguration = {
   format: "tagged",
   long_type: "number",
   linearized: false,
+  max_attempts: 3,
+  max_backoff: 20,
   max_contention_retries: 5,
   query_tags: { name: "readme query" },
   query_timeout_ms: 60_000,
@@ -278,6 +280,18 @@ const config: ClientConfiguration = {
 
 const client = new Client(config);
 ```
+
+### Retry
+
+#### Max Attempts
+
+The maximum number of times a query will be attempted if a retryable exception is thrown (ThrottlingError). Default 3, inclusive of the initial call. The retry strategy implemented is a simple exponential backoff.
+
+To disable retries, pass max_attempts less than or equal to 1.
+
+#### Max Backoff
+
+The maximum backoff in seconds to be observed between each retry. Default 20 seconds.
 
 ### Timeouts
 

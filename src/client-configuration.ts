@@ -118,6 +118,16 @@ export interface ClientConfiguration {
    * be used.
    */
   typecheck?: boolean;
+
+  /**
+   * Max attempts for retryable exceptions. Default is 3.
+   */
+  max_attempts?: number;
+
+  /**
+   * Max backoff between retries. Default is 20 seconds.
+   */
+  max_backoff?: number;
 }
 
 /**

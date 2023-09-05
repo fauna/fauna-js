@@ -134,6 +134,25 @@ describe("query", () => {
     }
   );
 
+  it("retries throttling errors and then succeeds", async () => {
+    const throttlingResponse = JSON.stringify({
+      error: { code: "throttle", message: "too much" },
+      summary: "the summary",
+    });
+
+    fetchMock.mockResponses(
+      [throttlingResponse, { status: 429 }],
+      [throttlingResponse, { status: 429 }],
+      [
+        JSON.stringify({ data: 3, summary: "the summary", stats: {} }),
+        { status: 200 },
+      ]
+    );
+    const actual = await client.query(fql`'foo'.length`);
+    expect(actual.data).toEqual(3);
+    expect(actual.stats?.attempts).toEqual(3);
+  });
+
   it("Includes a summary in a QueryResult when present at top-level", async () => {
     // axios mock adapater currently has a bug that cannot match
     // routes on clients using a baseURL. As such we use onAny() in these tests.

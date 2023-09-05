@@ -50,6 +50,8 @@ type RequiredClientConfig = ClientConfiguration &
       | "format"
       | "long_type"
       | "query_timeout_ms"
+      | "max_attempts"
+      | "max_backoff"
     >
   >;
 
@@ -64,6 +66,8 @@ const DEFAULT_CLIENT_CONFIG: Omit<
   long_type: "number",
   fetch_keepalive: false,
   query_timeout_ms: 5000,
+  max_attempts: 3,
+  max_backoff: 20,
 };
 
 /**
@@ -164,7 +168,9 @@ export class Client {
 
   /**
    * Creates an iterator to yield pages of data. If additional pages exist, the
-   * iterator will lazily fetch addition pages on each iteration.
+   * iterator will lazily fetch addition pages on each iteration. Pages will
+   * be retried in the event of a ThrottlingError up to the client's configured
+   * max_attempts, inclusive of the initial call.
    *
    * @typeParam T - The expected type of the items returned from Fauna on each
    * iteration
@@ -213,7 +219,8 @@ export class Client {
   }
 
   /**
-   * Queries Fauna.
+   * Queries Fauna. Queries will be retried in the event of a ThrottlingError up to the client's configured
+   * max_attempts, inclusive of the initial call.
    *
    * @typeParam T - The expected type of the response from Fauna
    * @param query - a {@link Query} to execute in Fauna.
@@ -254,7 +261,32 @@ export class Client {
     //   to simply do `const queryInterpolation: TaggedTypeFormat.encode(query)`
     const queryInterpolation = query.toQuery(options).query;
 
-    return this.#query(queryInterpolation, options);
+    return this.#queryWithRetries(queryInterpolation, options);
+  }
+
+  async #queryWithRetries<T extends QueryValue>(
+    queryInterpolation: string | QueryInterpolation,
+    options?: QueryOptions,
+    attempt = 0
+  ): Promise<QuerySuccess<T>> {
+    const maxBackoff =
+      this.clientConfiguration.max_backoff ?? DEFAULT_CLIENT_CONFIG.max_backoff;
+    const maxAttempts =
+      this.clientConfiguration.max_attempts ??
+      DEFAULT_CLIENT_CONFIG.max_attempts;
+    const backoffMs =
+      Math.min(Math.random() * 2 ** attempt, maxBackoff) * 1_000;
+
+    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    attempt += 1;
+    return this.#query<T>(queryInterpolation, options, attempt).catch((e) => {
+      if (e instanceof ThrottlingError && attempt < maxAttempts) {
+        return wait(backoffMs).then(() =>
+          this.#queryWithRetries<T>(queryInterpolation, options, attempt)
+        );
+      }
+      throw e;
+    });
   }
 
   #getError(e: any): ClientError | NetworkError | ProtocolError | ServiceError {
@@ -385,7 +417,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
   async #query<T extends QueryValue>(
     queryInterpolation: string | QueryInterpolation,
-    options?: QueryOptions
+    options?: QueryOptions,
+    attempt = 0
   ): Promise<QuerySuccess<T>> {
     try {
       const requestConfig = {
@@ -460,7 +493,11 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         this.#lastTxnTs = txn_ts;
       }
 
-      return parsedResponse.body as QuerySuccess<T>;
+      const res = parsedResponse.body as QuerySuccess<T>;
+      if (res.stats) {
+        res.stats.attempts = attempt;
+      }
+      return res;
     } catch (e: any) {
       throw this.#getError(e);
     }

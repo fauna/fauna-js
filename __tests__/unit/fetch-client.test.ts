@@ -29,6 +29,7 @@ const dummyStats = {
   storage_bytes_read: 0,
   storage_bytes_write: 0,
   contention_retries: 0,
+  attempts: 0,
 };
 
 describe("fetch client", () => {

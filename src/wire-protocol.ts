@@ -129,6 +129,8 @@ export type QueryStats = {
   storage_bytes_write: number;
   /** The number of times the transaction was retried due to write contention. */
   contention_retries: number;
+  /** The number query attempts made due to retryable errors. */
+  attempts: number;
 };
 
 export type QueryInfo = {

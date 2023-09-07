@@ -128,6 +128,11 @@ export interface ClientConfiguration {
    * Max backoff between retries. Default is 20 seconds.
    */
   max_backoff?: number;
+
+  /**
+   * Any extra headers to send with the request. These headers will overwrite any headers set by the driver.
+   */
+  headers?: Record<string, string>;
 }
 
 /**

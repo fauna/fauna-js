@@ -426,10 +426,15 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         ...options,
       };
 
-      const headers = {
+      const headerPartial = {
         Authorization: `Bearer ${requestConfig.secret}`,
       };
-      this.#setHeaders(requestConfig, headers);
+      this.#setHeaders(requestConfig, headerPartial);
+
+      const headers = {
+        ...headerPartial,
+        ...requestConfig.headers,
+      };
 
       const isTaggedFormat = requestConfig.format === "tagged";
 

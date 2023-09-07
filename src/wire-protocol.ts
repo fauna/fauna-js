@@ -98,6 +98,11 @@ export interface QueryOptions {
    * Secret to use instead of the client's secret.
    */
   secret?: string;
+
+  /**
+   * Any extra headers to send with the request. These headers will overwrite any headers set by the driver.
+   */
+  headers?: Record<string, string>;
 }
 
 /**

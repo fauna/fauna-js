@@ -1,4 +1,5 @@
 import {
+  AuthenticationError,
   Client,
   ClientConfiguration,
   endpoints,
@@ -207,5 +208,70 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     } catch (e: any) {
       expect(e).toBeInstanceOf(RangeError);
     }
+  });
+
+  it("can override headers in client config", async () => {
+    expect.assertions(4);
+    const httpClient: HTTPClient = {
+      async request(req) {
+        expect(req.headers["x-query-timeout-ms"]).toEqual("1000");
+        expect(req.headers["foobar"]).toEqual("baz");
+        expect(req.headers["Authorization"]).toEqual("12345");
+        return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(req);
+      },
+
+      close() {},
+    };
+
+    const client = getClient(
+      {
+        query_timeout_ms: 5000,
+        headers: {
+          "x-query-timeout-ms": "1000",
+          foobar: "baz",
+          Authorization: "12345",
+        },
+      },
+      httpClient
+    );
+    try {
+      await client.query<number>(fql`"taco".length`);
+    } catch (e) {
+      expect(e).toBeInstanceOf(AuthenticationError);
+    }
+    client.close();
+  });
+
+  it("can override headers in query", async () => {
+    expect.assertions(4);
+    const httpClient: HTTPClient = {
+      async request(req) {
+        expect(req.headers["x-query-timeout-ms"]).toEqual("1000");
+        expect(req.headers["foobar"]).toEqual("baz");
+        expect(req.headers["Authorization"]).toEqual("12345");
+        return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(req);
+      },
+
+      close() {},
+    };
+
+    const client = getClient(
+      {
+        query_timeout_ms: 5000,
+      },
+      httpClient
+    );
+    try {
+      await client.query<number>(fql`"taco".length`, {
+        headers: {
+          "x-query-timeout-ms": "1000",
+          foobar: "baz",
+          Authorization: "12345",
+        },
+      });
+    } catch (e) {
+      expect(e).toBeInstanceOf(AuthenticationError);
+    }
+    client.close();
   });
 });

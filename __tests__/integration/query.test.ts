@@ -166,6 +166,7 @@ describe("query", () => {
 
     const response = await client.query<typeof foo>(fql`foo`, {
       arguments: { foo },
+      format: "tagged",
     });
     const foo2 = response.data;
 

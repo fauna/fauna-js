@@ -36,8 +36,8 @@ export function fql(
  * function
  */
 export class Query {
-  readonly #queryFragments: ReadonlyArray<string>;
-  readonly #queryArgs: (QueryValue | Query)[];
+  readonly queryFragments: ReadonlyArray<string>;
+  readonly queryArgs: (QueryValue | Query)[];
 
   constructor(
     queryFragments: ReadonlyArray<string>,
@@ -49,8 +49,8 @@ export class Query {
     ) {
       throw new Error("invalid query constructed");
     }
-    this.#queryFragments = queryFragments;
-    this.#queryArgs = queryArgs;
+    this.queryFragments = queryFragments;
+    this.queryArgs = queryArgs;
   }
 
   /**
@@ -70,41 +70,17 @@ export class Query {
    * ```
    */
   toQuery(requestHeaders: QueryOptions = {}): QueryRequest {
-    return { ...this.#render(requestHeaders), ...requestHeaders };
+    return {
+      query: this.#render_query(),
+      arguments: requestHeaders.arguments,
+    };
   }
 
-  #render(requestHeaders: QueryOptions): QueryRequest {
-    if (this.#queryFragments.length === 1) {
-      return { query: { fql: [this.#queryFragments[0]] }, arguments: {} };
+  #render_query(): QueryInterpolation {
+    if (this.queryFragments.length === 1) {
+      return { fql: [this.queryFragments[0]] };
     }
 
-    let resultArgs: QueryValueObject = {};
-    const renderedFragments: (string | QueryInterpolation)[] =
-      this.#queryFragments.flatMap((fragment, i) => {
-        // There will always be one more fragment than there are arguments
-        if (i === this.#queryFragments.length - 1) {
-          return fragment === "" ? [] : [fragment];
-        }
-
-        const arg = this.#queryArgs[i];
-        let subQuery: string | QueryInterpolation;
-        if (arg instanceof Query) {
-          const request = arg.toQuery(requestHeaders);
-          subQuery = request.query;
-          resultArgs = { ...resultArgs, ...request.arguments };
-        } else {
-          // arguments in the template format must always be encoded, regardless
-          // of the "x-format" request header
-          // TODO: catch and rethrow Errors, indicating bad user input
-          subQuery = { value: TaggedTypeFormat.encode(arg) };
-        }
-
-        return [fragment, subQuery].filter((x) => x !== "");
-      });
-
-    return {
-      query: { fql: renderedFragments },
-      arguments: resultArgs,
-    };
+    return TaggedTypeFormat.encode(this);
   }
 }

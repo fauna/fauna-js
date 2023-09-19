@@ -143,7 +143,7 @@ describe.each`
     const bugs_mod = new Module("Bugs");
     const collection_mod = new Module("Collection");
 
-    const encoded = TaggedTypeFormat.encode({
+    const encoded = TaggedTypeFormat.encodeInterpolation({
       // literals
       double: 4.14,
       int: 32,
@@ -252,7 +252,7 @@ describe.each`
   });
 
   it("handles conflicts", () => {
-    const result = TaggedTypeFormat.encode({
+    const result = TaggedTypeFormat.encodeInterpolation({
       date: { "@date": DateStub.from("2022-11-01") },
       time: { "@time": TimeStub.from("2022-11-02T05:00:00.000Z") },
       int: { "@int": 1 },
@@ -278,7 +278,7 @@ describe.each`
   });
 
   it("handles nested conflict types", () => {
-    const encoded = TaggedTypeFormat.encode({
+    const encoded = TaggedTypeFormat.encodeInterpolation({
       "@date": {
         "@date": {
           "@time": new Date("2022-12-02T02:00:00.000Z"),
@@ -302,7 +302,7 @@ describe.each`
   });
 
   it("wraps user-provided `@` fields", () => {
-    const encoded = TaggedTypeFormat.encode({
+    const encoded = TaggedTypeFormat.encodeInterpolation({
       "@foo": true,
     });
 
@@ -341,7 +341,9 @@ describe.each`
         }
       }
       testCase;
-      const encoded = TaggedTypeFormat.encode(input) as ValueFragment;
+      const encoded = TaggedTypeFormat.encodeInterpolation(
+        input
+      ) as ValueFragment;
       const encodedKey = Object.keys(encoded.value as Object)[0];
       expect(encodedKey).toEqual(tag);
       const decoded = TaggedTypeFormat.decode(
@@ -360,6 +362,6 @@ describe.each`
     ${Number.NEGATIVE_INFINITY} | ${"NEGATIVE_INFINITY"}
     ${Number.POSITIVE_INFINITY} | ${"POSITIVE_INFINITY"}
   `("Throws if BigInt value is $testCase", async ({ input }) => {
-    expect(() => TaggedTypeFormat.encode(input)).toThrow();
+    expect(() => TaggedTypeFormat.encodeInterpolation(input)).toThrow();
   });
 });

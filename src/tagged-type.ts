@@ -31,13 +31,23 @@ export interface DecodeOptions {
  */
 export class TaggedTypeFormat {
   /**
-   * Encode the Object to the Tagged Type format for Fauna
+   * Encode the value to the Tagged Type format for Fauna
    *
-   * @param obj - Object that will be encoded
+   * @param input - value that will be encoded
    * @returns Map of result
    */
-  static encode(obj: QueryValue): QueryInterpolation {
-    return encode(obj);
+  static encode(input: QueryValue): TaggedType {
+    return encode(input);
+  }
+
+  /**
+   * Encode the value to a QueryInterpolation to send to Fauna
+   *
+   * @param value - value that will be encoded
+   * @returns Map of result
+   */
+  static encodeInterpolation(input: QueryValue): QueryInterpolation {
+    return encodeInterpolation(input);
   }
 
   /**
@@ -116,6 +126,7 @@ type TaggedDouble = { "@double": string };
 type TaggedInt = { "@int": string };
 type TaggedLong = { "@long": string };
 type TaggedMod = { "@mod": string };
+type TaggedObject = { "@object": EncodedObject };
 type TaggedRef = {
   "@ref": { id: string; coll: TaggedMod } | { name: string; coll: TaggedMod };
 };
@@ -123,12 +134,28 @@ type TaggedRef = {
 // type TaggedSet = { "@set": { data: QueryValue[]; after?: string } };
 type TaggedTime = { "@time": string };
 
+type EncodedObject = { [key: string]: TaggedType };
+type TaggedType =
+  | string
+  | boolean
+  | null
+  | TaggedDate
+  | TaggedDouble
+  | TaggedInt
+  | TaggedLong
+  | TaggedMod
+  | TaggedObject
+  | TaggedRef
+  | TaggedTime
+  | EncodedObject
+  | TaggedType[];
+
 export const LONG_MIN = BigInt("-9223372036854775808");
 export const LONG_MAX = BigInt("9223372036854775807");
 export const INT_MIN = -(2 ** 31);
 export const INT_MAX = 2 ** 31 - 1;
 
-const encodeMap = {
+const encodeMap: Record<string, (value: any) => TaggedType> = {
   bigint: (value: bigint): TaggedLong | TaggedInt => {
     if (value < LONG_MIN || value > LONG_MAX) {
       throw new RangeError(
@@ -166,6 +193,21 @@ const encodeMap = {
   string: (value: string): string => {
     return value;
   },
+  object: (input: QueryValueObject): TaggedObject | EncodedObject => {
+    let wrapped = false;
+    const _out: EncodedObject = {};
+
+    for (const k in input) {
+      if (k.startsWith("@")) {
+        wrapped = true;
+      }
+      if (input[k] !== undefined) {
+        _out[k] = encode(input[k]);
+      }
+    }
+    return wrapped ? { "@object": _out } : _out;
+  },
+  array: (input: QueryValue[]): TaggedType[] => input.map(encode),
   date: (dateValue: Date): TaggedTime => ({
     "@time": dateValue.toISOString(),
   }),
@@ -198,89 +240,48 @@ const encodeMap = {
     //   "@set": { data: encodeMap["array"](value.data), after: value.after },
     // };
   },
-
-  // Encode into query fragments
-
-  query: (value: Query): FQLFragment => {
-    let renderedFragments: (string | QueryInterpolation)[] =
-      value.queryFragments.flatMap((fragment, i) => {
-        // There will always be one more fragment than there are arguments
-        if (i === value.queryFragments.length - 1) {
-          return fragment === "" ? [] : [fragment];
-        }
-
-        // arguments in the template format must always be encoded, regardless
-        // of the "x-format" request header
-        // TODO: catch and rethrow Errors, indicating bad user input
-        const arg = value.queryArgs[i];
-        const encoded = TaggedTypeFormat.encode(arg);
-
-        return [fragment, encoded];
-      });
-
-    // We don't need to send empty-string fragments over the wire
-    renderedFragments = renderedFragments.filter((x) => x !== "");
-
-    return { fql: renderedFragments };
-  },
-  object: (input: QueryValueObject): ObjectFragment => {
-    const _out: QueryValueObject = {};
-
-    for (const k in input) {
-      if (input[k] !== undefined) {
-        _out[k] = encode(input[k]);
-      }
-    }
-    return { object: _out };
-  },
-  array: (input: Array<QueryValue>): ArrayFragment => {
-    const encodedItems = input.map(encode);
-    return { array: encodedItems };
-  },
 };
 
-const toValueFragment = (value: QueryValue): ValueFragment => ({ value });
-
-const encode = (input: QueryValue): QueryInterpolation => {
+const encode = (input: QueryValue): TaggedType => {
   if (input === undefined) {
     throw new TypeError("Passing undefined as a QueryValue is not supported");
   }
   switch (typeof input) {
     case "bigint":
-      return toValueFragment(encodeMap["bigint"](input));
+      return encodeMap["bigint"](input);
     case "string":
-      return toValueFragment(encodeMap["string"](input));
+      return encodeMap["string"](input);
     case "number":
-      return toValueFragment(encodeMap["number"](input));
+      return encodeMap["number"](input);
     case "boolean":
-      return toValueFragment(input);
+      return input;
     case "object":
       if (input == null) {
-        return toValueFragment(null);
+        return null;
       } else if (input instanceof Date) {
-        return toValueFragment(encodeMap["date"](input));
+        return encodeMap["date"](input);
       } else if (input instanceof DateStub) {
-        return toValueFragment(encodeMap["faunadate"](input));
+        return encodeMap["faunadate"](input);
       } else if (input instanceof TimeStub) {
-        return toValueFragment(encodeMap["faunatime"](input));
+        return encodeMap["faunatime"](input);
       } else if (input instanceof Module) {
-        return toValueFragment(encodeMap["module"](input));
+        return encodeMap["module"](input);
       } else if (input instanceof Document) {
         // Document extends DocumentReference, so order is important here
-        return toValueFragment(encodeMap["document"](input));
+        return encodeMap["document"](input);
       } else if (input instanceof DocumentReference) {
-        return toValueFragment(encodeMap["documentReference"](input));
+        return encodeMap["documentReference"](input);
       } else if (input instanceof NamedDocument) {
         // NamedDocument extends NamedDocumentReference, so order is important here
-        return toValueFragment(encodeMap["namedDocument"](input));
+        return encodeMap["namedDocument"](input);
       } else if (input instanceof NamedDocumentReference) {
-        return toValueFragment(encodeMap["namedDocumentReference"](input));
+        return encodeMap["namedDocumentReference"](input);
       } else if (input instanceof NullDocument) {
         return encode(input.ref);
       } else if (input instanceof Page) {
-        return toValueFragment(encodeMap["set"](input));
+        return encodeMap["set"](input);
       } else if (input instanceof EmbeddedSet) {
-        return toValueFragment(encodeMap["set"](input));
+        return encodeMap["set"](input);
       } else if (input instanceof Query) {
         return encodeMap["query"](input);
       } else if (Array.isArray(input)) {
@@ -291,3 +292,99 @@ const encode = (input: QueryValue): QueryInterpolation => {
   }
   // anything here would be unreachable code
 };
+
+const encodeInterpolation = (input: QueryValue): QueryInterpolation => {
+  if (input === undefined) {
+    throw new TypeError("Passing undefined as a QueryValue is not supported");
+  }
+  switch (typeof input) {
+    case "bigint":
+      return encodeValueInterpolation(encodeMap["bigint"](input));
+    case "string":
+      return encodeValueInterpolation(encodeMap["string"](input));
+    case "number":
+      return encodeValueInterpolation(encodeMap["number"](input));
+    case "boolean":
+      return encodeValueInterpolation(input);
+    case "object":
+      if (input == null) {
+        return encodeValueInterpolation(null);
+      } else if (input instanceof Date) {
+        return encodeValueInterpolation(encodeMap["date"](input));
+      } else if (input instanceof DateStub) {
+        return encodeValueInterpolation(encodeMap["faunadate"](input));
+      } else if (input instanceof TimeStub) {
+        return encodeValueInterpolation(encodeMap["faunatime"](input));
+      } else if (input instanceof Module) {
+        return encodeValueInterpolation(encodeMap["module"](input));
+      } else if (input instanceof Document) {
+        // Document extends DocumentReference, so order is important here
+        return encodeValueInterpolation(encodeMap["document"](input));
+      } else if (input instanceof DocumentReference) {
+        return encodeValueInterpolation(encodeMap["documentReference"](input));
+      } else if (input instanceof NamedDocument) {
+        // NamedDocument extends NamedDocumentReference, so order is important here
+        return encodeValueInterpolation(encodeMap["namedDocument"](input));
+      } else if (input instanceof NamedDocumentReference) {
+        return encodeValueInterpolation(
+          encodeMap["namedDocumentReference"](input)
+        );
+      } else if (input instanceof NullDocument) {
+        return encodeInterpolation(input.ref);
+      } else if (input instanceof Page) {
+        return encodeValueInterpolation(encodeMap["set"](input));
+      } else if (input instanceof EmbeddedSet) {
+        return encodeValueInterpolation(encodeMap["set"](input));
+      } else if (input instanceof Query) {
+        return encodeQueryInterpolation(input);
+      } else if (Array.isArray(input)) {
+        return encodeArrayInterpolation(input);
+      } else {
+        return encodeObjectInterpolation(input);
+      }
+  }
+  // anything here would be unreachable code
+};
+
+const encodeObjectInterpolation = (input: QueryValueObject): ObjectFragment => {
+  const _out: QueryValueObject = {};
+
+  for (const k in input) {
+    if (input[k] !== undefined) {
+      _out[k] = encodeInterpolation(input[k]);
+    }
+  }
+  return { object: _out };
+};
+
+const encodeArrayInterpolation = (input: Array<QueryValue>): ArrayFragment => {
+  const encodedItems = input.map(encodeInterpolation);
+  return { array: encodedItems };
+};
+
+const encodeQueryInterpolation = (value: Query): FQLFragment => {
+  let renderedFragments: (string | QueryInterpolation)[] =
+    value.queryFragments.flatMap((fragment, i) => {
+      // There will always be one more fragment than there are arguments
+      if (i === value.queryFragments.length - 1) {
+        return fragment === "" ? [] : [fragment];
+      }
+
+      // arguments in the template format must always be encoded, regardless
+      // of the "x-format" request header
+      // TODO: catch and rethrow Errors, indicating bad user input
+      const arg = value.queryArgs[i];
+      const encoded = TaggedTypeFormat.encodeInterpolation(arg);
+
+      return [fragment, encoded];
+    });
+
+  // We don't need to send empty-string fragments over the wire
+  renderedFragments = renderedFragments.filter((x) => x !== "");
+
+  return { fql: renderedFragments };
+};
+
+const encodeValueInterpolation = (value: QueryValue): ValueFragment => ({
+  value,
+});

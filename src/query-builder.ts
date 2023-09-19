@@ -81,6 +81,6 @@ export class Query {
       return { fql: [this.queryFragments[0]] };
     }
 
-    return TaggedTypeFormat.encode(this);
+    return TaggedTypeFormat.encodeInterpolation(this);
   }
 }

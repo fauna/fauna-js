@@ -437,34 +437,13 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
       const isTaggedFormat = requestConfig.format === "tagged";
 
-      // const encodeArguments = (args: QueryValueObject) => {
-      //   const isObjectFragment = (
-      //     value: QueryInterpolation
-      //   ): value is ObjectFragment => !!(value as ObjectFragment).object;
-      //   const isArrayFragment = (
-      //     value: QueryInterpolation
-      //   ): value is ArrayFragment => !!(value as ArrayFragment).array;
-      //   const isValueFragment = (
-      //     value: QueryInterpolation
-      //   ): value is ValueFragment => !!(value as ValueFragment).value;
-
-      //   const newEntries = Object.entries(args).map(([key, value]) => {
-      //     const encoded = TaggedTypeFormat.encode(value);
-      //     if (isObjectFragment(encoded)) return [key, encoded.object];
-      //     if (isArrayFragment(encoded)) return [key, encoded.array];
-      //     if (isValueFragment(encoded)) return [key, encoded.value];
-
-      //     throw new TypeError(
-      //       `Unexpected argument encoding. Received '${value}`
-      //     );
-      //   });
-
-      //   return Object.fromEntries(newEntries);
-      // };
-
       const queryArgs = requestConfig.arguments
         ? isTaggedFormat
-          ? TaggedTypeFormat.encode(requestConfig.arguments)
+          ? // Type cast safety: requestConfig.arguments is an object, so
+            // encoding creates a subtype of QueryValueObject
+            (TaggedTypeFormat.encode(
+              requestConfig.arguments
+            ) as QueryValueObject)
           : requestConfig.arguments
         : undefined;
 

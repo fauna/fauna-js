@@ -34,10 +34,7 @@ import {
   type QueryOptions,
   type QuerySuccess,
   type QueryValue,
-  ObjectFragment,
   QueryValueObject,
-  ArrayFragment,
-  ValueFragment,
 } from "./wire-protocol";
 
 type RequiredClientConfig = ClientConfiguration &

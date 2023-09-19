@@ -43,7 +43,7 @@ export class TaggedTypeFormat {
   /**
    * Encode the value to a QueryInterpolation to send to Fauna
    *
-   * @param value - value that will be encoded
+   * @param input - value that will be encoded
    * @returns Map of result
    */
   static encodeInterpolation(input: QueryValue): QueryInterpolation {
@@ -155,7 +155,7 @@ export const LONG_MAX = BigInt("9223372036854775807");
 export const INT_MIN = -(2 ** 31);
 export const INT_MAX = 2 ** 31 - 1;
 
-const encodeMap: Record<string, (value: any) => TaggedType> = {
+const encodeMap = {
   bigint: (value: bigint): TaggedLong | TaggedInt => {
     if (value < LONG_MIN || value > LONG_MAX) {
       throw new RangeError(
@@ -258,6 +258,8 @@ const encode = (input: QueryValue): TaggedType => {
     case "object":
       if (input == null) {
         return null;
+      } else if (Array.isArray(input)) {
+        return encodeMap["array"](input);
       } else if (input instanceof Date) {
         return encodeMap["date"](input);
       } else if (input instanceof DateStub) {
@@ -283,9 +285,9 @@ const encode = (input: QueryValue): TaggedType => {
       } else if (input instanceof EmbeddedSet) {
         return encodeMap["set"](input);
       } else if (input instanceof Query) {
-        return encodeMap["query"](input);
-      } else if (Array.isArray(input)) {
-        return encodeMap["array"](input);
+        throw new TypeError(
+          "Cannot encode instance of type 'Query'. Try using TaggedTypeFormat.encodeInterpolation instead."
+        );
       } else {
         return encodeMap["object"](input);
       }

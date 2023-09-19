@@ -109,6 +109,36 @@ describe("query using template format", () => {
     expect(response.data).toBe(true);
   });
 
+  it("succeeds with expressions nested within objects", async () => {
+    const arg = {
+      a: fql`1`,
+      b: fql`2`,
+    };
+    const queryBuilder = fql`${arg}`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toStrictEqual({ a: 1, b: 2 });
+  });
+
+  it("succeeds with expressions nested within arrays", async () => {
+    const arg = [fql`1`, fql`2`];
+    const queryBuilder = fql`${arg}`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toEqual([1, 2]);
+  });
+
+  it("succeeds with expressions nested within arrays and objects combined", async () => {
+    const arg = [
+      [fql`1`],
+      {
+        a: fql`1`,
+        b: fql`2`,
+      },
+    ];
+    const queryBuilder = fql`${arg}`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toEqual([[1], { a: 1, b: 2 }]);
+  });
+
   it("succeeds with FQL string interpolation", async () => {
     const codeName = "Alice";
     const queryBuilder = fql`

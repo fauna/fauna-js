@@ -243,9 +243,6 @@ const encodeMap = {
 };
 
 const encode = (input: QueryValue): TaggedType => {
-  if (input === undefined) {
-    throw new TypeError("Passing undefined as a QueryValue is not supported");
-  }
   switch (typeof input) {
     case "bigint":
       return encodeMap["bigint"](input);
@@ -291,52 +288,37 @@ const encode = (input: QueryValue): TaggedType => {
       } else {
         return encodeMap["object"](input);
       }
+    default:
+      // catch "undefined", "symbol", and "function"
+      throw new TypeError(
+        `Cannot encode value with typeof '${typeof input}'. Received ${input}.`
+      );
   }
   // anything here would be unreachable code
 };
 
 const encodeInterpolation = (input: QueryValue): QueryInterpolation => {
-  if (input === undefined) {
-    throw new TypeError("Passing undefined as a QueryValue is not supported");
-  }
   switch (typeof input) {
     case "bigint":
-      return encodeValueInterpolation(encodeMap["bigint"](input));
     case "string":
-      return encodeValueInterpolation(encodeMap["string"](input));
     case "number":
-      return encodeValueInterpolation(encodeMap["number"](input));
     case "boolean":
-      return encodeValueInterpolation(input);
+      return encodeValueInterpolation(encode(input));
     case "object":
-      if (input == null) {
-        return encodeValueInterpolation(null);
-      } else if (input instanceof Date) {
-        return encodeValueInterpolation(encodeMap["date"](input));
-      } else if (input instanceof DateStub) {
-        return encodeValueInterpolation(encodeMap["faunadate"](input));
-      } else if (input instanceof TimeStub) {
-        return encodeValueInterpolation(encodeMap["faunatime"](input));
-      } else if (input instanceof Module) {
-        return encodeValueInterpolation(encodeMap["module"](input));
-      } else if (input instanceof Document) {
-        // Document extends DocumentReference, so order is important here
-        return encodeValueInterpolation(encodeMap["document"](input));
-      } else if (input instanceof DocumentReference) {
-        return encodeValueInterpolation(encodeMap["documentReference"](input));
-      } else if (input instanceof NamedDocument) {
-        // NamedDocument extends NamedDocumentReference, so order is important here
-        return encodeValueInterpolation(encodeMap["namedDocument"](input));
-      } else if (input instanceof NamedDocumentReference) {
-        return encodeValueInterpolation(
-          encodeMap["namedDocumentReference"](input)
-        );
+      if (
+        input == null ||
+        input instanceof Date ||
+        input instanceof DateStub ||
+        input instanceof TimeStub ||
+        input instanceof Module ||
+        input instanceof DocumentReference ||
+        input instanceof NamedDocumentReference ||
+        input instanceof Page ||
+        input instanceof EmbeddedSet
+      ) {
+        return encodeValueInterpolation(encode(input));
       } else if (input instanceof NullDocument) {
         return encodeInterpolation(input.ref);
-      } else if (input instanceof Page) {
-        return encodeValueInterpolation(encodeMap["set"](input));
-      } else if (input instanceof EmbeddedSet) {
-        return encodeValueInterpolation(encodeMap["set"](input));
       } else if (input instanceof Query) {
         return encodeQueryInterpolation(input);
       } else if (Array.isArray(input)) {
@@ -344,8 +326,12 @@ const encodeInterpolation = (input: QueryValue): QueryInterpolation => {
       } else {
         return encodeObjectInterpolation(input);
       }
+    default:
+      // catch "undefined", "symbol", and "function"
+      throw new TypeError(
+        `Passing ${typeof input} as a QueryValue is not supported`
+      );
   }
-  // anything here would be unreachable code
 };
 
 const encodeObjectInterpolation = (input: QueryValueObject): ObjectFragment => {

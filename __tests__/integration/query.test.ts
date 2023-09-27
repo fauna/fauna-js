@@ -499,4 +499,37 @@ describe("query can encode / decode QueryValue correctly", () => {
       }
     }
   });
+
+  it("symbol arguments throw a TypeError", async () => {
+    expect.assertions(2);
+    // whack in a symbol
+    // @ts-expect-error Type 'undefined' is not assignable to type 'QueryValue'
+    let symbolValue: QueryValue = Symbol("foo");
+    try {
+      await client.query(fql`{ foo: ${symbolValue} }`);
+    } catch (e) {
+      if (e instanceof TypeError) {
+        expect(e.name).toBe("TypeError");
+        expect(e.message).toBe(
+          "Passing symbol as a QueryValue is not supported"
+        );
+      }
+    }
+  });
+
+  it("function arguments throw a TypeError", async () => {
+    expect.assertions(2);
+    // whack in a function
+    let fnValue: QueryValue = () => {};
+    try {
+      await client.query(fql`{ foo: ${fnValue} }`);
+    } catch (e) {
+      if (e instanceof TypeError) {
+        expect(e.name).toBe("TypeError");
+        expect(e.message).toBe(
+          "Passing function as a QueryValue is not supported"
+        );
+      }
+    }
+  });
 });

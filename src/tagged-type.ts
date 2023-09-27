@@ -291,7 +291,7 @@ const encode = (input: QueryValue): TaggedType => {
     default:
       // catch "undefined", "symbol", and "function"
       throw new TypeError(
-        `Cannot encode value with typeof '${typeof input}'. Received ${input}.`
+        `Passing ${typeof input} as a QueryValue is not supported`
       );
   }
   // anything here would be unreachable code

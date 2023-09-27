@@ -143,6 +143,90 @@ describe.each`
     const bugs_mod = new Module("Bugs");
     const collection_mod = new Module("Collection");
 
+    const encoded = TaggedTypeFormat.encode({
+      // literals
+      double: 4.14,
+      int: 32,
+      name: "Hello, World",
+      null: null,
+      number: 48,
+      // objects and arrays
+      child: { more: { itsworking: DateStub.from("1983-04-15") } },
+      extra: [
+        {
+          id: 1,
+          time: new Date(),
+        },
+        {
+          id: 2,
+          time: new Date(),
+        },
+      ],
+      "@foobar": {
+        date: DateStub.from("1888-08-08"),
+      },
+      // dates and times
+      date: DateStub.from("1923-05-13"),
+      time: TimeStub.from("2023-03-20T00:00:00Z"),
+      datetime: new Date("2023-03-20T00:00:00Z"),
+      // Document types
+      mod: bugs_mod,
+      docReference: new DocumentReference({ coll: bugs_mod, id: "123" }),
+      doc: new Document({
+        coll: bugs_mod,
+        id: "123",
+        ts: TimeStub.from("2023-03-20T00:00:00Z"),
+      }),
+      namedDocReference: new NamedDocumentReference({
+        coll: collection_mod,
+        name: "Bugs",
+      }),
+      namedDoc: new NamedDocument({
+        coll: collection_mod,
+        name: "Bugs",
+        ts: TimeStub.from("2023-03-20T00:00:00Z"),
+      }),
+      nullDoc: new NullDocument(
+        new DocumentReference({ coll: bugs_mod, id: "123" }),
+        "not found"
+      ),
+      // Set types
+      // TODO: uncomment to add test once core accepts `@set` tagged values
+      // page: new Page({ data: ["a", "b"] }),
+      // TODO: uncomment to add test once core accepts `@set` tagged values
+      // page_string: new Page({ after: "abc123" }),
+    });
+
+    expect(encoded).toMatchObject({
+      "@object": {
+        // literals
+        double: { "@double": "4.14" },
+        int: { "@int": "32" },
+        name: "Hello, World",
+        null: null,
+        // objects and arrays
+        child: { more: { itsworking: { "@date": "1983-04-15" } } },
+        extra: [{ id: { "@int": "1" } }, { id: { "@int": "2" } }],
+        "@foobar": { date: { "@date": "1888-08-08" } },
+        // Document types
+        mod: { "@mod": "Bugs" },
+        docReference: { "@ref": { coll: { "@mod": "Bugs" }, id: "123" } },
+        doc: { "@ref": { coll: { "@mod": "Bugs" }, id: "123" } },
+        namedDocReference: {
+          "@ref": { coll: { "@mod": "Collection" }, name: "Bugs" },
+        },
+        namedDoc: { "@ref": { coll: { "@mod": "Collection" }, name: "Bugs" } },
+        nullDoc: { "@ref": { coll: { "@mod": "Bugs" }, id: "123" } },
+      },
+      // Set types
+      // TODO: expect set types to be encoded as `@set` tagged values
+    });
+  });
+
+  it("can be encoded as interpolation query", () => {
+    const bugs_mod = new Module("Bugs");
+    const collection_mod = new Module("Collection");
+
     const encoded = TaggedTypeFormat.encodeInterpolation({
       // literals
       double: 4.14,
@@ -252,6 +336,24 @@ describe.each`
   });
 
   it("handles conflicts", () => {
+    const result = TaggedTypeFormat.encode({
+      date: { "@date": DateStub.from("2022-11-01") },
+      time: { "@time": TimeStub.from("2022-11-02T05:00:00.000Z") },
+      int: { "@int": 1 },
+      long: { "@long": BigInt("99999999999999999") },
+      double: { "@double": 1.99 },
+    }) as ObjectFragment;
+
+    expect(result).toMatchObject({
+      date: { "@object": { "@date": { "@date": "2022-11-01" } } },
+      time: { "@object": { "@time": { "@time": "2022-11-02T05:00:00.000Z" } } },
+      int: { "@object": { "@int": { "@int": "1" } } },
+      long: { "@object": { "@long": { "@long": "99999999999999999" } } },
+      double: { "@object": { "@double": { "@double": "1.99" } } },
+    });
+  });
+
+  it("handles conflicts in interpolation queries", () => {
     const result = TaggedTypeFormat.encodeInterpolation({
       date: { "@date": DateStub.from("2022-11-01") },
       time: { "@time": TimeStub.from("2022-11-02T05:00:00.000Z") },
@@ -278,6 +380,30 @@ describe.each`
   });
 
   it("handles nested conflict types", () => {
+    const encoded = TaggedTypeFormat.encode({
+      "@date": {
+        "@date": {
+          "@time": new Date("2022-12-02T02:00:00.000Z"),
+        },
+      },
+    });
+
+    expect(encoded).toMatchObject({
+      "@object": {
+        "@date": {
+          "@object": {
+            "@date": {
+              "@object": {
+                "@time": { "@time": "2022-12-02T02:00:00.000Z" },
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it("handles nested conflict types in interpolation queries", () => {
     const encoded = TaggedTypeFormat.encodeInterpolation({
       "@date": {
         "@date": {

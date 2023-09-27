@@ -503,7 +503,7 @@ describe("query can encode / decode QueryValue correctly", () => {
   it("symbol arguments throw a TypeError", async () => {
     expect.assertions(2);
     // whack in a symbol
-    // @ts-expect-error Type 'undefined' is not assignable to type 'QueryValue'
+    // @ts-expect-error Type 'symbol' is not assignable to type 'QueryValue'
     let symbolValue: QueryValue = Symbol("foo");
     try {
       await client.query(fql`{ foo: ${symbolValue} }`);

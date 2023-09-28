@@ -16,9 +16,9 @@ import {
 /**
  * A request to make to Fauna.
  */
-export interface QueryRequest {
+export interface QueryRequest<T = string | QueryInterpolation> {
   /** The query */
-  query: string | QueryInterpolation;
+  query: T;
 
   /** Optional arguments. Variables in the query will be initialized to the
    * value associated with an argument key.

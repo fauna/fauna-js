@@ -351,26 +351,7 @@ const encodeArrayInterpolation = (input: Array<QueryValue>): ArrayFragment => {
 };
 
 const encodeQueryInterpolation = (value: Query): FQLFragment => {
-  let renderedFragments: (string | QueryInterpolation)[] =
-    value.queryFragments.flatMap((fragment, i) => {
-      // There will always be one more fragment than there are arguments
-      if (i === value.queryFragments.length - 1) {
-        return fragment === "" ? [] : [fragment];
-      }
-
-      // arguments in the template format must always be encoded, regardless
-      // of the "x-format" request header
-      // TODO: catch and rethrow Errors, indicating bad user input
-      const arg = value.queryArgs[i];
-      const encoded = TaggedTypeFormat.encodeInterpolation(arg);
-
-      return [fragment, encoded];
-    });
-
-  // We don't need to send empty-string fragments over the wire
-  renderedFragments = renderedFragments.filter((x) => x !== "");
-
-  return { fql: renderedFragments };
+  return value.toQuery().query;
 };
 
 const encodeValueInterpolation = (value: QueryValue): ValueFragment => ({

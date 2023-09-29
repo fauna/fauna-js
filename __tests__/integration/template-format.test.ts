@@ -109,6 +109,19 @@ describe("query using template format", () => {
     expect(response.data).toBe(true);
   });
 
+  it("succeeds with deep nested expressions - example 2", async () => {
+    const str = "foo";
+    const otherStr = "bar";
+    const num = 6;
+    const otherNum = 3;
+    const deepFirst = fql`(${str} + ${otherStr})`;
+    const deeperBuilder = fql`(${num} + 3)`;
+    const innerQuery = fql`(${deeperBuilder} + ${otherNum})`;
+    const queryBuilder = fql`${deepFirst}.length + ${innerQuery}`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toBe(18);
+  });
+
   it("succeeds with expressions nested within objects", async () => {
     const arg = {
       a: fql`1`,

@@ -37,8 +37,8 @@ export function fql(
  * function
  */
 export class Query {
-  readonly queryFragments: ReadonlyArray<string>;
-  readonly queryArgs: (QueryValue | Query)[];
+  #queryFragments: ReadonlyArray<string>;
+  #queryArgs: (QueryValue | Query)[];
 
   constructor(
     queryFragments: ReadonlyArray<string>,
@@ -50,8 +50,8 @@ export class Query {
     ) {
       throw new Error("invalid query constructed");
     }
-    this.queryFragments = queryFragments;
-    this.queryArgs = queryArgs;
+    this.#queryFragments = queryFragments;
+    this.#queryArgs = queryArgs;
   }
 
   /**
@@ -78,21 +78,21 @@ export class Query {
   }
 
   #render_query(): FQLFragment {
-    if (this.queryFragments.length === 1) {
-      return { fql: [this.queryFragments[0]] };
+    if (this.#queryFragments.length === 1) {
+      return { fql: [this.#queryFragments[0]] };
     }
 
     let renderedFragments: (string | QueryInterpolation)[] =
-      this.queryFragments.flatMap((fragment, i) => {
+      this.#queryFragments.flatMap((fragment, i) => {
         // There will always be one more fragment than there are arguments
-        if (i === this.queryFragments.length - 1) {
+        if (i === this.#queryFragments.length - 1) {
           return fragment === "" ? [] : [fragment];
         }
 
         // arguments in the template format must always be encoded, regardless
         // of the "x-format" request header
         // TODO: catch and rethrow Errors, indicating bad user input
-        const arg = this.queryArgs[i];
+        const arg = this.#queryArgs[i];
         const encoded = TaggedTypeFormat.encodeInterpolation(arg);
 
         return [fragment, encoded];

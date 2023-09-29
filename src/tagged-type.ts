@@ -350,9 +350,8 @@ const encodeArrayInterpolation = (input: Array<QueryValue>): ArrayFragment => {
   return { array: encodedItems };
 };
 
-const encodeQueryInterpolation = (value: Query): FQLFragment => {
-  return value.toQuery().query;
-};
+const encodeQueryInterpolation = (value: Query): FQLFragment =>
+  value.toQuery().query;
 
 const encodeValueInterpolation = (value: QueryValue): ValueFragment => ({
   value,

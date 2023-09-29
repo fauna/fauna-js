@@ -37,8 +37,8 @@ export function fql(
  * function
  */
 export class Query {
-  #queryFragments: ReadonlyArray<string>;
-  #queryArgs: (QueryValue | Query)[];
+  readonly #queryFragments: ReadonlyArray<string>;
+  readonly #queryArgs: (QueryValue | Query)[];
 
   constructor(
     queryFragments: ReadonlyArray<string>,

@@ -1,4 +1,5 @@
 import { ClientError } from "./errors";
+import { Query } from "./query-builder";
 import {
   DateStub,
   Document,
@@ -11,7 +12,15 @@ import {
   NullDocument,
   EmbeddedSet,
 } from "./values";
-import { QueryValueObject, QueryValue } from "./wire-protocol";
+import {
+  QueryValueObject,
+  QueryValue,
+  FQLFragment,
+  ObjectFragment,
+  ArrayFragment,
+  QueryInterpolation,
+  ValueFragment,
+} from "./wire-protocol";
 
 export interface DecodeOptions {
   long_type: "number" | "bigint";
@@ -22,13 +31,23 @@ export interface DecodeOptions {
  */
 export class TaggedTypeFormat {
   /**
-   * Encode the Object to the Tagged Type format for Fauna
+   * Encode the value to the Tagged Type format for Fauna
    *
-   * @param obj - Object that will be encoded
+   * @param input - value that will be encoded
    * @returns Map of result
    */
-  static encode(obj: any): any {
-    return encode(obj);
+  static encode(input: QueryValue): TaggedType {
+    return encode(input);
+  }
+
+  /**
+   * Encode the value to a QueryInterpolation to send to Fauna
+   *
+   * @param input - value that will be encoded
+   * @returns Map of result
+   */
+  static encodeInterpolation(input: QueryValue): QueryInterpolation {
+    return encodeInterpolation(input);
   }
 
   /**
@@ -107,13 +126,29 @@ type TaggedDouble = { "@double": string };
 type TaggedInt = { "@int": string };
 type TaggedLong = { "@long": string };
 type TaggedMod = { "@mod": string };
-type TaggedObject = { "@object": QueryValueObject };
+type TaggedObject = { "@object": EncodedObject };
 type TaggedRef = {
   "@ref": { id: string; coll: TaggedMod } | { name: string; coll: TaggedMod };
 };
 // WIP: core does not accept `@set` tagged values
 // type TaggedSet = { "@set": { data: QueryValue[]; after?: string } };
 type TaggedTime = { "@time": string };
+
+type EncodedObject = { [key: string]: TaggedType };
+type TaggedType =
+  | string
+  | boolean
+  | null
+  | TaggedDate
+  | TaggedDouble
+  | TaggedInt
+  | TaggedLong
+  | TaggedMod
+  | TaggedObject
+  | TaggedRef
+  | TaggedTime
+  | EncodedObject
+  | TaggedType[];
 
 export const LONG_MIN = BigInt("-9223372036854775808");
 export const LONG_MAX = BigInt("9223372036854775807");
@@ -158,9 +193,9 @@ const encodeMap = {
   string: (value: string): string => {
     return value;
   },
-  object: (input: QueryValueObject): TaggedObject | QueryValueObject => {
+  object: (input: QueryValueObject): TaggedObject | EncodedObject => {
     let wrapped = false;
-    const _out: QueryValueObject = {};
+    const _out: EncodedObject = {};
 
     for (const k in input) {
       if (k.startsWith("@")) {
@@ -172,11 +207,7 @@ const encodeMap = {
     }
     return wrapped ? { "@object": _out } : _out;
   },
-  array: (input: Array<QueryValue>): Array<QueryValue> => {
-    const _out: QueryValue = [];
-    for (const i in input) _out.push(encode(input[i]));
-    return _out;
-  },
+  array: (input: QueryValue[]): TaggedType[] => input.map(encode),
   date: (dateValue: Date): TaggedTime => ({
     "@time": dateValue.toISOString(),
   }),
@@ -211,10 +242,7 @@ const encodeMap = {
   },
 };
 
-const encode = (input: QueryValue): QueryValue => {
-  if (input === undefined) {
-    throw new TypeError("Passing undefined as a QueryValue is not supported");
-  }
+const encode = (input: QueryValue): TaggedType => {
   switch (typeof input) {
     case "bigint":
       return encodeMap["bigint"](input);
@@ -253,9 +281,78 @@ const encode = (input: QueryValue): QueryValue => {
         return encodeMap["set"](input);
       } else if (input instanceof EmbeddedSet) {
         return encodeMap["set"](input);
+      } else if (input instanceof Query) {
+        throw new TypeError(
+          "Cannot encode instance of type 'Query'. Try using TaggedTypeFormat.encodeInterpolation instead."
+        );
       } else {
         return encodeMap["object"](input);
       }
+    default:
+      // catch "undefined", "symbol", and "function"
+      throw new TypeError(
+        `Passing ${typeof input} as a QueryValue is not supported`
+      );
   }
   // anything here would be unreachable code
 };
+
+const encodeInterpolation = (input: QueryValue): QueryInterpolation => {
+  switch (typeof input) {
+    case "bigint":
+    case "string":
+    case "number":
+    case "boolean":
+      return encodeValueInterpolation(encode(input));
+    case "object":
+      if (
+        input == null ||
+        input instanceof Date ||
+        input instanceof DateStub ||
+        input instanceof TimeStub ||
+        input instanceof Module ||
+        input instanceof DocumentReference ||
+        input instanceof NamedDocumentReference ||
+        input instanceof Page ||
+        input instanceof EmbeddedSet
+      ) {
+        return encodeValueInterpolation(encode(input));
+      } else if (input instanceof NullDocument) {
+        return encodeInterpolation(input.ref);
+      } else if (input instanceof Query) {
+        return encodeQueryInterpolation(input);
+      } else if (Array.isArray(input)) {
+        return encodeArrayInterpolation(input);
+      } else {
+        return encodeObjectInterpolation(input);
+      }
+    default:
+      // catch "undefined", "symbol", and "function"
+      throw new TypeError(
+        `Passing ${typeof input} as a QueryValue is not supported`
+      );
+  }
+};
+
+const encodeObjectInterpolation = (input: QueryValueObject): ObjectFragment => {
+  const _out: QueryValueObject = {};
+
+  for (const k in input) {
+    if (input[k] !== undefined) {
+      _out[k] = encodeInterpolation(input[k]);
+    }
+  }
+  return { object: _out };
+};
+
+const encodeArrayInterpolation = (input: Array<QueryValue>): ArrayFragment => {
+  const encodedItems = input.map(encodeInterpolation);
+  return { array: encodedItems };
+};
+
+const encodeQueryInterpolation = (value: Query): FQLFragment =>
+  value.toQuery().query;
+
+const encodeValueInterpolation = (value: QueryValue): ValueFragment => ({
+  value,
+});

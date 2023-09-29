@@ -34,6 +34,7 @@ import {
   type QueryOptions,
   type QuerySuccess,
   type QueryValue,
+  QueryValueObject,
 } from "./wire-protocol";
 
 type RequiredClientConfig = ClientConfiguration &
@@ -435,7 +436,11 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
       const queryArgs = requestConfig.arguments
         ? isTaggedFormat
-          ? TaggedTypeFormat.encode(requestConfig.arguments)
+          ? // Type cast safety: requestConfig.arguments is an object, so
+            // encoding creates a subtype of QueryValueObject
+            (TaggedTypeFormat.encode(
+              requestConfig.arguments
+            ) as QueryValueObject)
           : requestConfig.arguments
         : undefined;
 

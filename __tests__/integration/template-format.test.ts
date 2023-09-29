@@ -109,6 +109,64 @@ describe("query using template format", () => {
     expect(response.data).toBe(true);
   });
 
+  it("succeeds with deep nested expressions - example 2", async () => {
+    const str = "foo";
+    const otherStr = "bar";
+    const num = 6;
+    const otherNum = 3;
+    const deepFirst = fql`(${str} + ${otherStr})`;
+    const deeperBuilder = fql`(${num} + 3)`;
+    const innerQuery = fql`(${deeperBuilder} + ${otherNum})`;
+    const queryBuilder = fql`${deepFirst}.length + ${innerQuery}`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toBe(18);
+  });
+
+  it("succeeds with expressions nested within objects", async () => {
+    const arg = {
+      a: fql`1`,
+      b: fql`2`,
+    };
+    const queryBuilder = fql`${arg}`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toStrictEqual({ a: 1, b: 2 });
+  });
+
+  it("succeeds with expressions nested within arrays", async () => {
+    const arg = [fql`1`, fql`2`];
+    const queryBuilder = fql`${arg}`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toEqual([1, 2]);
+  });
+
+  it("succeeds with expressions nested within arrays and objects combined", async () => {
+    const arg = [
+      [fql`1`],
+      {
+        a: fql`1`,
+        b: fql`2`,
+      },
+    ];
+    const queryBuilder = fql`${arg}`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toEqual([[1], { a: 1, b: 2 }]);
+  });
+
+  it("succeeds with multiple layers of nesting of arrays and objects", async () => {
+    const other = { a: fql`3`, b: fql`4` };
+    const arg = [
+      [fql`1 + ${fql`2`}`],
+      {
+        a: fql`1`,
+        b: fql`2`,
+        c: other,
+      },
+    ];
+    const queryBuilder = fql`${arg}`;
+    const response = await client.query(queryBuilder);
+    expect(response.data).toEqual([[3], { a: 1, b: 2, c: { a: 3, b: 4 } }]);
+  });
+
   it("succeeds with FQL string interpolation", async () => {
     const codeName = "Alice";
     const queryBuilder = fql`

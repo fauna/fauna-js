@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Query, fql } from "./query-builder";
+import { fql } from "./query-builder";
 import {
   DateStub,
   Document,
@@ -16,9 +16,9 @@ import {
 /**
  * A request to make to Fauna.
  */
-export interface QueryRequest<T = string | QueryInterpolation> {
+export interface QueryRequest {
   /** The query */
-  query: T;
+  query: string | QueryInterpolation;
 
   /** Optional arguments. Variables in the query will be initialized to the
    * value associated with an argument key.
@@ -218,11 +218,7 @@ export const isQueryResponse = (res: any): res is QueryResponse<any> =>
  * @see {@link ValueFragment} and {@link FQLFragment} for additional
  * information
  */
-export type QueryInterpolation =
-  | FQLFragment
-  | ValueFragment
-  | ObjectFragment
-  | ArrayFragment;
+export type QueryInterpolation = FQLFragment | ValueFragment;
 
 /**
  * A piece of an interpolated query that represents an actual value. Arguments
@@ -243,40 +239,6 @@ export type QueryInterpolation =
  * ```
  */
 export type ValueFragment = { value: QueryValue };
-
-/**
- * A piece of an interpolated query that represents an object. Arguments
- * are passed to fauna using ObjectFragments so that query arguments can be
- * nested within javascript objects.
- *
- * ObjectFragments must always be encoded with tags, regardless of the "x-format"
- * request header sent.
- * @example
- * ```typescript
- *  const arg = { startDate: DateStub.from("2023-09-01") };
- *  const query = fql`${arg})`;
- *  // produces
- *  { fql: [{ object: { startDate: { "@date": "2023-09-01" } } }] }
- * ```
- */
-export type ObjectFragment = { object: QueryValueObject };
-
-/**
- * A piece of an interpolated query that represents an array. Arguments
- * are passed to fauna using ArrayFragments so that query arguments can be
- * nested within javascript arrays.
- *
- * ArrayFragments must always be encoded with tags, regardless of the "x-format"
- * request header sent.
- * @example
- * ```typescript
- *  const arg = [1, 2];
- *  const query = fql`${arg})`;
- *  // produces
- *  { fql: [{ array: [{ "@int": 1 }, { "@int": 2 }] }] }
- * ```
- */
-export type ArrayFragment = { array: QueryValue[] };
 
 /**
  * A piece of an interpolated query. Interpolated Queries can be safely composed
@@ -344,7 +306,6 @@ export type QueryValue =
   | boolean
   | QueryValueObject
   | Array<QueryValue>
-  | Date
   // client-provided classes
   | DateStub
   | TimeStub
@@ -355,5 +316,4 @@ export type QueryValue =
   | NamedDocumentReference
   | NullDocument
   | Page<QueryValue>
-  | EmbeddedSet
-  | Query;
+  | EmbeddedSet;

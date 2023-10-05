@@ -24,11 +24,11 @@ run:
     - -ceu
     - |
       # setup Fauna container
-      docker-compose -f testtools-repo/fauna-driver-query-limits-tests/concourse/scripts/docker-compose.yml run setup
+      docker-compose -f testtools-repo/fauna-driver-query-limits-tests/docker-compose.yml run setup
       # run tests
       docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna.yml run query-limits-tests
       # stop and remove containers
       docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna.yml down
-      docker-compose -f testtools-repo/fauna-driver-query-limits-tests/concourse/scripts/docker-compose.yml down
+      docker-compose -f testtools-repo/fauna-driver-query-limits-tests/docker-compose.yml down
       # remove volumes
       docker volume rm $(docker volume ls -q)

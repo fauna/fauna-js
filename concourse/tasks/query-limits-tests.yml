@@ -1,0 +1,34 @@
+---
+platform: linux
+image_resource:
+  type: registry-image
+  source:
+    repository: shared-concourse-dind
+    aws_access_key_id: ((prod-images-aws-access-key-id))
+    aws_secret_access_key: ((prod-images-aws-secret-key))
+    aws_region: us-east-2
+
+params:
+  FAUNA_ENDPOINT: http://fauna-limits:8443
+  QUERY_LIMITS_DB:
+  QUERY_LIMITS_COLL:
+
+inputs:
+  - name: fauna-js-repository
+  - name: testtools-repo
+
+run:
+  path: entrypoint.sh
+  args:
+    - bash
+    - -ceu
+    - |
+      # setup Fauna container
+      docker-compose -f testtools-repo/fauna-driver-query-limits-tests/concourse/scripts/docker-compose.yml run setup
+      # run tests
+      docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna.yml run query-limits-tests
+      # stop and remove containers
+      docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna.yml down
+      docker-compose -f testtools-repo/fauna-driver-query-limits-tests/concourse/scripts/docker-compose.yml down
+      # remove volumes
+      docker volume rm $(docker volume ls -q)

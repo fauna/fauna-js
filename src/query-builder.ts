@@ -5,7 +5,6 @@ import type {
   QueryInterpolation,
   QueryRequest,
   QueryOptions,
-  FQLFragment,
 } from "./wire-protocol";
 
 /**
@@ -70,37 +69,42 @@ export class Query {
    *  { query: { fql: ["'foo'.length == ", { value: { "@int": "8" } }, ""] }}
    * ```
    */
-  toQuery(requestHeaders: QueryOptions = {}): QueryRequest<FQLFragment> {
-    return {
-      query: this.#render_query(),
-      arguments: requestHeaders.arguments,
-    };
+  toQuery(requestHeaders: QueryOptions = {}): QueryRequest {
+    return { ...this.#render(requestHeaders), ...requestHeaders };
   }
 
-  #render_query(): FQLFragment {
+  #render(requestHeaders: QueryOptions): QueryRequest {
     if (this.#queryFragments.length === 1) {
-      return { fql: [this.#queryFragments[0]] };
+      return { query: { fql: [this.#queryFragments[0]] }, arguments: {} };
     }
 
-    let renderedFragments: (string | QueryInterpolation)[] =
+    let resultArgs: QueryValueObject = {};
+    const renderedFragments: (string | QueryInterpolation)[] =
       this.#queryFragments.flatMap((fragment, i) => {
         // There will always be one more fragment than there are arguments
         if (i === this.#queryFragments.length - 1) {
           return fragment === "" ? [] : [fragment];
         }
 
-        // arguments in the template format must always be encoded, regardless
-        // of the "x-format" request header
-        // TODO: catch and rethrow Errors, indicating bad user input
         const arg = this.#queryArgs[i];
-        const encoded = TaggedTypeFormat.encodeInterpolation(arg);
+        let subQuery: string | QueryInterpolation;
+        if (arg instanceof Query) {
+          const request = arg.toQuery(requestHeaders);
+          subQuery = request.query;
+          resultArgs = { ...resultArgs, ...request.arguments };
+        } else {
+          // arguments in the template format must always be encoded, regardless
+          // of the "x-format" request header
+          // TODO: catch and rethrow Errors, indicating bad user input
+          subQuery = { value: TaggedTypeFormat.encode(arg) };
+        }
 
-        return [fragment, encoded];
+        return [fragment, subQuery].filter((x) => x !== "");
       });
 
-    // We don't need to send empty-string fragments over the wire
-    renderedFragments = renderedFragments.filter((x) => x !== "");
-
-    return { fql: renderedFragments };
+    return {
+      query: { fql: renderedFragments },
+      arguments: resultArgs,
+    };
   }
 }

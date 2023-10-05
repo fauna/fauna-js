@@ -101,6 +101,7 @@ jobs:
                 NETLIFY_AUTH_TOKEN: ((drivers-platform-tests/netlify-auth-token))
 
             - task: query-limits-tests
+              privileged: true
               file: fauna-js-repository/concourse/tasks/query-limits-tests.yml
               params:
                 QUERY_LIMITS_DB: limited

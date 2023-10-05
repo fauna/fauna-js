@@ -42,7 +42,7 @@ groups:
   - name: standard-release
     jobs:
       - set-self
-      - test 
+      - test
       - release
 
 jobs:
@@ -99,6 +99,12 @@ jobs:
                 FAUNA_SECRET: ((drivers-platform-tests/fauna-secret))
                 NETLIFY_ACCOUNT: ((drivers-platform-tests/netlify-account))
                 NETLIFY_AUTH_TOKEN: ((drivers-platform-tests/netlify-auth-token))
+
+            - task: query-limits-tests
+              file: fauna-js-repository/concourse/tasks/query-limits-tests.yml
+              params:
+                QUERY_LIMITS_DB: limited
+                QUERY_LIMITS_COLL: limitCollection
 
             # - task: vercel-tests
             #   image: testtools-image

@@ -1,4 +1,9 @@
-version: "3.3"
+version: "3.5"
+
+networks:
+  limit-net:
+    external: true
+    name: limit-net
 
 services:
   faunadb:
@@ -44,3 +49,21 @@ services:
         apk add --no-cache curl
         ./wait-for-it.sh http://faunadb:8443/ping
         yarn test:integration
+
+  query-limits-tests:
+    image: node:20.2-alpine3.16
+    container_name: node-current-limits-test
+    networks:
+      - limit-net
+    volumes:
+      - "../../:/tmp/app"
+    working_dir: "/tmp/app"
+    environment:
+      FAUNA_ENDPOINT: ${FAUNA_ENDPOINT:-http://fauna-limits:8443}
+      QUERY_LIMITS_DB: ${QUERY_LIMITS_DB}
+      QUERY_LIMITS_COLL: ${QUERY_LIMITS_COLL}
+    command:
+      - /bin/sh
+      - -cxe
+      - |
+        yarn test:query-limits

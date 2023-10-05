@@ -30,5 +30,3 @@ run:
       # stop and remove containers
       docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna.yml down
       docker-compose -f testtools-repo/fauna-driver-query-limits-tests/docker-compose.yml down
-      # remove volumes
-      docker volume rm $(docker volume ls -q)

@@ -1,0 +1,25 @@
+version: "3.5"
+
+networks:
+  limit-net:
+    external: true
+    name: limit-net
+
+services:
+  query-limits-tests:
+    image: node:20.2-alpine3.16
+    container_name: node-current-limits-test
+    networks:
+      - limit-net
+    volumes:
+      - "../../:/tmp/app"
+    working_dir: "/tmp/app"
+    environment:
+      FAUNA_ENDPOINT: ${FAUNA_ENDPOINT:-http://fauna-limits:8443}
+      QUERY_LIMITS_DB: ${QUERY_LIMITS_DB}
+      QUERY_LIMITS_COLL: ${QUERY_LIMITS_COLL}
+    command:
+      - /bin/sh
+      - -cxe
+      - |
+        yarn test:query-limits

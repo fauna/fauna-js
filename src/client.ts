@@ -519,6 +519,10 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
           "query_tags",
         ].includes(entry[0])
       ) {
+        if (entry[1] === undefined) {
+          continue;
+        }
+
         let headerValue: string;
         let headerKey = `x-${entry[0].replaceAll("_", "-")}`;
         if ("query_tags" === entry[0]) {

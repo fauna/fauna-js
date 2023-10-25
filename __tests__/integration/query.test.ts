@@ -153,6 +153,31 @@ describe("query", () => {
     }
   );
 
+  it(
+    "respects typechecked: undefined", async () => {
+      const httpClient: HTTPClient = {
+        async request(req) {
+          const contains = new Set(Object.keys(req.headers)).has("x-typecheck");
+          expect(contains).toBe(false);
+          return dummyResponse;
+        },
+        close() {},
+      };
+
+      let clientConfiguration: Partial<ClientConfiguration> = {
+        typecheck: true,
+      };
+      let myClient = getClient(clientConfiguration, httpClient);
+      await myClient.query<number>(fql`"taco".length`, { typecheck: undefined });
+      myClient.close();
+
+      clientConfiguration = { typecheck: undefined };
+      myClient = getClient(clientConfiguration, httpClient);
+      await myClient.query<number>(fql`"taco".length`);
+      myClient.close();
+    }
+  );
+
   it("can send arguments directly", async () => {
     const foo = {
       double: 4.14,

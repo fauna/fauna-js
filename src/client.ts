@@ -507,49 +507,29 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     fromObject: QueryOptions,
     headerObject: Record<string, string | number>
   ): void {
-    for (const entry of Object.entries(fromObject)) {
-      if (
-        [
-          "format",
-          "query_timeout_ms",
-          "linearized",
-          "max_contention_retries",
-          "traceparent",
-          "typecheck",
-          "query_tags",
-        ].includes(entry[0])
-      ) {
-        if (entry[1] === undefined) {
-          continue;
-        }
-
-        let headerValue: string;
-        let headerKey = `x-${entry[0].replaceAll("_", "-")}`;
-        if ("query_tags" === entry[0]) {
-          headerValue = Object.entries(entry[1])
-            .map((tag) => tag.join("="))
-            .join(",");
-        } else {
-          if (typeof entry[1] === "string") {
-            headerValue = entry[1];
-          } else {
-            headerValue = String(entry[1]);
-          }
-        }
-        if ("traceparent" === entry[0]) {
-          headerKey = entry[0];
-        }
-        headerObject[headerKey] = headerValue;
+    const setHeader = <V>(
+      header: string,
+      value: V | undefined,
+      transform: (v: V) => string | number = (v) => String(v)
+    ) => {
+      if (value !== undefined) {
+        headerObject[header] = transform(value);
       }
-    }
-    if (
-      headerObject["x-last-txn-ts"] === undefined &&
-      this.#lastTxnTs !== undefined
-    ) {
-      headerObject["x-last-txn-ts"] = this.#lastTxnTs;
-    }
+    };
 
-    headerObject["x-driver-env"] = Client.#driverEnvHeader;
+    setHeader("x-format", fromObject.format);
+    setHeader("x-typecheck", fromObject.typecheck);
+    setHeader("x-query-timeout-ms", fromObject.query_timeout_ms);
+    setHeader("x-linearized", fromObject.linearized);
+    setHeader("x-max-contention-retries", fromObject.max_contention_retries);
+    setHeader("traceparent", fromObject.traceparent);
+    setHeader("x-query-tags", fromObject.query_tags, (tags) =>
+      Object.entries(tags)
+        .map((tag) => tag.join("="))
+        .join(",")
+    );
+    setHeader("x-last-txn-ts", this.#lastTxnTs, (v) => v); // x-last-txn-ts doesn't get stringified
+    setHeader("x-driver-env", Client.#driverEnvHeader);
   }
 
   #validateConfiguration() {

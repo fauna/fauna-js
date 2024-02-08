@@ -1,4 +1,8 @@
-import { ClientConfiguration, endpoints } from "./client-configuration";
+import {
+  ClientConfiguration,
+  StreamClientConfiguration,
+  endpoints,
+} from "./client-configuration";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -18,18 +22,23 @@ import {
   InvalidRequestError,
 } from "./errors";
 import {
+  HTTPStreamClient,
+  StreamAdapter,
   getDefaultHTTPClient,
+  implementsStreamClient,
   isHTTPResponse,
   type HTTPClient,
 } from "./http-client";
 import { Query } from "./query-builder";
 import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
-import { EmbeddedSet, Page, SetIterator } from "./values";
+import { EmbeddedSet, Page, SetIterator, StreamToken } from "./values";
 import {
   isQueryFailure,
   isQuerySuccess,
   QueryInterpolation,
+  StreamEvent,
+  StreamEventType,
   type QueryFailure,
   type QueryOptions,
   type QuerySuccess,
@@ -80,7 +89,7 @@ export class Client {
   /** The {@link ClientConfiguration} */
   readonly #clientConfiguration: RequiredClientConfig;
   /** The underlying {@link HTTPClient} client. */
-  readonly #httpClient: HTTPClient;
+  readonly #httpClient: HTTPClient & Partial<HTTPStreamClient>;
   /** The last transaction timestamp this client has seen */
   #lastTxnTs?: number;
   /** true if this client is closed false otherwise */
@@ -262,6 +271,28 @@ export class Client {
     const queryInterpolation = query.toQuery(options).query;
 
     return this.#queryWithRetries(queryInterpolation, options);
+  }
+
+  /**
+   * Initialize a streaming request to Fauna
+   * @param query - A string-encoded streaming token, or a {@link Query}
+   */
+  // TODO: implement options
+  // TODO: implement providing Query
+  stream(query: StreamToken): StreamClient {
+    if (this.#isClosed) {
+      throw new ClientClosedError(
+        "Your client is closed. No further requests can be issued."
+      );
+    }
+
+    const streamClient = this.#httpClient;
+
+    if (implementsStreamClient(streamClient)) {
+      return new StreamClient(query, this.#clientConfiguration, streamClient);
+    } else {
+      throw new ClientError("Streaming is not supported by this client.");
+    }
   }
 
   async #queryWithRetries<T extends QueryValue>(
@@ -565,6 +596,102 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
     if (config.query_timeout_ms <= 0) {
       throw new RangeError(`'query_timeout_ms' must be greater than zero.`);
+    }
+  }
+}
+
+export type StreamEventHandler = (event: StreamEvent) => void;
+
+export class StreamClient {
+  #callbacks: Record<StreamEventType, StreamEventHandler[]> = {
+    start: [],
+    add: [],
+    remove: [],
+    update: [],
+    error: [],
+  };
+  #query: StreamToken;
+  #clientConfiguration: Record<string, any>;
+  #httpStreamClient: HTTPStreamClient;
+  #streamAdapter: StreamAdapter | null = null;
+
+  // TODO: make clientConfiguration and httpStreamClient optional
+  constructor(
+    query: StreamToken,
+    clientConfiguration: StreamClientConfiguration,
+    httpStreamClient: HTTPStreamClient
+  ) {
+    this.#query = query;
+    this.#clientConfiguration = clientConfiguration;
+    this.#httpStreamClient = httpStreamClient;
+  }
+
+  on(type: StreamEventType, callback: StreamEventHandler) {
+    this.#callbacks[type].push(callback);
+    return this;
+  }
+
+  start() {
+    const headers = {
+      Authorization: `Bearer ${this.#clientConfiguration.secret}`,
+    };
+
+    const streamAdapter = this.#httpStreamClient.stream({
+      data: this.#query.token,
+      headers,
+      method: "POST",
+    });
+
+    this.#streamAdapter = streamAdapter;
+
+    const handleEvents = async () => {
+      for await (const event of streamAdapter.read) {
+        // stream events are always tagged
+        const deserializedEvent: StreamEvent = TaggedTypeFormat.decode(event, {
+          long_type: this.#clientConfiguration.long_type,
+        });
+        this.#callbacks[deserializedEvent.type].forEach((callback) =>
+          callback(deserializedEvent)
+        );
+      }
+    };
+
+    handleEvents().catch((error) => {
+      throw new NetworkError("Error reading from stream", { cause: error });
+    });
+  }
+
+  async *iter(): AsyncGenerator<StreamEvent> {
+    const headers = {
+      Authorization: `Bearer ${this.#clientConfiguration.secret}`,
+    };
+
+    const streamAdapter = this.#httpStreamClient.stream({
+      data: this.#query.token,
+      headers,
+      method: "POST",
+    });
+
+    this.#streamAdapter = streamAdapter;
+
+    for await (const event of streamAdapter.read) {
+      // stream events are always tagged
+      const deserializedEvent: StreamEvent = TaggedTypeFormat.decode(event, {
+        long_type: this.#clientConfiguration.long_type,
+      });
+
+      // TODO: handle callbacks when using the async generator?
+      // this.#callbacks[deserializedEvent.type].forEach((callback) =>
+      //   callback(deserializedEvent)
+      // );
+
+      yield deserializedEvent;
+    }
+  }
+
+  close() {
+    if (this.#streamAdapter) {
+      this.#streamAdapter.close();
     }
   }
 }

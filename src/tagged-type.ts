@@ -10,6 +10,7 @@ import {
   Page,
   NullDocument,
   EmbeddedSet,
+  StreamToken,
 } from "./values";
 import { QueryValueObject, QueryValue } from "./wire-protocol";
 
@@ -95,6 +96,8 @@ Returning as Number with loss of precision. Use long_type 'bigint' instead.`);
         return TimeStub.from(value["@time"]);
       } else if (value["@object"]) {
         return value["@object"];
+      } else if (value["@stream"]) {
+        return new StreamToken(value["@stream"]);
       }
 
       return value;
@@ -209,6 +212,9 @@ const encodeMap = {
     //   "@set": { data: encodeMap["array"](value.data), after: value.after },
     // };
   },
+  // TODO: encode as a tagged value if provided as a query arg?
+  // streamToken: (value: StreamToken): TaggedStreamToken => ({ "@stream": value.token }),
+  streamToken: (value: StreamToken): string => value.token,
 };
 
 const encode = (input: QueryValue): QueryValue => {
@@ -253,6 +259,8 @@ const encode = (input: QueryValue): QueryValue => {
         return encodeMap["set"](input);
       } else if (input instanceof EmbeddedSet) {
         return encodeMap["set"](input);
+      } else if (input instanceof StreamToken) {
+        return encodeMap["streamToken"](input);
       } else {
         return encodeMap["object"](input);
       }

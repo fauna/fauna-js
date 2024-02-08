@@ -1,11 +1,10 @@
 import { FetchClient } from "./fetch-client";
+import { HTTPClient, HTTPClientOptions, HTTPResponse } from "./http-client";
 import { NodeHTTP2Client } from "./node-http2-client";
-import {
-  HTTPClient,
-  HTTPClientOptions,
-  HTTPRequest,
-  HTTPResponse,
-} from "./http-client";
+
+export * from "./fetch-client";
+export * from "./http-client";
+export * from "./node-http2-client";
 
 export const getDefaultHTTPClient = (options: HTTPClientOptions): HTTPClient =>
   nodeHttp2IsSupported()
@@ -15,7 +14,7 @@ export const getDefaultHTTPClient = (options: HTTPClientOptions): HTTPClient =>
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;
 
-const nodeHttp2IsSupported = () => {
+export const nodeHttp2IsSupported = () => {
   if (
     typeof process !== "undefined" &&
     process &&
@@ -30,5 +29,3 @@ const nodeHttp2IsSupported = () => {
   }
   return false;
 };
-
-export { FetchClient, NodeHTTP2Client, HTTPClient, HTTPRequest, HTTPResponse };

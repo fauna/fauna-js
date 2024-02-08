@@ -10,6 +10,7 @@ import {
   NamedDocumentReference,
   NullDocument,
   Page,
+  StreamToken,
   TimeStub,
 } from "./values";
 
@@ -316,4 +317,26 @@ export type QueryValue =
   | NamedDocumentReference
   | NullDocument
   | Page<QueryValue>
-  | EmbeddedSet;
+  | EmbeddedSet
+  | StreamToken;
+
+export type StreamEventType = "start" | "add" | "remove" | "update" | "error";
+export type StreamEventStart = {
+  type: "start";
+  ts: TimeStub;
+};
+export type StreamEventData = {
+  type: "add" | "remove" | "update";
+  ts: TimeStub;
+  // TODO: Different type for StreamStats?
+  stats: QueryStats;
+  data: QueryValue;
+};
+export type StreamEventError = {
+  type: "error";
+  code: string;
+  message: string;
+  // TODO: Different type for StreamStats?
+  stats: QueryStats;
+};
+export type StreamEvent = StreamEventStart | StreamEventData | StreamEventError;

@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Client } from "../client";
+// import type { Stream } from "../stream";
 import { QueryRequest } from "../wire-protocol";
 
 /**
@@ -65,3 +66,65 @@ export interface HTTPClient {
    */
   close(): void;
 }
+
+/**
+ * An object representing an http request.
+ * The {@link Client} provides this to the {@link HTTPStreamClient} implementation.
+ */
+export type HTTPStreamRequest = {
+  /** The encoded Fauna query to send */
+  data: string; // | QueryRequest;
+
+  /** Headers in object format */
+  headers: Record<string, string | undefined>;
+
+  /** HTTP method to use */
+  method: "POST";
+};
+
+// export interface Stream {
+//   /**
+//    * Register an event handler to execute for each event with specified type.
+//    * @param type - The event type to listen to {@link StreamEventType}
+//    * @param callback - The event handler to call each time an event is emitted
+//    * @returns
+//    */
+//   on: (type: StreamEventType, callback: StreamEventHandler) => Stream;
+
+//   /**
+//    * Start the stream.
+//    */
+//   // TODO: return `AsyncGenerator<StreamEvent>`?
+//   start: () => void;
+
+//   /**
+//    * Close the stream.
+//    */
+//   close: () => void;
+// }
+
+export interface StreamAdapter {
+  read: AsyncGenerator<string>;
+  close: () => void;
+}
+
+/**
+ * An interface to provide implementation-specific, asyncronous http calls.
+ * This driver provides default implementations for common environments. Users
+ * can configure the {@link Client} to use custom implementations if desired.
+ */
+export interface HTTPStreamClient {
+  /**
+   * Makes an HTTP request and returns the response
+   * @param req - an {@link HTTPStreamRequest}
+   * @returns A Promise&lt;{@link HTTPResponse}&gt;
+   * @throws {@link NetworkError} on request timeout or other network issue.
+   */
+  stream(req: HTTPStreamRequest): StreamAdapter;
+}
+
+export const implementsStreamClient = (
+  client: Partial<HTTPStreamClient>
+): client is HTTPStreamClient => {
+  return "stream" in client && typeof client.stream === "function";
+};

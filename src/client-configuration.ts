@@ -156,6 +156,24 @@ export interface Endpoints {
 }
 
 /**
+ * Configuration for a streaming client. This typically comes from the `Client`
+ * instance configuration.
+ */
+export type StreamClientConfiguration = {
+  /**
+   * A secret for your Fauna DB, used to authorize your queries.
+   * @see https://docs.fauna.com/fauna/current/security/keys
+   */
+  secret: string;
+
+  /**
+   * Controls what Javascript type to deserialize {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#long | Fauna longs} to.
+   * @see {@link ClientConfiguration.long_type}
+   */
+  long_type: "number" | "bigint";
+};
+
+/**
  * A extensible set of endpoints for calling Fauna.
  * @remarks Most clients will will not need to extend this set.
  * @example

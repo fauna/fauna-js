@@ -82,27 +82,6 @@ export type HTTPStreamRequest = {
   method: "POST";
 };
 
-// export interface Stream {
-//   /**
-//    * Register an event handler to execute for each event with specified type.
-//    * @param type - The event type to listen to {@link StreamEventType}
-//    * @param callback - The event handler to call each time an event is emitted
-//    * @returns
-//    */
-//   on: (type: StreamEventType, callback: StreamEventHandler) => Stream;
-
-//   /**
-//    * Start the stream.
-//    */
-//   // TODO: return `AsyncGenerator<StreamEvent>`?
-//   start: () => void;
-
-//   /**
-//    * Close the stream.
-//    */
-//   close: () => void;
-// }
-
 export interface StreamAdapter {
   read: AsyncGenerator<string>;
   close: () => void;

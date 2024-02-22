@@ -29,7 +29,7 @@ import {
   isHTTPResponse,
   type HTTPClient,
 } from "./http-client";
-import { Query } from "./query-builder";
+import { Query, fql } from "./query-builder";
 import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
 import { EmbeddedSet, Page, SetIterator, StreamToken } from "./values";
@@ -278,18 +278,32 @@ export class Client {
    * @param query - A string-encoded streaming token, or a {@link Query}
    */
   // TODO: implement options
-  // TODO: implement providing Query
-  stream(query: StreamToken): StreamClient {
+  async stream(query: Query | StreamToken): Promise<StreamClient> {
     if (this.#isClosed) {
       throw new ClientClosedError(
         "Your client is closed. No further requests can be issued."
       );
     }
 
+    let streamToken: StreamToken | null = null;
+    if (query instanceof Query) {
+      const toStreamQuery = fql`${query}.toStream()`;
+
+      streamToken = (await this.query<StreamToken>(toStreamQuery).then(
+        (res) => res.data
+      )) as StreamToken;
+    } else {
+      streamToken = query;
+    }
+
     const streamClient = this.#httpClient;
 
     if (implementsStreamClient(streamClient)) {
-      return new StreamClient(query, this.#clientConfiguration, streamClient);
+      return new StreamClient(
+        streamToken,
+        this.#clientConfiguration,
+        streamClient
+      );
     } else {
       throw new ClientError("Streaming is not supported by this client.");
     }

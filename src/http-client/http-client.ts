@@ -1,7 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Client } from "../client";
 // import type { Stream } from "../stream";
-import { QueryRequest } from "../wire-protocol";
+import { QueryRequest, StreamRequest } from "../wire-protocol";
 
 /**
  * An object representing an http request.
@@ -73,7 +73,8 @@ export interface HTTPClient {
  */
 export type HTTPStreamRequest = {
   /** The encoded Fauna query to send */
-  data: string; // | QueryRequest;
+  // TODO: Allow type to be a QueryRequest once implemented by the db
+  data: StreamRequest;
 
   /** Headers in object format */
   headers: Record<string, string | undefined>;

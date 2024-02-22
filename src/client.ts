@@ -637,7 +637,7 @@ export class StreamClient {
     };
 
     const streamAdapter = this.#httpStreamClient.stream({
-      data: this.#query.token,
+      data: { token: this.#query.token },
       headers,
       method: "POST",
     });
@@ -667,7 +667,7 @@ export class StreamClient {
     };
 
     const streamAdapter = this.#httpStreamClient.stream({
-      data: this.#query.token,
+      data: { token: this.#query.token },
       headers,
       method: "POST",
     });

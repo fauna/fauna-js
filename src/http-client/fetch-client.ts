@@ -78,7 +78,7 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
     const request = new Request(this.#streamURL, {
       method,
       headers: { ...requestHeaders, "Content-Type": "application/json" },
-      body: data,
+      body: JSON.stringify(data),
       keepalive: this.#keepalive,
     });
 

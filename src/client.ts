@@ -650,9 +650,12 @@ export class StreamClient {
         const deserializedEvent: StreamEvent = TaggedTypeFormat.decode(event, {
           long_type: this.#clientConfiguration.long_type,
         });
-        this.#callbacks[deserializedEvent.type].forEach((callback) =>
-          callback(deserializedEvent)
-        );
+        const callbacks = this.#callbacks[deserializedEvent.type];
+        if (callbacks) {
+          this.#callbacks[deserializedEvent.type].forEach((callback) =>
+            callback(deserializedEvent)
+          );
+        }
       }
     };
 

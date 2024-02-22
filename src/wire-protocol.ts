@@ -320,6 +320,11 @@ export type QueryValue =
   | EmbeddedSet
   | StreamToken;
 
+export type StreamRequest = {
+  token: string;
+  start_ts?: number;
+};
+
 export type StreamEventType = "start" | "add" | "remove" | "update" | "error";
 export type StreamEventStart = {
   type: "start";

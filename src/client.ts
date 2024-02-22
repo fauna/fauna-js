@@ -678,7 +678,7 @@ export class StreamClient {
     });
   }
 
-  async *iter(): AsyncGenerator<StreamEvent> {
+  async *[Symbol.asyncIterator](): AsyncGenerator<StreamEvent> {
     const headers = {
       Authorization: `Bearer ${this.#clientConfiguration.secret}`,
     };

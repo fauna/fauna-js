@@ -29,7 +29,7 @@ import {
   isHTTPResponse,
   type HTTPClient,
 } from "./http-client";
-import { Query, fql } from "./query-builder";
+import { Query } from "./query-builder";
 import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
 import { EmbeddedSet, Page, SetIterator, StreamToken } from "./values";

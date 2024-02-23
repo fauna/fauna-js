@@ -278,7 +278,7 @@ export class Client {
    * @param query - A string-encoded streaming token, or a {@link Query}
    */
   // TODO: implement options
-  async stream(query: Query | StreamToken): Promise<StreamClient> {
+  stream(query: Query | StreamToken): StreamClient {
     if (this.#isClosed) {
       throw new ClientClosedError(
         "Your client is closed. No further requests can be issued."
@@ -288,24 +288,23 @@ export class Client {
     const streamClient = this.#httpClient;
 
     if (implementsStreamClient(streamClient)) {
-      let streamToken: StreamToken | null = null;
-      if (query instanceof Query) {
-        streamToken = await this.query<StreamToken>(query).then(
-          (res) => res.data
-        );
-
-        if (!(streamToken instanceof StreamToken)) {
-          throw new ClientError(
-            `Error requesting a stream token. Expected a StreamToken as the query result, but received ${typeof streamToken}. Your query must return the result of '<Set>.toStream' or '<Set>.changesOn')\n` +
-              `Query result: ${JSON.stringify(streamToken, null)}`
-          );
-        }
-      } else {
-        streamToken = query;
-      }
+      const getStreamToken: () => Promise<StreamToken> =
+        query instanceof Query
+          ? () =>
+              this.query(query).then((res) => {
+                const maybeStreamToken = res.data;
+                if (!(maybeStreamToken instanceof StreamToken)) {
+                  throw new ClientError(
+                    `Error requesting a stream token. Expected a StreamToken as the query result, but received ${typeof maybeStreamToken}. Your query must return the result of '<Set>.toStream' or '<Set>.changesOn')\n` +
+                      `Query result: ${JSON.stringify(maybeStreamToken, null)}`
+                  );
+                }
+                return maybeStreamToken;
+              })
+          : () => Promise.resolve(query as StreamToken);
 
       return new StreamClient(
-        streamToken,
+        getStreamToken,
         this.#clientConfiguration,
         streamClient
       );
@@ -629,14 +628,14 @@ export class StreamClient {
     update: [],
     error: [],
   };
-  #query: StreamToken;
+  #query: () => Promise<StreamToken>;
   #clientConfiguration: Record<string, any>;
   #httpStreamClient: HTTPStreamClient;
   #streamAdapter: StreamAdapter | null = null;
 
   // TODO: make clientConfiguration and httpStreamClient optional
   constructor(
-    query: StreamToken,
+    query: () => Promise<StreamToken>,
     clientConfiguration: StreamClientConfiguration,
     httpStreamClient: HTTPStreamClient
   ) {
@@ -651,45 +650,52 @@ export class StreamClient {
   }
 
   start() {
-    const headers = {
-      Authorization: `Bearer ${this.#clientConfiguration.secret}`,
-    };
+    this.#query().then((streamToken) => {
+      const headers = {
+        Authorization: `Bearer ${this.#clientConfiguration.secret}`,
+      };
 
-    const streamAdapter = this.#httpStreamClient.stream({
-      data: { token: this.#query.token },
-      headers,
-      method: "POST",
-    });
+      const streamAdapter = this.#httpStreamClient.stream({
+        data: { token: streamToken.token },
+        headers,
+        method: "POST",
+      });
 
-    this.#streamAdapter = streamAdapter;
+      this.#streamAdapter = streamAdapter;
 
-    const handleEvents = async () => {
-      for await (const event of streamAdapter.read) {
-        // stream events are always tagged
-        const deserializedEvent: StreamEvent = TaggedTypeFormat.decode(event, {
-          long_type: this.#clientConfiguration.long_type,
-        });
-        const callbacks = this.#callbacks[deserializedEvent.type];
-        if (callbacks) {
-          this.#callbacks[deserializedEvent.type].forEach((callback) =>
-            callback(deserializedEvent)
+      const handleEvents = async () => {
+        for await (const event of streamAdapter.read) {
+          // stream events are always tagged
+          const deserializedEvent: StreamEvent = TaggedTypeFormat.decode(
+            event,
+            {
+              long_type: this.#clientConfiguration.long_type,
+            }
           );
+          const callbacks = this.#callbacks[deserializedEvent.type];
+          if (callbacks) {
+            this.#callbacks[deserializedEvent.type].forEach((callback) =>
+              callback(deserializedEvent)
+            );
+          }
         }
-      }
-    };
+      };
 
-    handleEvents().catch((error) => {
-      throw new NetworkError("Error reading from stream", { cause: error });
+      handleEvents().catch((error) => {
+        throw new NetworkError("Error reading from stream", { cause: error });
+      });
     });
   }
 
   async *[Symbol.asyncIterator](): AsyncGenerator<StreamEvent> {
+    const streamToken = await this.#query();
+
     const headers = {
       Authorization: `Bearer ${this.#clientConfiguration.secret}`,
     };
 
     const streamAdapter = this.#httpStreamClient.stream({
-      data: { token: this.#query.token },
+      data: { token: streamToken.token },
       headers,
       method: "POST",
     });

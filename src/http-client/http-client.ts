@@ -1,6 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Client } from "../client";
-// import type { Stream } from "../stream";
 import { QueryRequest, StreamRequest } from "../wire-protocol";
 
 /**

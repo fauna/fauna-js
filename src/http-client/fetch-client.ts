@@ -104,7 +104,7 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
     return {
       read: reader(),
       close: () => {
-        abortController.abort();
+        abortController.abort("Stream closed by the client.");
       },
     };
   }

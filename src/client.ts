@@ -285,20 +285,25 @@ export class Client {
       );
     }
 
-    let streamToken: StreamToken | null = null;
-    if (query instanceof Query) {
-      const toStreamQuery = fql`${query}.toStream()`;
-
-      streamToken = (await this.query<StreamToken>(toStreamQuery).then(
-        (res) => res.data
-      )) as StreamToken;
-    } else {
-      streamToken = query;
-    }
-
     const streamClient = this.#httpClient;
 
     if (implementsStreamClient(streamClient)) {
+      let streamToken: StreamToken | null = null;
+      if (query instanceof Query) {
+        streamToken = await this.query<StreamToken>(query).then(
+          (res) => res.data
+        );
+
+        if (!(streamToken instanceof StreamToken)) {
+          throw new ClientError(
+            `Error requesting a stream token. Expected a StreamToken as the query result, but received ${typeof streamToken}. Your query must return the result of '<Set>.toStream' or '<Set>.changesOn')\n` +
+              `Query result: ${JSON.stringify(streamToken, null)}`
+          );
+        }
+      } else {
+        streamToken = query;
+      }
+
       return new StreamClient(
         streamToken,
         this.#clientConfiguration,

@@ -2,7 +2,9 @@ import type {
   ConstraintFailure,
   QueryFailure,
   QueryInfo,
+  QueryStats,
   QueryValue,
+  StreamEventError,
 } from "./wire-protocol";
 
 /**
@@ -310,5 +312,37 @@ export class ProtocolError extends FaunaError {
 
     this.name = "ProtocolError";
     this.httpStatus = error.httpStatus;
+  }
+}
+
+/**
+ * An error representing a failure in a stream
+ */
+export class StreamError extends FaunaError {
+  /**
+   * Error code
+   */
+  readonly code: string;
+
+  /**
+   * Details about the query sent along with the response
+   */
+  readonly stats: QueryStats;
+
+  constructor(message: string, code: string, stats: QueryStats) {
+    super(message);
+
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, StreamError);
+    }
+
+    this.name = "StreamError";
+    this.code = code;
+    this.stats = stats;
+  }
+
+  static fromStreamEventError(event: StreamEventError) {
+    return new StreamError(event.message, event.code, event.stats);
   }
 }

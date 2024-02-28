@@ -328,11 +328,11 @@ export type StreamRequest = {
 export type StreamEventType = "start" | "add" | "remove" | "update" | "error";
 export type StreamEventStart = {
   type: "start";
-  ts: TimeStub;
+  ts: number;
 };
 export type StreamEventData = {
   type: "add" | "remove" | "update";
-  ts: TimeStub;
+  ts: number;
   // TODO: Different type for StreamStats?
   stats: QueryStats;
   data: QueryValue;

@@ -20,6 +20,7 @@ import {
   ThrottlingError,
   ContendedTransactionError,
   InvalidRequestError,
+  StreamError,
 } from "./errors";
 import {
   HTTPStreamClient,
@@ -326,16 +327,17 @@ export class Client {
     const backoffMs =
       Math.min(Math.random() * 2 ** attempt, maxBackoff) * 1_000;
 
-    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
     attempt += 1;
-    return this.#query<T>(queryInterpolation, options, attempt).catch((e) => {
-      if (e instanceof ThrottlingError && attempt < maxAttempts) {
-        return wait(backoffMs).then(() =>
-          this.#queryWithRetries<T>(queryInterpolation, options, attempt)
-        );
+
+    try {
+      return await this.#query<T>(queryInterpolation, options, attempt);
+    } catch (error) {
+      if (error instanceof ThrottlingError && attempt < maxAttempts) {
+        await wait(backoffMs);
+        return this.#queryWithRetries<T>(queryInterpolation, options, attempt);
       }
-      throw e;
-    });
+      throw error;
+    }
   }
 
   #getError(e: any): ClientError | NetworkError | ProtocolError | ServiceError {
@@ -621,6 +623,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 export type StreamEventHandler = (event: StreamEvent) => void;
 
 export class StreamClient {
+  closed = false;
   #callbacks: Record<StreamEventType, StreamEventHandler[]> = {
     start: [],
     add: [],
@@ -631,7 +634,10 @@ export class StreamClient {
   #query: () => Promise<StreamToken>;
   #clientConfiguration: Record<string, any>;
   #httpStreamClient: HTTPStreamClient;
-  #streamAdapter: StreamAdapter | null = null;
+  #connectionAttempts = 0;
+  #streamAdapter?: StreamAdapter;
+  #streamToken?: StreamToken;
+  #last_ts?: number;
 
   // TODO: make clientConfiguration and httpStreamClient optional
   constructor(
@@ -650,52 +656,78 @@ export class StreamClient {
   }
 
   start() {
-    this.#query().then((streamToken) => {
-      const headers = {
-        Authorization: `Bearer ${this.#clientConfiguration.secret}`,
-      };
-
-      const streamAdapter = this.#httpStreamClient.stream({
-        data: { token: streamToken.token },
-        headers,
-        method: "POST",
-      });
-
-      this.#streamAdapter = streamAdapter;
-
-      const handleEvents = async () => {
-        for await (const event of streamAdapter.read) {
-          // stream events are always tagged
-          const deserializedEvent: StreamEvent = TaggedTypeFormat.decode(
-            event,
-            {
-              long_type: this.#clientConfiguration.long_type,
-            }
-          );
-          const callbacks = this.#callbacks[deserializedEvent.type];
-          if (callbacks) {
-            this.#callbacks[deserializedEvent.type].forEach((callback) =>
-              callback(deserializedEvent)
-            );
-          }
+    const run = async () => {
+      for await (const event of this) {
+        const callbacks = this.#callbacks[event.type];
+        if (callbacks) {
+          this.#callbacks[event.type].forEach((callback) => callback(event));
         }
-      };
-
-      handleEvents().catch((error) => {
-        throw new NetworkError("Error reading from stream", { cause: error });
-      });
-    });
+      }
+    };
+    run();
   }
 
   async *[Symbol.asyncIterator](): AsyncGenerator<StreamEvent> {
-    const streamToken = await this.#query();
+    if (this.closed) {
+      throw new ClientError("The stream has been closed and cannot be reused.");
+    }
+
+    if (!this.#streamToken) {
+      // TODO: Should we retry any errors when trying to get the token?
+      this.#streamToken = await this.#query();
+    }
+
+    // TODO: make these constants configurable
+    const STREAM_RECONNECT_MAX_ATTEMPTS = 60;
+    const STREAM_RECONNECT_MAX_BACKOFF = 10;
+
+    while (!this.closed) {
+      const backoffMs =
+        Math.min(
+          Math.random() * 2 ** this.#connectionAttempts,
+          STREAM_RECONNECT_MAX_BACKOFF
+        ) * 1_000;
+
+      this.#connectionAttempts = 1;
+      try {
+        for await (const event of this.#startStream(this.#last_ts)) {
+          yield event;
+        }
+      } catch (error) {
+        console.error("Error in stream", error);
+        if (
+          error instanceof StreamError ||
+          this.#connectionAttempts >= STREAM_RECONNECT_MAX_ATTEMPTS
+        ) {
+          this.close();
+          throw error;
+        }
+
+        console.log("retrying stream...");
+        this.#connectionAttempts += 1;
+        await wait(backoffMs);
+      }
+    }
+  }
+
+  close() {
+    if (this.#streamAdapter) {
+      this.#streamAdapter.close();
+      this.#streamAdapter = undefined;
+    }
+    this.closed = true;
+  }
+
+  async *#startStream(start_ts?: number): AsyncGenerator<StreamEvent> {
+    // Safety: This method must only be called after a stream token has been acquired
+    const streamToken = this.#streamToken as StreamToken;
 
     const headers = {
       Authorization: `Bearer ${this.#clientConfiguration.secret}`,
     };
 
     const streamAdapter = this.#httpStreamClient.stream({
-      data: { token: streamToken.token },
+      data: { token: streamToken.token, start_ts },
       headers,
       method: "POST",
     });
@@ -708,18 +740,21 @@ export class StreamClient {
         long_type: this.#clientConfiguration.long_type,
       });
 
+      if (deserializedEvent.type === "error") {
+        // Errors sent from Fauna are assumed fatal
+        this.close();
+        yield deserializedEvent;
+        throw StreamError.fromStreamEventError(deserializedEvent);
+      }
+
       // TODO: handle callbacks when using the async generator?
       // this.#callbacks[deserializedEvent.type].forEach((callback) =>
       //   callback(deserializedEvent)
       // );
 
-      yield deserializedEvent;
-    }
-  }
+      this.#last_ts = deserializedEvent.ts;
 
-  close() {
-    if (this.#streamAdapter) {
-      this.#streamAdapter.close();
+      yield deserializedEvent;
     }
   }
 }
@@ -733,3 +768,7 @@ const QUERY_CHECK_FAILURE_CODES = [
   "invalid_syntax",
   "invalid_type",
 ];
+
+function wait(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}

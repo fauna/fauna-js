@@ -624,13 +624,6 @@ export type StreamEventHandler = (event: StreamEvent) => void;
 
 export class StreamClient {
   closed = false;
-  #callbacks: Record<StreamEventType, StreamEventHandler[]> = {
-    start: [],
-    add: [],
-    remove: [],
-    update: [],
-    error: [],
-  };
   #query: () => Promise<StreamToken>;
   #clientConfiguration: Record<string, any>;
   #httpStreamClient: HTTPStreamClient;
@@ -654,8 +647,13 @@ export class StreamClient {
     this.#callbacks[type].push(callback);
     return this;
   }
-
-  start(onFatalError?: (error: Error) => void) {
+    
+  start(onEvent: StreamEventHandler, onFatalError?: (error: Error) => void) {
+    if (typeof onEvent !== "function") {
+      throw new TypeError(
+        `Expected a function as the 'onEvent' argument, but received ${typeof onEvent}. Please provide a valid function.`
+      );
+    }
     if (onFatalError && typeof onFatalError !== "function") {
       throw new TypeError(
         `Expected a function as the 'onFatalError' argument, but received ${typeof onFatalError}. Please provide a valid function.`
@@ -664,10 +662,7 @@ export class StreamClient {
     const run = async () => {
       try {
         for await (const event of this) {
-          const callbacks = this.#callbacks[event.type];
-          if (callbacks) {
-            this.#callbacks[event.type].forEach((callback) => callback(event));
-          }
+          onEvent(event);
         }
       } catch (error) {
         if (onFatalError) {

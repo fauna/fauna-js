@@ -327,9 +327,9 @@ export class StreamError extends FaunaError {
   /**
    * Details about the query sent along with the response
    */
-  readonly stats: QueryStats;
+  readonly stats?: QueryStats;
 
-  constructor(message: string, code: string, stats: QueryStats) {
+  constructor(message: string, code: string, stats?: QueryStats) {
     super(message);
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)

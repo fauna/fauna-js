@@ -342,6 +342,7 @@ export type StreamEventError = {
   code: string;
   message: string;
   // TODO: Different type for StreamStats?
-  stats: QueryStats;
+  stats?: QueryStats;
+  cause?: Error;
 };
 export type StreamEvent = StreamEventStart | StreamEventData | StreamEventError;

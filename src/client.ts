@@ -643,12 +643,10 @@ export class StreamClient {
     this.#httpStreamClient = httpStreamClient;
   }
 
-  on(type: StreamEventType, callback: StreamEventHandler) {
-    this.#callbacks[type].push(callback);
-    return this;
-  }
-    
-  start(onEvent: StreamEventHandler, onFatalError?: (error: Error) => void) {
+  start(
+    onEvent: StreamEventHandler,
+    onFatalError: (error: Error) => void
+  ): StreamClient {
     if (typeof onEvent !== "function") {
       throw new TypeError(
         `Expected a function as the 'onEvent' argument, but received ${typeof onEvent}. Please provide a valid function.`
@@ -671,6 +669,7 @@ export class StreamClient {
       }
     };
     run();
+    return this;
   }
 
   async *[Symbol.asyncIterator](): AsyncGenerator<StreamEvent> {

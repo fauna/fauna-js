@@ -655,12 +655,18 @@ export class StreamClient {
     return this;
   }
 
-  start() {
+  start(onFatalError: (error: Error) => void) {
     const run = async () => {
-      for await (const event of this) {
-        const callbacks = this.#callbacks[event.type];
-        if (callbacks) {
-          this.#callbacks[event.type].forEach((callback) => callback(event));
+      try {
+        for await (const event of this) {
+          const callbacks = this.#callbacks[event.type];
+          if (callbacks) {
+            this.#callbacks[event.type].forEach((callback) => callback(event));
+          }
+        }
+      } catch (error) {
+        if (error instanceof Error) {
+          onFatalError(error);
         }
       }
     };
@@ -693,17 +699,23 @@ export class StreamClient {
         for await (const event of this.#startStream(this.#last_ts)) {
           yield event;
         }
-      } catch (error) {
-        console.error("Error in stream", error);
+      } catch (error: any) {
         if (
           error instanceof StreamError ||
           this.#connectionAttempts >= STREAM_RECONNECT_MAX_ATTEMPTS
         ) {
+          // A terminal error from Fauna
           this.close();
           throw error;
         }
 
-        console.log("retrying stream...");
+        yield {
+          type: "error",
+          code: "network error",
+          message: error.message,
+          cause: error,
+        };
+
         this.#connectionAttempts += 1;
         await wait(backoffMs);
       }

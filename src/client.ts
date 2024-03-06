@@ -655,7 +655,12 @@ export class StreamClient {
     return this;
   }
 
-  start(onFatalError: (error: Error) => void) {
+  start(onFatalError?: (error: Error) => void) {
+    if (onFatalError && typeof onFatalError !== "function") {
+      throw new TypeError(
+        `Expected a function as the 'onFatalError' argument, but received ${typeof onFatalError}. Please provide a valid function.`
+      );
+    }
     const run = async () => {
       try {
         for await (const event of this) {
@@ -665,8 +670,8 @@ export class StreamClient {
           }
         }
       } catch (error) {
-        if (error instanceof Error) {
-          onFatalError(error);
+        if (onFatalError) {
+          onFatalError(error as Error);
         }
       }
     };

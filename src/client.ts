@@ -760,14 +760,8 @@ export class StreamClient {
       if (deserializedEvent.type === "error") {
         // Errors sent from Fauna are assumed fatal
         this.close();
-        yield deserializedEvent;
         throw StreamError.fromStreamEventError(deserializedEvent);
       }
-
-      // TODO: handle callbacks when using the async generator?
-      // this.#callbacks[deserializedEvent.type].forEach((callback) =>
-      //   callback(deserializedEvent)
-      // );
 
       this.#last_ts = deserializedEvent.ts;
 

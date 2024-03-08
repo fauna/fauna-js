@@ -290,7 +290,7 @@ export class NodeHTTP2Client implements HTTPClient {
     async function* reader(): AsyncGenerator<string> {
       const httpRequestHeaders: OutgoingHttpHeaders = {
         ...requestHeaders,
-        [http2.constants.HTTP2_HEADER_PATH]: "/query/1",
+        [http2.constants.HTTP2_HEADER_PATH]: "/stream/1",
         [http2.constants.HTTP2_HEADER_METHOD]: method,
       };
 

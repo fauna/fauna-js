@@ -677,7 +677,6 @@ export class StreamClient {
     }
 
     if (!this.#streamToken) {
-      // TODO: Should we retry any errors when trying to get the token?
       this.#streamToken = await this.#query();
     }
 

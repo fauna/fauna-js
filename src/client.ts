@@ -39,7 +39,6 @@ import {
   isQuerySuccess,
   QueryInterpolation,
   StreamEvent,
-  StreamEventType,
   type QueryFailure,
   type QueryOptions,
   type QuerySuccess,
@@ -708,13 +707,6 @@ export class StreamClient {
           throw error;
         }
 
-        yield {
-          type: "error",
-          code: "network error",
-          message: error.message,
-          cause: error,
-        };
-
         this.#connectionAttempts += 1;
         await wait(backoffMs);
       }
@@ -754,12 +746,15 @@ export class StreamClient {
       if (deserializedEvent.type === "error") {
         // Errors sent from Fauna are assumed fatal
         this.close();
+        // TODO: replace with appropriate class from existing error heirarchy
         throw StreamError.fromStreamEventError(deserializedEvent);
       }
 
       this.#last_ts = deserializedEvent.ts;
 
-      yield deserializedEvent;
+      if (deserializedEvent.type !== "start") {
+        yield deserializedEvent;
+      }
     }
   }
 }

@@ -247,42 +247,44 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
         http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
       );
       if (!(status >= 200 && status < 400)) {
-        // TODO: if we get bad status, then we should still finish reading the response, and create
-        // the appropriate error instance
-        rejectChunk(
-          new ServiceError(
-            {
-              error: {
-                code: "fauna error",
-                message: "fauna error",
-              },
-            },
-            status
-          )
-        );
+        // Get the error body and then throw an error
+        let responseData = "";
+
+        // append response data to the data string every time we receive new
+        // data chunks in the response
+        req.on("data", (chunk: string) => {
+          responseData += chunk;
+        });
+
+        // Once the response is finished, resolve the promise
+        // TODO: The Client contains the information for how to parse an error
+        // into the appropriate class, so lift this logic out of the HTTPClient.
+        req.on("end", () => {
+          rejectChunk(new ServiceError(JSON.parse(responseData), status));
+        });
+      } else {
+        let partOfLine = "";
+
+        // append response data to the data string every time we receive new
+        // data chunks in the response
+        req.on("data", (chunk: string) => {
+          const chunkLines = (partOfLine + chunk).split("\n");
+
+          // Yield all complete lines
+          for (let i = 0; i < chunkLines.length - 1; i++) {
+            resolveChunk(chunkLines[i].trim());
+            chunkPromise = setChunkPromise();
+          }
+
+          // Store the partial line
+          partOfLine = chunkLines[chunkLines.length - 1];
+        });
+
+        // Once the response is finished, resolve the promise
+        req.on("end", () => {
+          resolveChunk(partOfLine);
+        });
       }
-
-      let partOfLine = "";
-
-      // append response data to the data string every time we receive new
-      // data chunks in the response
-      req.on("data", (chunk: string) => {
-        const chunkLines = (partOfLine + chunk).split("\n");
-
-        // Yield all complete lines
-        for (let i = 0; i < chunkLines.length - 1; i++) {
-          resolveChunk(chunkLines[i].trim());
-          chunkPromise = setChunkPromise();
-        }
-
-        // Store the partial line
-        partOfLine = chunkLines[chunkLines.length - 1];
-      });
-
-      // Once the response is finished, resolve the promise
-      req.on("end", () => {
-        resolveChunk(partOfLine);
-      });
     };
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias

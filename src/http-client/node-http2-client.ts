@@ -9,6 +9,7 @@ import {
   HTTPClientOptions,
   HTTPRequest,
   HTTPResponse,
+  HTTPStreamClient,
   HTTPStreamRequest,
   StreamAdapter,
 } from "./http-client";
@@ -24,7 +25,7 @@ type OutgoingHttpHeaders = any;
 /**
  * An implementation for {@link HTTPClient} that uses the node http package
  */
-export class NodeHTTP2Client implements HTTPClient {
+export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
   static #clients: Map<string, NodeHTTP2Client> = new Map();
 
   #http2_session_idle_ms: number;

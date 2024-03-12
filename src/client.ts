@@ -20,7 +20,7 @@ import {
   ThrottlingError,
   ContendedTransactionError,
   InvalidRequestError,
-  StreamError,
+  FaunaError,
 } from "./errors";
 import {
   HTTPStreamClient,
@@ -39,6 +39,7 @@ import {
   isQuerySuccess,
   QueryInterpolation,
   StreamEvent,
+  StreamEventData,
   type QueryFailure,
   type QueryOptions,
   type QuerySuccess,
@@ -619,8 +620,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   }
 }
 
-export type StreamEventHandler = (event: StreamEvent) => void;
-
 export class StreamClient {
   closed = false;
   #query: () => Promise<StreamToken>;
@@ -643,7 +642,7 @@ export class StreamClient {
   }
 
   start(
-    onEvent: StreamEventHandler,
+    onEvent: (event: StreamEventData) => void,
     onFatalError: (error: Error) => void
   ): StreamClient {
     if (typeof onEvent !== "function") {
@@ -671,7 +670,7 @@ export class StreamClient {
     return this;
   }
 
-  async *[Symbol.asyncIterator](): AsyncGenerator<StreamEvent> {
+  async *[Symbol.asyncIterator](): AsyncGenerator<StreamEventData> {
     if (this.closed) {
       throw new ClientError("The stream has been closed and cannot be reused.");
     }
@@ -698,7 +697,7 @@ export class StreamClient {
         }
       } catch (error: any) {
         if (
-          error instanceof StreamError ||
+          error instanceof FaunaError ||
           this.#connectionAttempts >= STREAM_RECONNECT_MAX_ATTEMPTS
         ) {
           // A terminal error from Fauna
@@ -720,7 +719,7 @@ export class StreamClient {
     this.closed = true;
   }
 
-  async *#startStream(start_ts?: number): AsyncGenerator<StreamEvent> {
+  async *#startStream(start_ts?: number): AsyncGenerator<StreamEventData> {
     // Safety: This method must only be called after a stream token has been acquired
     const streamToken = this.#streamToken as StreamToken;
 
@@ -746,7 +745,7 @@ export class StreamClient {
         // Errors sent from Fauna are assumed fatal
         this.close();
         // TODO: replace with appropriate class from existing error heirarchy
-        throw StreamError.fromStreamEventError(deserializedEvent);
+        throw new ServiceError(deserializedEvent, 400);
       }
 
       this.#last_ts = deserializedEvent.ts;

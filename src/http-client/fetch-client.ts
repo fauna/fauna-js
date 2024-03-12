@@ -1,7 +1,7 @@
 /** following reference needed to include types for experimental fetch API in Node */
 /// <reference lib="dom" />
 
-import { NetworkError } from "../errors";
+import { NetworkError, ServiceError } from "../errors";
 import {
   HTTPClient,
   HTTPClientOptions,
@@ -89,7 +89,20 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
     };
 
     async function* reader() {
-      const response = await fetch(request, options);
+      const response = await fetch(request, options).catch((error) => {
+        throw new NetworkError(
+          "The network connection encountered a problem.",
+          {
+            cause: error,
+          }
+        );
+      });
+      const status = response.status;
+      if (!(status >= 200 && status < 400)) {
+        const body = await response.json();
+        throw new ServiceError(body, status);
+      }
+
       const body = response.body;
       if (!body) {
         throw new Error("Response body is undefined.");

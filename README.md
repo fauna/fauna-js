@@ -10,7 +10,7 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
 <details>
 <summary>Table of Contents</summary>
 
-- [A JavaScript driver for Fauna.](#a-javascript-driver-for-fauna)
+- [The Official Javascript Driver for Fauna.](#the-official-javascript-driver-for-fauna)
 - [Quick-Start](#quick-start)
 - [Supported Runtimes](#supported-runtimes)
 - [Installation](#installation)
@@ -23,12 +23,16 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
   - [Typescript Support](#typescript-support)
   - [Query Options](#query-options)
   - [Client Configuration](#client-configuration)
+    - [Retry](#retry)
+      - [Max Attempts](#max-attempts)
+      - [Max Backoff](#max-backoff)
     - [Timeouts](#timeouts)
       - [Query Timeout](#query-timeout)
       - [Client Timeout](#client-timeout)
       - [HTTP/2 Session Idle Timeout](#http2-session-idle-timeout)
     - [Using environment variables](#using-environment-variables)
   - [Query Statistics](#query-statistics)
+  - [Streaming](#streaming)
 - [Contributing](#contributing)
   - [Setting up this Repo](#setting-up-this-repo)
   - [Running tests](#running-tests)
@@ -401,6 +405,85 @@ try {
  * ```
  */
 ````
+
+## Streaming
+
+Obtain a stream token using a regular query with either the `toStream()` or `changesOn()` FQL methods on a Set.
+
+```javascript
+import { Client, fql } from "fauna"
+const client = new Client({ secret: FAUNA_SECRET })
+
+const response = await client.query(fql`
+  let set = MyCollection.all()
+
+  {
+    initialPage: set.pageSize(10),
+    streamToken: set.toStream()
+  }
+`);
+const { initialPage, streamToken } = response.data;
+
+const stream = client.stream(streamToken)
+```
+
+The driver will take care of the initial request to convert to a stream if you provide a Query
+
+```javascript
+import { Client, fql } from "fauna"
+const client = new Client({ secret: FAUNA_SECRET })
+
+const stream = await client.stream(fql`MyCollection.all().changesOn(.field1, .field2)`)
+```
+
+There are two Two ways to initiate the stream:
+1. Async Iterator
+2. Callbacks
+
+_Async Iterator example_
+```javascript
+try {
+  for await (const event of stream) {
+    switch (event.type) {
+      case "update":
+      case "add":
+      case "remove":
+        console.log("Stream event:", event);
+        // ...
+        break;
+    }
+  }
+} catch (error) {
+  // An error will be handled here if Fauna returns a terminal, "error" event, or
+  // if Fauna returns a non-200 response when trying to connect, or
+  // if the max number of retries on network errors is reached.
+
+  // ... handle fatal error
+}
+```
+
+_Callbacks example_
+```javascript
+stream.start(
+  function onEvent(event) {
+    switch (event.type) {
+      case "update":
+      case "add":
+      case "remove":
+        console.log("Stream event:", event);
+        // ...
+        break;
+    }
+  },
+  function onFatalError(error) {
+    // An error will be handled here if Fauna returns a terminal, "error" event, or
+    // if Fauna returns a non-200 response when trying to connect, or
+    // if the max number of retries on network errors is reached.
+
+    // ... handle fatal error
+  }
+);
+```
 
 # Contributing
 

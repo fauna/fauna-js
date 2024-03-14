@@ -719,6 +719,10 @@ export class StreamClient {
     this.closed = true;
   }
 
+  get last_ts(): number | undefined {
+    return this.#last_ts;
+  }
+
   async *#startStream(start_ts?: number): AsyncGenerator<StreamEventData> {
     // Safety: This method must only be called after a stream token has been acquired
     const streamToken = this.#streamToken as StreamToken;
@@ -748,9 +752,9 @@ export class StreamClient {
         throw new ServiceError(deserializedEvent, 400);
       }
 
-      this.#last_ts = deserializedEvent.ts;
+      this.#last_ts = deserializedEvent.txn_ts;
 
-      if (deserializedEvent.type !== "start") {
+      if (deserializedEvent.type !== "status") {
         yield deserializedEvent;
       }
     }

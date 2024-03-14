@@ -82,6 +82,9 @@ export type HTTPStreamRequest = {
   method: "POST";
 };
 
+/**
+ * A common interface for a StreamClient to operate a stream from any HTTPStreamClient
+ */
 export interface StreamAdapter {
   read: AsyncGenerator<string>;
   close: () => void;

@@ -277,6 +277,57 @@ export class Client {
   /**
    * Initialize a streaming request to Fauna
    * @param query - A string-encoded streaming token, or a {@link Query}
+   * @returns A {@link StreamClient} that which can be used to listen to a stream
+   * of events
+   *
+   * @example
+   * ```javascript
+   *  const stream = client.stream(fql`MyCollection.all().toStream()`)
+   *
+   *  try {
+   *    for await (const event of stream) {
+   *      switch (event.type) {
+   *        case "update":
+   *        case "add":
+   *        case "remove":
+   *          console.log("Stream update:", event);
+   *          // ...
+   *          break;
+   *      }
+   *    }
+   *  } catch (error) {
+   *    // An error will be handled here if Fauna returns a terminal, "error" event, or
+   *    // if Fauna returns a non-200 response when trying to connect, or
+   *    // if the max number of retries on network errors is reached.
+   *
+   *    // ... handle fatal error
+   *  };
+   * ```
+   *
+   * @example
+   * ```javascript
+   *  const stream = client.stream(fql`MyCollection.all().toStream()`)
+   *
+   *  stream.start(
+   *    function onEvent(event) {
+   *      switch (event.type) {
+   *        case "update":
+   *        case "add":
+   *        case "remove":
+   *          console.log("Stream update:", event);
+   *          // ...
+   *          break;
+   *      }
+   *    },
+   *    function onError(error) {
+   *      // An error will be handled here if Fauna returns a terminal, "error" event, or
+   *      // if Fauna returns a non-200 response when trying to connect, or
+   *      // if the max number of retries on network errors is reached.
+   *
+   *      // ... handle fatal error
+   *    }
+   *  );
+   * ```
    */
   // TODO: implement options
   stream(query: Query | StreamToken): StreamClient {
@@ -620,17 +671,39 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   }
 }
 
+/**
+ * A class to listen to Fauna streams.
+ */
 export class StreamClient {
+  /** Whether or not this stream has been closed */
   closed = false;
-  #query: () => Promise<StreamToken>;
+  /** The stream client options */
   #clientConfiguration: Record<string, any>;
-  #httpStreamClient: HTTPStreamClient;
+  /** A tracker for the number of connection attempts */
   #connectionAttempts = 0;
-  #streamAdapter?: StreamAdapter;
-  #streamToken?: StreamToken;
+  /** The underlying {@link HTTPStreamClient} that will execute the actual HTTP calls */
+  #httpStreamClient: HTTPStreamClient;
+  /** A lambda that returns a promise for a {@link StreamToken} */
+  #query: () => Promise<StreamToken>;
+  /** The last `txn_ts` value received from events */
   #last_ts?: number;
+  /** A common interface to operate a stream from any HTTPStreamClient */
+  #streamAdapter?: StreamAdapter;
+  /** A saved copy of the StreamToken once received */
+  #streamToken?: StreamToken;
 
-  // TODO: make clientConfiguration and httpStreamClient optional
+  /**
+   *
+   * @param query - A lambda that returns a promise for a {@link StreamToken}
+   * @param clientConfiguration - The {@link ClientConfiguration} to apply
+   * @param httpStreamClient - The underlying {@link HTTPStreamClient} that will
+   * execute the actual HTTP calls
+   * @example
+   * ```typescript
+   *  const streamClient = client.stream(streamToken);
+   * ```
+   */
+  // TODO: implement stream-specific options
   constructor(
     query: () => Promise<StreamToken>,
     clientConfiguration: StreamClientConfiguration,
@@ -641,18 +714,25 @@ export class StreamClient {
     this.#httpStreamClient = httpStreamClient;
   }
 
+  /**
+   * A synchronous method to start listening to the stream and handle events
+   * using callbacks.
+   * @param onEvent - A callback function to handle each event
+   * @param onError - An Optional callback function to handle errors. If none is
+   * provided, error will not be handled, and the stream will simply end.
+   */
   start(
     onEvent: (event: StreamEventData) => void,
-    onFatalError: (error: Error) => void
-  ): StreamClient {
+    onError: (error: Error) => void
+  ) {
     if (typeof onEvent !== "function") {
       throw new TypeError(
         `Expected a function as the 'onEvent' argument, but received ${typeof onEvent}. Please provide a valid function.`
       );
     }
-    if (onFatalError && typeof onFatalError !== "function") {
+    if (onError && typeof onError !== "function") {
       throw new TypeError(
-        `Expected a function as the 'onFatalError' argument, but received ${typeof onFatalError}. Please provide a valid function.`
+        `Expected a function as the 'onError' argument, but received ${typeof onError}. Please provide a valid function.`
       );
     }
     const run = async () => {
@@ -661,13 +741,12 @@ export class StreamClient {
           onEvent(event);
         }
       } catch (error) {
-        if (onFatalError) {
-          onFatalError(error as Error);
+        if (onError) {
+          onError(error as Error);
         }
       }
     };
     run();
-    return this;
   }
 
   async *[Symbol.asyncIterator](): AsyncGenerator<StreamEventData> {

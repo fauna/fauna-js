@@ -2,9 +2,7 @@ import type {
   ConstraintFailure,
   QueryFailure,
   QueryInfo,
-  QueryStats,
   QueryValue,
-  StreamEventError,
 } from "./wire-protocol";
 
 /**

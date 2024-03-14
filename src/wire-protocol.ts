@@ -325,15 +325,15 @@ export type StreamRequest = {
   start_ts?: number;
 };
 
-export type StreamEventType = "start" | "add" | "remove" | "update" | "error";
+export type StreamEventType = "status" | "add" | "remove" | "update" | "error";
 export type StreamEventStart = {
-  type: "start";
-  ts: number;
+  type: "status";
+  txn_ts: number;
+  stats: QueryStats;
 };
 export type StreamEventData = {
   type: "add" | "remove" | "update";
-  ts: number;
-  // TODO: Different type for StreamStats?
+  txn_ts: number;
   stats: QueryStats;
   data: QueryValue;
 };

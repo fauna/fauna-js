@@ -332,7 +332,7 @@ export class Client {
    */
   // TODO: implement options
   stream(
-    query: Query | StreamToken,
+    tokenOrQuery: StreamToken | Query,
     options?: Partial<StreamClientConfiguration>
   ): StreamClient {
     if (this.#isClosed) {
@@ -350,22 +350,12 @@ export class Client {
         ...options,
       };
 
-      const getStreamToken: () => Promise<StreamToken> =
-        query instanceof Query
-          ? () =>
-              this.query(query).then((res) => {
-                const maybeStreamToken = res.data;
-                if (!(maybeStreamToken instanceof StreamToken)) {
-                  throw new ClientError(
-                    `Error requesting a stream token. Expected a StreamToken as the query result, but received ${typeof maybeStreamToken}. Your query must return the result of '<Set>.toStream' or '<Set>.changesOn')\n` +
-                      `Query result: ${JSON.stringify(maybeStreamToken, null)}`
-                  );
-                }
-                return maybeStreamToken;
-              })
-          : () => Promise.resolve(query as StreamToken);
+      const tokenOrGetToken =
+        tokenOrQuery instanceof Query
+          ? () => this.query<StreamToken>(tokenOrQuery).then((res) => res.data)
+          : tokenOrQuery;
 
-      return new StreamClient(getStreamToken, streamClientConfig);
+      return new StreamClient(tokenOrGetToken, streamClientConfig);
     } else {
       throw new ClientError("Streaming is not supported by this client.");
     }
@@ -709,10 +699,15 @@ export class StreamClient {
    */
   // TODO: implement stream-specific options
   constructor(
-    query: () => Promise<StreamToken>,
+    token: StreamToken | (() => Promise<StreamToken>),
     clientConfiguration: StreamClientConfiguration
   ) {
-    this.#query = query;
+    if (token instanceof StreamToken) {
+      this.#query = () => Promise.resolve(token);
+    } else {
+      this.#query = token;
+    }
+
     this.#clientConfiguration = clientConfiguration;
   }
 
@@ -759,7 +754,15 @@ export class StreamClient {
     }
 
     if (!this.#streamToken) {
-      this.#streamToken = await this.#query();
+      this.#streamToken = await this.#query().then((maybeStreamToken) => {
+        if (!(maybeStreamToken instanceof StreamToken)) {
+          throw new ClientError(
+            `Error requesting a stream token. Expected a StreamToken as the query result, but received ${typeof maybeStreamToken}. Your query must return the result of '<Set>.toStream' or '<Set>.changesOn')\n` +
+              `Query result: ${JSON.stringify(maybeStreamToken, null)}`
+          );
+        }
+        return maybeStreamToken;
+      });
     }
 
     this.#connectionAttempts = 1;

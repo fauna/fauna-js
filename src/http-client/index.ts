@@ -1,5 +1,10 @@
 import { FetchClient } from "./fetch-client";
-import { HTTPClient, HTTPClientOptions, HTTPResponse } from "./http-client";
+import {
+  HTTPClient,
+  HTTPClientOptions,
+  HTTPResponse,
+  HTTPStreamClient,
+} from "./http-client";
 import { NodeHTTP2Client } from "./node-http2-client";
 
 export * from "./fetch-client";
@@ -13,6 +18,12 @@ export const getDefaultHTTPClient = (options: HTTPClientOptions): HTTPClient =>
 
 export const isHTTPResponse = (res: any): res is HTTPResponse =>
   res instanceof Object && "body" in res && "headers" in res && "status" in res;
+
+export const isStreamClient = (
+  client: Partial<HTTPStreamClient>
+): client is HTTPStreamClient => {
+  return "stream" in client && typeof client.stream === "function";
+};
 
 export const nodeHttp2IsSupported = () => {
   if (

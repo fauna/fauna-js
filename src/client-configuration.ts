@@ -171,6 +171,24 @@ export type StreamClientConfiguration = {
    * @see {@link ClientConfiguration.long_type}
    */
   long_type: "number" | "bigint";
+
+  /**
+   * Max attempts for retryable exceptions.
+   */
+  max_attempts: number;
+
+  /**
+   * Max backoff between retries.
+   */
+  max_backoff: number;
+
+  /**
+   * Indicates if stream should include "status" events, periodic events that
+   * update the client with the latest valid timestamp (in the event of a
+   * dropped connection) as well as metrics about about the cost of maintaining
+   * the stream other than the cost of the received events.
+   */
+  status_events?: boolean;
 };
 
 /**

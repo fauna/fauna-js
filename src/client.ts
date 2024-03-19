@@ -26,7 +26,7 @@ import {
   HTTPStreamClient,
   StreamAdapter,
   getDefaultHTTPClient,
-  implementsStreamClient,
+  isStreamClient,
   isHTTPResponse,
   type HTTPClient,
 } from "./http-client";
@@ -40,6 +40,7 @@ import {
   QueryInterpolation,
   StreamEvent,
   StreamEventData,
+  StreamEventStatus,
   type QueryFailure,
   type QueryOptions,
   type QuerySuccess,
@@ -330,7 +331,10 @@ export class Client {
    * ```
    */
   // TODO: implement options
-  stream(query: Query | StreamToken): StreamClient {
+  stream(
+    query: Query | StreamToken,
+    options?: Partial<StreamClientConfiguration>
+  ): StreamClient {
     if (this.#isClosed) {
       throw new ClientClosedError(
         "Your client is closed. No further requests can be issued."
@@ -339,7 +343,12 @@ export class Client {
 
     const streamClient = this.#httpClient;
 
-    if (implementsStreamClient(streamClient)) {
+    if (isStreamClient(streamClient)) {
+      const streamClientConfig: StreamClientConfiguration = {
+        ...this.#clientConfiguration,
+        ...options,
+      };
+
       const getStreamToken: () => Promise<StreamToken> =
         query instanceof Query
           ? () =>
@@ -355,11 +364,7 @@ export class Client {
               })
           : () => Promise.resolve(query as StreamToken);
 
-      return new StreamClient(
-        getStreamToken,
-        this.#clientConfiguration,
-        streamClient
-      );
+      return new StreamClient(getStreamToken, streamClientConfig, streamClient);
     } else {
       throw new ClientError("Streaming is not supported by this client.");
     }
@@ -678,7 +683,7 @@ export class StreamClient {
   /** Whether or not this stream has been closed */
   closed = false;
   /** The stream client options */
-  #clientConfiguration: Record<string, any>;
+  #clientConfiguration: StreamClientConfiguration;
   /** A tracker for the number of connection attempts */
   #connectionAttempts = 0;
   /** The underlying {@link HTTPStreamClient} that will execute the actual HTTP calls */
@@ -722,7 +727,7 @@ export class StreamClient {
    * provided, error will not be handled, and the stream will simply end.
    */
   start(
-    onEvent: (event: StreamEventData) => void,
+    onEvent: (event: StreamEventData | StreamEventStatus) => void,
     onError: (error: Error) => void
   ) {
     if (typeof onEvent !== "function") {
@@ -749,7 +754,9 @@ export class StreamClient {
     run();
   }
 
-  async *[Symbol.asyncIterator](): AsyncGenerator<StreamEventData> {
+  async *[Symbol.asyncIterator](): AsyncGenerator<
+    StreamEventData | StreamEventStatus
+  > {
     if (this.closed) {
       throw new ClientError("The stream has been closed and cannot be reused.");
     }
@@ -758,18 +765,14 @@ export class StreamClient {
       this.#streamToken = await this.#query();
     }
 
-    // TODO: make these constants configurable
-    const STREAM_RECONNECT_MAX_ATTEMPTS = 60;
-    const STREAM_RECONNECT_MAX_BACKOFF = 10;
-
+    this.#connectionAttempts = 1;
     while (!this.closed) {
       const backoffMs =
         Math.min(
           Math.random() * 2 ** this.#connectionAttempts,
-          STREAM_RECONNECT_MAX_BACKOFF
+          this.#clientConfiguration.max_backoff
         ) * 1_000;
 
-      this.#connectionAttempts = 1;
       try {
         for await (const event of this.#startStream(this.#last_ts)) {
           yield event;
@@ -777,7 +780,7 @@ export class StreamClient {
       } catch (error: any) {
         if (
           error instanceof FaunaError ||
-          this.#connectionAttempts >= STREAM_RECONNECT_MAX_ATTEMPTS
+          this.#connectionAttempts >= this.#clientConfiguration.max_attempts
         ) {
           // A terminal error from Fauna
           this.close();
@@ -802,7 +805,9 @@ export class StreamClient {
     return this.#last_ts;
   }
 
-  async *#startStream(start_ts?: number): AsyncGenerator<StreamEventData> {
+  async *#startStream(
+    start_ts?: number
+  ): AsyncGenerator<StreamEventData | StreamEventStatus> {
     // Safety: This method must only be called after a stream token has been acquired
     const streamToken = this.#streamToken as StreamToken;
 
@@ -833,9 +838,14 @@ export class StreamClient {
 
       this.#last_ts = deserializedEvent.txn_ts;
 
-      if (deserializedEvent.type !== "status") {
-        yield deserializedEvent;
+      if (
+        !this.#clientConfiguration.status_events &&
+        deserializedEvent.type === "status"
+      ) {
+        continue;
       }
+
+      yield deserializedEvent;
     }
   }
 }

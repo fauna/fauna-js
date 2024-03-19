@@ -104,9 +104,3 @@ export interface HTTPStreamClient {
    */
   stream(req: HTTPStreamRequest): StreamAdapter;
 }
-
-export const implementsStreamClient = (
-  client: Partial<HTTPStreamClient>
-): client is HTTPStreamClient => {
-  return "stream" in client && typeof client.stream === "function";
-};

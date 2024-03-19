@@ -326,7 +326,7 @@ export type StreamRequest = {
 };
 
 export type StreamEventType = "status" | "add" | "remove" | "update" | "error";
-export type StreamEventStart = {
+export type StreamEventStatus = {
   type: "status";
   txn_ts: number;
   stats: QueryStats;
@@ -338,4 +338,7 @@ export type StreamEventData = {
   data: QueryValue;
 };
 export type StreamEventError = { type: "error" } & QueryFailure;
-export type StreamEvent = StreamEventStart | StreamEventData | StreamEventError;
+export type StreamEvent =
+  | StreamEventStatus
+  | StreamEventData
+  | StreamEventError;

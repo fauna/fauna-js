@@ -1,3 +1,4 @@
+import { HTTPStreamClient } from "./http-client";
 import type { ValueFormat } from "./wire-protocol";
 
 /**
@@ -161,10 +162,9 @@ export interface Endpoints {
  */
 export type StreamClientConfiguration = {
   /**
-   * A secret for your Fauna DB, used to authorize your queries.
-   * @see https://docs.fauna.com/fauna/current/security/keys
+   * The underlying {@link HTTPStreamClient} that will execute the actual HTTP calls
    */
-  secret: string;
+  httpStreamClient: HTTPStreamClient;
 
   /**
    * Controls what Javascript type to deserialize {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#long | Fauna longs} to.
@@ -181,6 +181,12 @@ export type StreamClientConfiguration = {
    * Max backoff between retries.
    */
   max_backoff: number;
+
+  /**
+   * A secret for your Fauna DB, used to authorize your queries.
+   * @see https://docs.fauna.com/fauna/current/security/keys
+   */
+  secret: string;
 
   /**
    * Indicates if stream should include "status" events, periodic events that

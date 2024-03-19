@@ -346,6 +346,7 @@ export class Client {
     if (isStreamClient(streamClient)) {
       const streamClientConfig: StreamClientConfiguration = {
         ...this.#clientConfiguration,
+        httpStreamClient: streamClient,
         ...options,
       };
 
@@ -364,7 +365,7 @@ export class Client {
               })
           : () => Promise.resolve(query as StreamToken);
 
-      return new StreamClient(getStreamToken, streamClientConfig, streamClient);
+      return new StreamClient(getStreamToken, streamClientConfig);
     } else {
       throw new ClientError("Streaming is not supported by this client.");
     }
@@ -686,8 +687,6 @@ export class StreamClient {
   #clientConfiguration: StreamClientConfiguration;
   /** A tracker for the number of connection attempts */
   #connectionAttempts = 0;
-  /** The underlying {@link HTTPStreamClient} that will execute the actual HTTP calls */
-  #httpStreamClient: HTTPStreamClient;
   /** A lambda that returns a promise for a {@link StreamToken} */
   #query: () => Promise<StreamToken>;
   /** The last `txn_ts` value received from events */
@@ -711,12 +710,10 @@ export class StreamClient {
   // TODO: implement stream-specific options
   constructor(
     query: () => Promise<StreamToken>,
-    clientConfiguration: StreamClientConfiguration,
-    httpStreamClient: HTTPStreamClient
+    clientConfiguration: StreamClientConfiguration
   ) {
     this.#query = query;
     this.#clientConfiguration = clientConfiguration;
-    this.#httpStreamClient = httpStreamClient;
   }
 
   /**
@@ -815,7 +812,7 @@ export class StreamClient {
       Authorization: `Bearer ${this.#clientConfiguration.secret}`,
     };
 
-    const streamAdapter = this.#httpStreamClient.stream({
+    const streamAdapter = this.#clientConfiguration.httpStreamClient.stream({
       data: { token: streamToken.token, start_ts },
       headers,
       method: "POST",

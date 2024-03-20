@@ -228,11 +228,11 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
     headers: requestHeaders,
     method,
   }: HTTPStreamRequest): StreamAdapter {
-    let resolveChunk: (chunk: string) => void;
+    let resolveChunk: (chunk: string[]) => void;
     let rejectChunk: (reason: any) => void;
 
     const setChunkPromise = () =>
-      new Promise<string>((res, rej) => {
+      new Promise<string[]>((res, rej) => {
         resolveChunk = res;
         rejectChunk = rej;
       });
@@ -271,10 +271,8 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
           const chunkLines = (partOfLine + chunk).split("\n");
 
           // Yield all complete lines
-          for (let i = 0; i < chunkLines.length - 1; i++) {
-            resolveChunk(chunkLines[i].trim());
-            chunkPromise = setChunkPromise();
-          }
+          resolveChunk(chunkLines.map((s) => s.trim()).slice(0, -1));
+          chunkPromise = setChunkPromise();
 
           // Store the partial line
           partOfLine = chunkLines[chunkLines.length - 1];
@@ -282,7 +280,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
 
         // Once the response is finished, resolve the promise
         req.on("end", () => {
-          resolveChunk(partOfLine);
+          resolveChunk([partOfLine]);
         });
       }
     };
@@ -313,7 +311,10 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
       req.end();
 
       while (true) {
-        yield await chunkPromise;
+        const chunks = await chunkPromise;
+        for (const chunk of chunks) {
+          yield chunk;
+        }
       }
     }
 

@@ -378,4 +378,45 @@ describe("StreamClient", () => {
       stream2?.close();
     }
   });
+
+  it("yields all events when Fauna sends them as a single chunk", async () => {
+    // This test has a chance of creating a false positive. Since we are not in
+    // control of the actual stream, we will use a query that has been shown to
+    // behave how we expect MOST of the time.
+    // This test will not create a false negative.
+    expect.assertions(6);
+
+    let stream: StreamClient<DocumentT<StreamTest>> | null = null;
+    try {
+      // clear the collection
+      await client.query(fql`StreamTest.all().forEach(.delete())`);
+
+      const response = await client.query<StreamToken>(
+        fql`StreamTest.all().toStream()`
+      );
+      const token = response.data;
+
+      stream = new StreamClient(token, defaultStreamConfig);
+
+      // create some events that will be played back
+      await client.query(fql`StreamTest.create({ value: 0 })`);
+      await client.query(fql`StreamTest.create({ value: 1 })`);
+      await client.query(fql`StreamTest.create({ value: 2 })`);
+      // This has a very high probability of creating multiple events sent as a single chunk
+      await client.query(fql`StreamTest.all().forEach(.delete())`);
+
+      let count = 0;
+      for await (const event of stream) {
+        if (event.type != "status") {
+          expect(event.data).toBeDefined();
+        }
+        count++;
+        if (count === 6) {
+          break;
+        }
+      }
+    } finally {
+      stream?.close();
+    }
+  });
 });

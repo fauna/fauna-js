@@ -12,7 +12,7 @@ jobs:
         ports:
           - 8443:8443
         volumes:
-          - ${{ github.workspace }}/docker/feature-flags.json:/etc/feature-flag-periodic.d/feature-flags.js
+          - ./docker/feature-flags.json:/etc/feature-flag-periodic.d/feature-flags.js
       alt_core:
         image: fauna/faunadb:latest
         ports:

@@ -331,14 +331,14 @@ export type StreamEventStatus = {
   txn_ts: number;
   stats: QueryStats;
 };
-export type StreamEventData = {
+export type StreamEventData<T extends QueryValue> = {
   type: "add" | "remove" | "update";
   txn_ts: number;
   stats: QueryStats;
-  data: QueryValue;
+  data: T;
 };
 export type StreamEventError = { type: "error" } & QueryFailure;
-export type StreamEvent =
+export type StreamEvent<T extends QueryValue> =
   | StreamEventStatus
-  | StreamEventData
+  | StreamEventData<T>
   | StreamEventError;

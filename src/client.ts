@@ -331,10 +331,10 @@ export class Client {
    * ```
    */
   // TODO: implement options
-  stream(
+  stream<T extends QueryValue>(
     tokenOrQuery: StreamToken | Query,
     options?: Partial<StreamClientConfiguration>
-  ): StreamClient {
+  ): StreamClient<T> {
     if (this.#isClosed) {
       throw new ClientClosedError(
         "Your client is closed. No further requests can be issued."
@@ -642,6 +642,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       "query_timeout_ms",
       "fetch_keepalive",
       "http2_max_streams",
+      "max_backoff",
+      "max_attempts",
     ];
     required_options.forEach((option) => {
       if (config[option] === undefined) {
@@ -664,13 +666,21 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     if (config.query_timeout_ms <= 0) {
       throw new RangeError(`'query_timeout_ms' must be greater than zero.`);
     }
+
+    if (config.max_backoff <= 0) {
+      throw new RangeError(`'max_backoff' must be greater than zero.`);
+    }
+
+    if (config.max_attempts <= 0) {
+      throw new RangeError(`'max_attempts' must be greater than zero.`);
+    }
   }
 }
 
 /**
  * A class to listen to Fauna streams.
  */
-export class StreamClient {
+export class StreamClient<T extends QueryValue = any> {
   /** Whether or not this stream has been closed */
   closed = false;
   /** The stream client options */
@@ -709,6 +719,8 @@ export class StreamClient {
     }
 
     this.#clientConfiguration = clientConfiguration;
+
+    this.#validateConfiguration();
   }
 
   /**
@@ -719,8 +731,8 @@ export class StreamClient {
    * provided, error will not be handled, and the stream will simply end.
    */
   start(
-    onEvent: (event: StreamEventData | StreamEventStatus) => void,
-    onError: (error: Error) => void
+    onEvent: (event: StreamEventData<T> | StreamEventStatus) => void,
+    onError?: (error: Error) => void
   ) {
     if (typeof onEvent !== "function") {
       throw new TypeError(
@@ -747,7 +759,7 @@ export class StreamClient {
   }
 
   async *[Symbol.asyncIterator](): AsyncGenerator<
-    StreamEventData | StreamEventStatus
+    StreamEventData<T> | StreamEventStatus
   > {
     if (this.closed) {
       throw new ClientError("The stream has been closed and cannot be reused.");
@@ -807,7 +819,7 @@ export class StreamClient {
 
   async *#startStream(
     start_ts?: number
-  ): AsyncGenerator<StreamEventData | StreamEventStatus> {
+  ): AsyncGenerator<StreamEventData<T> | StreamEventStatus> {
     // Safety: This method must only be called after a stream token has been acquired
     const streamToken = this.#streamToken as StreamToken;
 
@@ -825,7 +837,7 @@ export class StreamClient {
 
     for await (const event of streamAdapter.read) {
       // stream events are always tagged
-      const deserializedEvent: StreamEvent = TaggedTypeFormat.decode(event, {
+      const deserializedEvent: StreamEvent<T> = TaggedTypeFormat.decode(event, {
         long_type: this.#clientConfiguration.long_type,
       });
 
@@ -838,6 +850,11 @@ export class StreamClient {
 
       this.#last_ts = deserializedEvent.txn_ts;
 
+      // TODO: remove this once all environments have updated the events to use "status" instead of "start"
+      if ((deserializedEvent.type as any) === "start") {
+        deserializedEvent.type = "status";
+      }
+
       if (
         !this.#clientConfiguration.status_events &&
         deserializedEvent.type === "status"
@@ -846,6 +863,33 @@ export class StreamClient {
       }
 
       yield deserializedEvent;
+    }
+  }
+
+  #validateConfiguration() {
+    const config = this.#clientConfiguration;
+
+    const required_options: (keyof StreamClientConfiguration)[] = [
+      "long_type",
+      "httpStreamClient",
+      "max_backoff",
+      "max_attempts",
+      "secret",
+    ];
+    required_options.forEach((option) => {
+      if (config[option] === undefined) {
+        throw new TypeError(
+          `ClientConfiguration option '${option}' must be defined.`
+        );
+      }
+    });
+
+    if (config.max_backoff <= 0) {
+      throw new RangeError(`'max_backoff' must be greater than zero.`);
+    }
+
+    if (config.max_attempts <= 0) {
+      throw new RangeError(`'max_attempts' must be greater than zero.`);
     }
   }
 }

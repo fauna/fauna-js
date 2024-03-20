@@ -11,7 +11,9 @@ export * from "./fetch-client";
 export * from "./http-client";
 export * from "./node-http2-client";
 
-export const getDefaultHTTPClient = (options: HTTPClientOptions): HTTPClient =>
+export const getDefaultHTTPClient = (
+  options: HTTPClientOptions
+): HTTPClient & HTTPStreamClient =>
   nodeHttp2IsSupported()
     ? NodeHTTP2Client.getClient(options)
     : new FetchClient(options);

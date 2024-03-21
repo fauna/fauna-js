@@ -15,7 +15,12 @@ then
 
   echo "Publishing a new version..."
   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
-  npm publish
+  if [[ -z "$NPM_TAG" ]]; then
+    npm publish --tag $NPM_TAG
+  else
+    npm publish
+  fi
+
   rm .npmrc
 
   echo "fauna-js@$PACKAGE_VERSION published to npm <!subteam^S0562QFL21M>" > ../slack-message/publish

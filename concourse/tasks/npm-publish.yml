@@ -9,6 +9,7 @@ image_resource:
 
 params:
   NPM_TOKEN:
+  NPM_TAG:
 
 inputs:
   - name: repo.git

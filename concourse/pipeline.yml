@@ -19,6 +19,7 @@ resources:
     source:
       uri: git@github.com:fauna/fauna-js.git
       branch: main
+      tag_filter: v*
       private_key: ((github-ssh-key))
       
   - name: beta.git
@@ -36,7 +37,6 @@ resources:
     source:
       uri: git@github.com:fauna/testtools.git
       branch: main
-      tag_filter: v*
       private_key: ((github-ssh-key))
 
   - name: testtools-image
@@ -258,6 +258,7 @@ jobs:
         input_mapping: {repo.git: beta.git}
         params:
           NPM_TOKEN: ((npm_token))
+          NPM_TAG: beta
         on_success:
           put: notify
           params:

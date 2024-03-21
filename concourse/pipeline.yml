@@ -19,7 +19,6 @@ resources:
     source:
       uri: git@github.com:fauna/fauna-js.git
       branch: main
-      tag_filter: v*
       private_key: ((github-ssh-key))
       
   - name: beta.git

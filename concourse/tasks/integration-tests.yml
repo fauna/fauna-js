@@ -15,7 +15,7 @@ params:
   FAUNA_PORT:
 
 inputs:
-  - name: fauna-js-repository
+  - name: repo.git
 
 run:
   path: entrypoint.sh
@@ -24,9 +24,9 @@ run:
     - -ceu
     - |
       # start containers
-      docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna.yml run node-lts
-      docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna.yml run node-current
+      docker-compose -f repo.git/concourse/scripts/docker-compose-fauna.yml run node-lts
+      docker-compose -f repo.git/concourse/scripts/docker-compose-fauna.yml run node-current
       # stop and remove containers
-      docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna.yml down
+      docker-compose -f repo.git/concourse/scripts/docker-compose-fauna.yml down
       # remove volumes
       docker volume rm $(docker volume ls -q)

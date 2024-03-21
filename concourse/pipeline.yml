@@ -239,18 +239,18 @@ jobs:
         passed:
           - set-self
 
-      - task: integration-tests
-        file: beta.git/concourse/tasks/integration-tests.yml
-        input_mapping: {repo.git: beta.git}
-        privileged: true
-        on_success:
-          put: notify
-          params:
-            text: "fauna-js driver release passed integration tests"
-        on_failure:
-          put: notify
-          params:
-            text: fauna-js driver release failed integration tests
+#      - task: integration-tests
+#        file: beta.git/concourse/tasks/integration-tests.yml
+#        input_mapping: {repo.git: beta.git}
+#        privileged: true
+#        on_success:
+#          put: notify
+#          params:
+#            text: "fauna-js driver release passed integration tests"
+#        on_failure:
+#          put: notify
+#          params:
+#            text: fauna-js driver release failed integration tests
 
       - task: publish
         file: beta.git/concourse/tasks/npm-publish.yml

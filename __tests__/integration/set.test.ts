@@ -36,10 +36,10 @@ describe("SetIterator", () => {
   beforeAll(async () => {
     await client.query(fql`
       if (Collection.byName("IterTestSmall") != null) {
-        IterTestSmall.definition.delete()
+        Collection.byName("IterTestSmall")!.delete()
       }
       if (Collection.byName("IterTestBig") != null) {
-        IterTestBig.definition.delete()
+        Collection.byName("IterTestBig")!.delete()
       }
     `);
     await client.query(fql`

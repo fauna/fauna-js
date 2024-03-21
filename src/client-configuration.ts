@@ -1,3 +1,4 @@
+import { HTTPStreamClient } from "./http-client";
 import type { ValueFormat } from "./wire-protocol";
 
 /**
@@ -154,6 +155,47 @@ export interface Endpoints {
    */
   [key: string]: URL;
 }
+
+/**
+ * Configuration for a streaming client. This typically comes from the `Client`
+ * instance configuration.
+ */
+export type StreamClientConfiguration = {
+  /**
+   * The underlying {@link HTTPStreamClient} that will execute the actual HTTP calls
+   */
+  httpStreamClient: HTTPStreamClient;
+
+  /**
+   * Controls what Javascript type to deserialize {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#long | Fauna longs} to.
+   * @see {@link ClientConfiguration.long_type}
+   */
+  long_type: "number" | "bigint";
+
+  /**
+   * Max attempts for retryable exceptions.
+   */
+  max_attempts: number;
+
+  /**
+   * Max backoff between retries.
+   */
+  max_backoff: number;
+
+  /**
+   * A secret for your Fauna DB, used to authorize your queries.
+   * @see https://docs.fauna.com/fauna/current/security/keys
+   */
+  secret: string;
+
+  /**
+   * Indicates if stream should include "status" events, periodic events that
+   * update the client with the latest valid timestamp (in the event of a
+   * dropped connection) as well as metrics about about the cost of maintaining
+   * the stream other than the cost of the received events.
+   */
+  status_events?: boolean;
+};
 
 /**
  * A extensible set of endpoints for calling Fauna.

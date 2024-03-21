@@ -14,7 +14,7 @@ params:
   QUERY_LIMITS_COLL:
 
 inputs:
-  - name: fauna-js-repository
+  - name: repo.git
   - name: testtools-repo
 
 run:
@@ -26,7 +26,7 @@ run:
       # setup Fauna container
       docker-compose -f testtools-repo/fauna-driver-query-limits-tests/docker-compose.yml run setup
       # run tests
-      docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna-limits.yml run query-limits-tests
+      docker-compose -f repo.git/concourse/scripts/docker-compose-fauna-limits.yml run query-limits-tests
       # stop and remove containers
-      docker-compose -f fauna-js-repository/concourse/scripts/docker-compose-fauna-limits.yml down
+      docker-compose -f repo.git/concourse/scripts/docker-compose-fauna-limits.yml down
       docker-compose -f testtools-repo/fauna-driver-query-limits-tests/docker-compose.yml down

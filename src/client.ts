@@ -1,4 +1,8 @@
-import { ClientConfiguration, endpoints } from "./client-configuration";
+import {
+  ClientConfiguration,
+  StreamClientConfiguration,
+  endpoints,
+} from "./client-configuration";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -16,20 +20,27 @@ import {
   ThrottlingError,
   ContendedTransactionError,
   InvalidRequestError,
+  FaunaError,
 } from "./errors";
 import {
+  HTTPStreamClient,
+  StreamAdapter,
   getDefaultHTTPClient,
+  isStreamClient,
   isHTTPResponse,
   type HTTPClient,
 } from "./http-client";
 import { Query } from "./query-builder";
 import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
-import { EmbeddedSet, Page, SetIterator } from "./values";
+import { EmbeddedSet, Page, SetIterator, StreamToken } from "./values";
 import {
   isQueryFailure,
   isQuerySuccess,
   QueryInterpolation,
+  StreamEvent,
+  StreamEventData,
+  StreamEventStatus,
   type QueryFailure,
   type QueryOptions,
   type QuerySuccess,
@@ -80,7 +91,7 @@ export class Client {
   /** The {@link ClientConfiguration} */
   readonly #clientConfiguration: RequiredClientConfig;
   /** The underlying {@link HTTPClient} client. */
-  readonly #httpClient: HTTPClient;
+  readonly #httpClient: HTTPClient & Partial<HTTPStreamClient>;
   /** The last transaction timestamp this client has seen */
   #lastTxnTs?: number;
   /** true if this client is closed false otherwise */
@@ -264,6 +275,92 @@ export class Client {
     return this.#queryWithRetries(queryInterpolation, options);
   }
 
+  /**
+   * Initialize a streaming request to Fauna
+   * @param query - A string-encoded streaming token, or a {@link Query}
+   * @returns A {@link StreamClient} that which can be used to listen to a stream
+   * of events
+   *
+   * @example
+   * ```javascript
+   *  const stream = client.stream(fql`MyCollection.all().toStream()`)
+   *
+   *  try {
+   *    for await (const event of stream) {
+   *      switch (event.type) {
+   *        case "update":
+   *        case "add":
+   *        case "remove":
+   *          console.log("Stream update:", event);
+   *          // ...
+   *          break;
+   *      }
+   *    }
+   *  } catch (error) {
+   *    // An error will be handled here if Fauna returns a terminal, "error" event, or
+   *    // if Fauna returns a non-200 response when trying to connect, or
+   *    // if the max number of retries on network errors is reached.
+   *
+   *    // ... handle fatal error
+   *  };
+   * ```
+   *
+   * @example
+   * ```javascript
+   *  const stream = client.stream(fql`MyCollection.all().toStream()`)
+   *
+   *  stream.start(
+   *    function onEvent(event) {
+   *      switch (event.type) {
+   *        case "update":
+   *        case "add":
+   *        case "remove":
+   *          console.log("Stream update:", event);
+   *          // ...
+   *          break;
+   *      }
+   *    },
+   *    function onError(error) {
+   *      // An error will be handled here if Fauna returns a terminal, "error" event, or
+   *      // if Fauna returns a non-200 response when trying to connect, or
+   *      // if the max number of retries on network errors is reached.
+   *
+   *      // ... handle fatal error
+   *    }
+   *  );
+   * ```
+   */
+  // TODO: implement options
+  stream<T extends QueryValue>(
+    tokenOrQuery: StreamToken | Query,
+    options?: Partial<StreamClientConfiguration>
+  ): StreamClient<T> {
+    if (this.#isClosed) {
+      throw new ClientClosedError(
+        "Your client is closed. No further requests can be issued."
+      );
+    }
+
+    const streamClient = this.#httpClient;
+
+    if (isStreamClient(streamClient)) {
+      const streamClientConfig: StreamClientConfiguration = {
+        ...this.#clientConfiguration,
+        httpStreamClient: streamClient,
+        ...options,
+      };
+
+      const tokenOrGetToken =
+        tokenOrQuery instanceof Query
+          ? () => this.query<StreamToken>(tokenOrQuery).then((res) => res.data)
+          : tokenOrQuery;
+
+      return new StreamClient(tokenOrGetToken, streamClientConfig);
+    } else {
+      throw new ClientError("Streaming is not supported by this client.");
+    }
+  }
+
   async #queryWithRetries<T extends QueryValue>(
     queryInterpolation: string | QueryInterpolation,
     options?: QueryOptions,
@@ -277,16 +374,17 @@ export class Client {
     const backoffMs =
       Math.min(Math.random() * 2 ** attempt, maxBackoff) * 1_000;
 
-    const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
     attempt += 1;
-    return this.#query<T>(queryInterpolation, options, attempt).catch((e) => {
-      if (e instanceof ThrottlingError && attempt < maxAttempts) {
-        return wait(backoffMs).then(() =>
-          this.#queryWithRetries<T>(queryInterpolation, options, attempt)
-        );
+
+    try {
+      return await this.#query<T>(queryInterpolation, options, attempt);
+    } catch (error) {
+      if (error instanceof ThrottlingError && attempt < maxAttempts) {
+        await wait(backoffMs);
+        return this.#queryWithRetries<T>(queryInterpolation, options, attempt);
       }
-      throw e;
-    });
+      throw error;
+    }
   }
 
   #getError(e: any): ClientError | NetworkError | ProtocolError | ServiceError {
@@ -544,6 +642,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       "query_timeout_ms",
       "fetch_keepalive",
       "http2_max_streams",
+      "max_backoff",
+      "max_attempts",
     ];
     required_options.forEach((option) => {
       if (config[option] === undefined) {
@@ -566,6 +666,231 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     if (config.query_timeout_ms <= 0) {
       throw new RangeError(`'query_timeout_ms' must be greater than zero.`);
     }
+
+    if (config.max_backoff <= 0) {
+      throw new RangeError(`'max_backoff' must be greater than zero.`);
+    }
+
+    if (config.max_attempts <= 0) {
+      throw new RangeError(`'max_attempts' must be greater than zero.`);
+    }
+  }
+}
+
+/**
+ * A class to listen to Fauna streams.
+ */
+export class StreamClient<T extends QueryValue = any> {
+  /** Whether or not this stream has been closed */
+  closed = false;
+  /** The stream client options */
+  #clientConfiguration: StreamClientConfiguration;
+  /** A tracker for the number of connection attempts */
+  #connectionAttempts = 0;
+  /** A lambda that returns a promise for a {@link StreamToken} */
+  #query: () => Promise<StreamToken>;
+  /** The last `txn_ts` value received from events */
+  #last_ts?: number;
+  /** A common interface to operate a stream from any HTTPStreamClient */
+  #streamAdapter?: StreamAdapter;
+  /** A saved copy of the StreamToken once received */
+  #streamToken?: StreamToken;
+
+  /**
+   *
+   * @param query - A lambda that returns a promise for a {@link StreamToken}
+   * @param clientConfiguration - The {@link ClientConfiguration} to apply
+   * @param httpStreamClient - The underlying {@link HTTPStreamClient} that will
+   * execute the actual HTTP calls
+   * @example
+   * ```typescript
+   *  const streamClient = client.stream(streamToken);
+   * ```
+   */
+  // TODO: implement stream-specific options
+  constructor(
+    token: StreamToken | (() => Promise<StreamToken>),
+    clientConfiguration: StreamClientConfiguration
+  ) {
+    if (token instanceof StreamToken) {
+      this.#query = () => Promise.resolve(token);
+    } else {
+      this.#query = token;
+    }
+
+    this.#clientConfiguration = clientConfiguration;
+
+    this.#validateConfiguration();
+  }
+
+  /**
+   * A synchronous method to start listening to the stream and handle events
+   * using callbacks.
+   * @param onEvent - A callback function to handle each event
+   * @param onError - An Optional callback function to handle errors. If none is
+   * provided, error will not be handled, and the stream will simply end.
+   */
+  start(
+    onEvent: (event: StreamEventData<T> | StreamEventStatus) => void,
+    onError?: (error: Error) => void
+  ) {
+    if (typeof onEvent !== "function") {
+      throw new TypeError(
+        `Expected a function as the 'onEvent' argument, but received ${typeof onEvent}. Please provide a valid function.`
+      );
+    }
+    if (onError && typeof onError !== "function") {
+      throw new TypeError(
+        `Expected a function as the 'onError' argument, but received ${typeof onError}. Please provide a valid function.`
+      );
+    }
+    const run = async () => {
+      try {
+        for await (const event of this) {
+          onEvent(event);
+        }
+      } catch (error) {
+        if (onError) {
+          onError(error as Error);
+        }
+      }
+    };
+    run();
+  }
+
+  async *[Symbol.asyncIterator](): AsyncGenerator<
+    StreamEventData<T> | StreamEventStatus
+  > {
+    if (this.closed) {
+      throw new ClientError("The stream has been closed and cannot be reused.");
+    }
+
+    if (!this.#streamToken) {
+      this.#streamToken = await this.#query().then((maybeStreamToken) => {
+        if (!(maybeStreamToken instanceof StreamToken)) {
+          throw new ClientError(
+            `Error requesting a stream token. Expected a StreamToken as the query result, but received ${typeof maybeStreamToken}. Your query must return the result of '<Set>.toStream' or '<Set>.changesOn')\n` +
+              `Query result: ${JSON.stringify(maybeStreamToken, null)}`
+          );
+        }
+        return maybeStreamToken;
+      });
+    }
+
+    this.#connectionAttempts = 1;
+    while (!this.closed) {
+      const backoffMs =
+        Math.min(
+          Math.random() * 2 ** this.#connectionAttempts,
+          this.#clientConfiguration.max_backoff
+        ) * 1_000;
+
+      try {
+        for await (const event of this.#startStream(this.#last_ts)) {
+          yield event;
+        }
+      } catch (error: any) {
+        if (
+          error instanceof FaunaError ||
+          this.#connectionAttempts >= this.#clientConfiguration.max_attempts
+        ) {
+          // A terminal error from Fauna
+          this.close();
+          throw error;
+        }
+
+        this.#connectionAttempts += 1;
+        await wait(backoffMs);
+      }
+    }
+  }
+
+  close() {
+    if (this.#streamAdapter) {
+      this.#streamAdapter.close();
+      this.#streamAdapter = undefined;
+    }
+    this.closed = true;
+  }
+
+  get last_ts(): number | undefined {
+    return this.#last_ts;
+  }
+
+  async *#startStream(
+    start_ts?: number
+  ): AsyncGenerator<StreamEventData<T> | StreamEventStatus> {
+    // Safety: This method must only be called after a stream token has been acquired
+    const streamToken = this.#streamToken as StreamToken;
+
+    const headers = {
+      Authorization: `Bearer ${this.#clientConfiguration.secret}`,
+    };
+
+    const streamAdapter = this.#clientConfiguration.httpStreamClient.stream({
+      data: { token: streamToken.token, start_ts },
+      headers,
+      method: "POST",
+    });
+
+    this.#streamAdapter = streamAdapter;
+
+    for await (const event of streamAdapter.read) {
+      // stream events are always tagged
+      const deserializedEvent: StreamEvent<T> = TaggedTypeFormat.decode(event, {
+        long_type: this.#clientConfiguration.long_type,
+      });
+
+      if (deserializedEvent.type === "error") {
+        // Errors sent from Fauna are assumed fatal
+        this.close();
+        // TODO: replace with appropriate class from existing error heirarchy
+        throw new ServiceError(deserializedEvent, 400);
+      }
+
+      this.#last_ts = deserializedEvent.txn_ts;
+
+      // TODO: remove this once all environments have updated the events to use "status" instead of "start"
+      if ((deserializedEvent.type as any) === "start") {
+        deserializedEvent.type = "status";
+      }
+
+      if (
+        !this.#clientConfiguration.status_events &&
+        deserializedEvent.type === "status"
+      ) {
+        continue;
+      }
+
+      yield deserializedEvent;
+    }
+  }
+
+  #validateConfiguration() {
+    const config = this.#clientConfiguration;
+
+    const required_options: (keyof StreamClientConfiguration)[] = [
+      "long_type",
+      "httpStreamClient",
+      "max_backoff",
+      "max_attempts",
+      "secret",
+    ];
+    required_options.forEach((option) => {
+      if (config[option] === undefined) {
+        throw new TypeError(
+          `ClientConfiguration option '${option}' must be defined.`
+        );
+      }
+    });
+
+    if (config.max_backoff <= 0) {
+      throw new RangeError(`'max_backoff' must be greater than zero.`);
+    }
+
+    if (config.max_attempts <= 0) {
+      throw new RangeError(`'max_attempts' must be greater than zero.`);
+    }
   }
 }
 
@@ -578,3 +903,7 @@ const QUERY_CHECK_FAILURE_CODES = [
   "invalid_syntax",
   "invalid_type",
 ];
+
+function wait(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}

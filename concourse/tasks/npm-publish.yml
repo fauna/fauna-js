@@ -9,12 +9,13 @@ image_resource:
 
 params:
   NPM_TOKEN:
+  NPM_TAG:
 
 inputs:
-  - name: fauna-js-repository
+  - name: repo.git
 
 outputs:
   - name: slack-message
 
 run:
-  path: ./fauna-js-repository/concourse/scripts/publish.sh
+  path: ./repo.git/concourse/scripts/publish.sh

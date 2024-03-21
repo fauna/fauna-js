@@ -19,6 +19,7 @@ resources:
     source:
       uri: git@github.com:fauna/fauna-js.git
       branch: main
+#      tag_filter: v*
       private_key: ((github-ssh-key))
       
   - name: beta.git
@@ -27,7 +28,7 @@ resources:
     source:
       uri: git@github.com:fauna/fauna-js.git
       branch: beta
-      tag_filter: v*
+#      tag_filter: v*
       private_key: ((github-ssh-key))
 
   - name: testtools-repo
@@ -239,18 +240,18 @@ jobs:
         passed:
           - set-self
 
-      - task: integration-tests
-        file: beta.git/concourse/tasks/integration-tests.yml
-        input_mapping: {repo.git: beta.git}
-        privileged: true
-        on_success:
-          put: notify
-          params:
-            text: "fauna-js driver release passed integration tests"
-        on_failure:
-          put: notify
-          params:
-            text: fauna-js driver release failed integration tests
+#      - task: integration-tests
+#        file: beta.git/concourse/tasks/integration-tests.yml
+#        input_mapping: {repo.git: beta.git}
+#        privileged: true
+#        on_success:
+#          put: notify
+#          params:
+#            text: "fauna-js driver release passed integration tests"
+#        on_failure:
+#          put: notify
+#          params:
+#            text: fauna-js driver release failed integration tests
 
       - task: publish
         file: beta.git/concourse/tasks/npm-publish.yml

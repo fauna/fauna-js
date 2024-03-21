@@ -2,7 +2,7 @@
 
 set -eou pipefail
 
-cd ./fauna-js-repository
+cd ./repo.git
 
 PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
 NPM_LATEST_VERSION=$(npm view fauna version)

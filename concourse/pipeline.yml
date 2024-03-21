@@ -218,7 +218,7 @@ jobs:
 
             - task: query-limits-tests
               privileged: true
-              file: main.git/concourse/tasks/query-limits-tests.yml
+              file: beta.git/concourse/tasks/query-limits-tests.yml
               input_mapping: {repo.git: beta.git, testtools-repo: testtools-repo}
               params:
                 QUERY_LIMITS_DB: limited
@@ -238,10 +238,10 @@ jobs:
     plan:
       - get: beta.git
         passed:
-          - test-beta
+          - set-self
 
       - task: integration-tests
-        file: main.git/concourse/tasks/integration-tests.yml
+        file: beta.git/concourse/tasks/integration-tests.yml
         input_mapping: {repo.git: beta.git}
         privileged: true
         on_success:
@@ -254,7 +254,7 @@ jobs:
             text: fauna-js driver release failed integration tests
 
       - task: publish
-        file: main.git/concourse/tasks/npm-publish.yml
+        file: beta.git/concourse/tasks/npm-publish.yml
         input_mapping: {repo.git: beta.git}
         params:
           NPM_TOKEN: ((npm_token))

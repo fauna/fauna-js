@@ -11,8 +11,6 @@ jobs:
         image: fauna/faunadb:latest
         ports:
           - 8443:8443
-        volumes:
-          - ./docker/feature-flags.json:/etc/feature-flag-periodic.d/feature-flags.js
       alt_core:
         image: fauna/faunadb:latest
         ports:

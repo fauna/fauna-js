@@ -162,6 +162,7 @@ jobs:
         input_mapping: {repo.git: main.git}
         params:
           NPM_TOKEN: ((npm_token))
+          NPM_TAG: latest
         on_success:
           put: notify
           params:

@@ -6,28 +6,18 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    services:
-      core:
-        image: fauna/faunadb:latest
-        ports:
-          - 8443:8443
-        volumes:
-          - ./docker/feature-flags.json:/etc/feature-flag-periodic.d/feature-flags.json
-      alt_core:
-        image: fauna/faunadb:latest
-        ports:
-          - 7443:8443
-        volumes:
-          - ./docker/feature-flags.json:/etc/feature-flag-periodic.d/feature-flags.json
     strategy:
       matrix:
         node: ["18", "20"]
       fail-fast: false
     steps:
-      - name: FF Permission Fix
-        run: sudo chown -R $USER:$USER /home/runner/work/fauna-js
-
       - uses: actions/checkout@v3
+
+      - name: Start FaunaDB service
+        run: docker run --rm -d --name faunadb-local -p 8443:8443 -p 8084:8084 --mount type=bind,source=\"$(pwd)\"/docker/feature-flags.json,target=/etc/feature-flag-periodic.d/feature-flags.json fauna/faunadb
+
+      - name: Start FaunaDB service alt port
+        run: docker run --rm -d --name faunadb-local-alt-port -p 7443:8443 -p 7084:8084 fauna/faunadb
 
       - uses: actions/setup-node@v3
         with:

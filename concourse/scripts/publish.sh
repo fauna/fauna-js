@@ -15,11 +15,7 @@ then
 
   echo "Publishing a new version..."
   echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > .npmrc
-  if [[ -z "$NPM_TAG" ]]; then
-    npm publish --tag $NPM_TAG
-  else
-    npm publish
-  fi
+  npm publish --tag "$NPM_TAG"
 
   rm .npmrc
 

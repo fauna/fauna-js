@@ -11,10 +11,14 @@ jobs:
         image: fauna/faunadb:latest
         ports:
           - 8443:8443
+        volumes:
+          - ./docker/feature-flags.json:/etc/feature-flag-periodic.d/feature-flags.json
       alt_core:
         image: fauna/faunadb:latest
         ports:
           - 7443:8443
+        volumes:
+          - ./docker/feature-flags.json:/etc/feature-flag-periodic.d/feature-flags.json
     strategy:
       matrix:
         node: ["18", "20"]

@@ -24,6 +24,9 @@ jobs:
         node: ["18", "20"]
       fail-fast: false
     steps:
+      - name: FF Permission Fix
+        run: sudo chown -R $USER:$USER /home/github/actions-runner/_work/fauna-js
+
       - uses: actions/checkout@v3
 
       - uses: actions/setup-node@v3

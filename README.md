@@ -105,13 +105,13 @@ This Driver supports and is tested on:
 The fauna-js driver is available on npm. You can install with your package manager of choice:
 
 ```shell
-npm install fauna
+npm install fauna@beta
 ```
 
 or
 
 ```shell
-yarn add fauna
+yarn add fauna@beta
 ```
 
 ## Via CDN

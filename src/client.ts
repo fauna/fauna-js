@@ -8,9 +8,11 @@ import {
   AuthorizationError,
   ClientClosedError,
   ClientError,
+  ContendedTransactionError,
+  FaunaError,
+  InvalidRequestError,
   NetworkError,
   ProtocolError,
-  AbortError,
   QueryCheckError,
   QueryRuntimeError,
   QueryTimeoutError,
@@ -18,9 +20,7 @@ import {
   ServiceInternalError,
   ServiceTimeoutError,
   ThrottlingError,
-  ContendedTransactionError,
-  InvalidRequestError,
-  FaunaError,
+  getServiceError,
 } from "./errors";
 import {
   HTTPStreamClient,
@@ -41,7 +41,6 @@ import {
   StreamEvent,
   StreamEventData,
   StreamEventStatus,
-  type QueryFailure,
   type QueryOptions,
   type QuerySuccess,
   type QueryValue,
@@ -244,9 +243,10 @@ export class Client {
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
    *   or a concrete ServiceError if it cannot. ServiceError child types are
-   *   {@link AuthenticaionError}, {@link AuthorizationError}, {@link QueryCheckError}
+   *   {@link AuthenticationError}, {@link AuthorizationError}, {@link QueryCheckError}
    *   {@link QueryRuntimeError}, {@link QueryTimeoutError}, {@link ServiceInternalError}
-   *   {@link ServiceTimeoutError}, {@link ThrottlingError}.
+   *   {@link ServiceTimeoutError}, {@link ThrottlingError}, {@link ContendedTransactionError},
+   *   {@link InvalidRequestError}.
    *   You can use either the type, or the underlying httpStatus + code to determine
    *   the root cause.
    * @throws {@link ProtocolError} the client a HTTP error not sent by Fauna.
@@ -404,7 +404,7 @@ export class Client {
       if (isQueryFailure(e.body)) {
         const failure = e.body;
         const status = e.status;
-        return this.#getServiceError(failure, status);
+        return getServiceError(failure, status);
       }
 
       // we got a different error from the protocol layer
@@ -473,44 +473,6 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
 
     return partialClientConfig?.endpoint ?? env_endpoint ?? endpoints.default;
-  }
-
-  #getServiceError(failure: QueryFailure, httpStatus: number): ServiceError {
-    switch (httpStatus) {
-      case 400:
-        if (QUERY_CHECK_FAILURE_CODES.includes(failure.error.code)) {
-          return new QueryCheckError(failure, httpStatus);
-        }
-        if (failure.error.code === "invalid_request") {
-          return new InvalidRequestError(failure, httpStatus);
-        }
-        if (
-          failure.error.code === "abort" &&
-          failure.error.abort !== undefined
-        ) {
-          return new AbortError(
-            failure as QueryFailure & { error: { abort: QueryValue } },
-            httpStatus
-          );
-        }
-        return new QueryRuntimeError(failure, httpStatus);
-      case 401:
-        return new AuthenticationError(failure, httpStatus);
-      case 403:
-        return new AuthorizationError(failure, httpStatus);
-      case 409:
-        return new ContendedTransactionError(failure, httpStatus);
-      case 429:
-        return new ThrottlingError(failure, httpStatus);
-      case 440:
-        return new QueryTimeoutError(failure, httpStatus);
-      case 500:
-        return new ServiceInternalError(failure, httpStatus);
-      case 503:
-        return new ServiceTimeoutError(failure, httpStatus);
-      default:
-        return new ServiceError(failure, httpStatus);
-    }
   }
 
   async #query<T extends QueryValue>(
@@ -845,7 +807,7 @@ export class StreamClient<T extends QueryValue = any> {
         // Errors sent from Fauna are assumed fatal
         this.close();
         // TODO: replace with appropriate class from existing error heirarchy
-        throw new ServiceError(deserializedEvent, 400);
+        throw getServiceError(deserializedEvent, 400);
       }
 
       this.#last_ts = deserializedEvent.txn_ts;
@@ -895,14 +857,6 @@ export class StreamClient<T extends QueryValue = any> {
 }
 
 // Private types and constants for internal logic.
-
-const QUERY_CHECK_FAILURE_CODES = [
-  "invalid_function_definition",
-  "invalid_identifier",
-  "invalid_query",
-  "invalid_syntax",
-  "invalid_type",
-];
 
 function wait(ms: number) {
   return new Promise((r) => setTimeout(r, ms));

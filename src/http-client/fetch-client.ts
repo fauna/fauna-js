@@ -1,7 +1,8 @@
 /** following reference needed to include types for experimental fetch API in Node */
 /// <reference lib="dom" />
 
-import { NetworkError, ServiceError } from "../errors";
+import { getServiceError, NetworkError, ServiceError } from "../errors";
+import { QueryFailure } from "../wire-protocol";
 import {
   HTTPClient,
   HTTPClientOptions,
@@ -99,8 +100,8 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
       });
       const status = response.status;
       if (!(status >= 200 && status < 400)) {
-        const body = await response.json();
-        throw new ServiceError(body, status);
+        const failure: QueryFailure = await response.json();
+        throw getServiceError(failure, status);
       }
 
       const body = response.body;

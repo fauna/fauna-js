@@ -1,15 +1,16 @@
 import {
-  fql,
-  getDefaultHTTPClient,
+  AbortError,
+  Client,
+  DocumentT,
+  DateStub,
+  Document,
+  InvalidRequestError,
   StreamClient,
   StreamClientConfiguration,
   StreamToken,
-  Client,
-  DocumentT,
-  ServiceError,
   TimeStub,
-  DateStub,
-  Document,
+  fql,
+  getDefaultHTTPClient,
 } from "../../src";
 import {
   getClient,
@@ -19,7 +20,6 @@ import {
 
 const defaultHttpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
 const { secret } = getDefaultSecretAndEndpoint();
-const dummyStreamToken = new StreamToken("dummy");
 
 let client: Client;
 const STREAM_DB_NAME = "StreamTestDB";
@@ -228,7 +228,7 @@ describe("StreamClient", () => {
     await promise;
   });
 
-  it("catches non 200 responses when establishing a stream", async () => {
+  it("catches InvalidRequestError when establishing a stream", async () => {
     expect.assertions(1);
 
     try {
@@ -242,12 +242,11 @@ describe("StreamClient", () => {
         /* do nothing */
       }
     } catch (e) {
-      // TODO: be more specific about the error and split into multiple tests
-      expect(e).toBeInstanceOf(ServiceError);
+      expect(e).toBeInstanceOf(InvalidRequestError);
     }
   });
 
-  it("handles non 200 responses via callback when establishing a stream", async () => {
+  it("handles InvalidRequestError when via callback when establishing a stream", async () => {
     expect.assertions(1);
 
     // create a stream with a bad token
@@ -261,8 +260,7 @@ describe("StreamClient", () => {
     stream.start(
       function onEvent(_) {},
       function onError(e) {
-        // TODO: be more specific about the error and split into multiple tests
-        expect(e).toBeInstanceOf(ServiceError);
+        expect(e).toBeInstanceOf(InvalidRequestError);
         resolve();
       }
     );
@@ -270,7 +268,8 @@ describe("StreamClient", () => {
     await promise;
   });
 
-  it("catches a ServiceError if an error event is received", async () => {
+  // TODO: fail in other ways
+  it("catches an AbortError if abort is called when processing an event", async () => {
     expect.assertions(1);
 
     let stream: StreamClient<DocumentT<StreamTest>> | null = null;
@@ -289,14 +288,14 @@ describe("StreamClient", () => {
         /* do nothing */
       }
     } catch (e) {
-      // TODO: be more specific about the error and split into multiple tests
-      expect(e).toBeInstanceOf(ServiceError);
+      expect(e).toBeInstanceOf(AbortError);
     } finally {
       stream?.close();
     }
   });
 
-  it("handles a ServiceError via callback if an error event is received", async () => {
+  // TODO: fail in other ways
+  it("handles an AbortError via callback if abort is called when processing an event", async () => {
     expect.assertions(1);
 
     const response = await client.query<StreamToken>(
@@ -320,8 +319,7 @@ describe("StreamClient", () => {
     stream.start(
       function onEvent(_) {},
       function onError(e) {
-        // TODO: be more specific about the error and split into multiple tests
-        expect(e).toBeInstanceOf(ServiceError);
+        expect(e).toBeInstanceOf(AbortError);
         resolve();
       }
     );

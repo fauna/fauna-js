@@ -13,7 +13,8 @@ import {
   HTTPStreamRequest,
   StreamAdapter,
 } from "./http-client";
-import { ServiceError, NetworkError } from "../errors";
+import { ServiceError, NetworkError, getServiceError } from "../errors";
+import { QueryFailure } from "../wire-protocol";
 
 // alias http2 types
 type ClientHttp2Session = any;
@@ -260,7 +261,16 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
         // TODO: The Client contains the information for how to parse an error
         // into the appropriate class, so lift this logic out of the HTTPClient.
         req.on("end", () => {
-          rejectChunk(new ServiceError(JSON.parse(responseData), status));
+          try {
+            const failure: QueryFailure = JSON.parse(responseData);
+            rejectChunk(getServiceError(failure, status));
+          } catch (error) {
+            rejectChunk(
+              new NetworkError("Could not process query failure.", {
+                cause: error,
+              })
+            );
+          }
         });
       } else {
         let partOfLine = "";

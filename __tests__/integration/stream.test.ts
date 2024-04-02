@@ -11,6 +11,7 @@ import {
   TimeStub,
   fql,
   getDefaultHTTPClient,
+  QueryRuntimeError,
 } from "../../src";
 import {
   getClient,
@@ -268,9 +269,8 @@ describe("StreamClient", () => {
     await promise;
   });
 
-  // TODO: fail in other ways
   it("catches an AbortError if abort is called when processing an event", async () => {
-    expect.assertions(1);
+    expect.assertions(3);
 
     let stream: StreamClient<DocumentT<StreamTest>> | null = null;
     try {
@@ -287,16 +287,43 @@ describe("StreamClient", () => {
       for await (const _ of stream) {
         /* do nothing */
       }
-    } catch (e) {
+    } catch (e: any) {
       expect(e).toBeInstanceOf(AbortError);
+      expect(e.httpStatus).toBe(400);
+      expect(e.abort).toBe("oops");
     } finally {
       stream?.close();
     }
   });
 
-  // TODO: fail in other ways
+  it("catches a QueryRuntimeError when processing an event", async () => {
+    expect.assertions(2);
+
+    let stream: StreamClient<DocumentT<StreamTest>> | null = null;
+    try {
+      const response = await client.query<StreamToken>(
+        fql`StreamTest.all().map((doc) => notARealFn(doc)).toStream()`
+      );
+      const token = response.data;
+
+      stream = new StreamClient(token, defaultStreamConfig);
+
+      // create some events that will be played back
+      await client.query(fql`StreamTest.create({ value: 0 })`);
+
+      for await (const _ of stream) {
+        /* do nothing */
+      }
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(QueryRuntimeError);
+      expect(e.httpStatus).toBe(400);
+    } finally {
+      stream?.close();
+    }
+  });
+
   it("handles an AbortError via callback if abort is called when processing an event", async () => {
-    expect.assertions(1);
+    expect.assertions(2);
 
     const response = await client.query<StreamToken>(
       fql`StreamTest.all().map((doc) => abort("oops")).toStream()`
@@ -319,13 +346,52 @@ describe("StreamClient", () => {
     stream.start(
       function onEvent(_) {},
       function onError(e) {
-        expect(e).toBeInstanceOf(AbortError);
+        if (e instanceof AbortError) {
+          expect(e.httpStatus).toBe(400);
+          expect(e.abort).toBe("oops");
+        }
         resolve();
       }
     );
 
     await promise;
   });
+
+  it("handles a QueryRuntimeError via callback when processing an event", async () => {
+    expect.assertions(1);
+
+    const response = await client.query<StreamToken>(
+      fql`StreamTest.all().map((doc) => notARealFn(doc)).toStream()`
+    );
+    const token = response.data;
+
+    const stream = new StreamClient<DocumentT<StreamTest>>(
+      token,
+      defaultStreamConfig
+    );
+
+    // create some events that will be played back
+    await client.query(fql`StreamTest.create({ value: 0 })`);
+
+    let resolve: () => void;
+    const promise = new Promise((res) => {
+      resolve = () => res(null);
+    });
+
+    stream.start(
+      function onEvent(_) {},
+      function onError(e) {
+        if (e instanceof QueryRuntimeError) {
+          expect(e.httpStatus).toBe(400);
+        }
+        resolve();
+      }
+    );
+
+    await promise;
+  });
+
+  // TODO: test other error events
 
   it("decodes values from streams correctly", async () => {
     expect.assertions(5);

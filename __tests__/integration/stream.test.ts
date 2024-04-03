@@ -72,7 +72,7 @@ describe("Client", () => {
     let stream: StreamClient | null = null;
     try {
       const response = await client.query<StreamToken>(
-        fql`StreamTest.all().toStream()`
+        fql`StreamTest.all().toStream()`,
       );
       const token = response.data;
 
@@ -113,7 +113,7 @@ describe("StreamClient", () => {
     let stream: StreamClient | null = null;
     try {
       const response = await client.query<StreamToken>(
-        fql`StreamTest.all().toStream()`
+        fql`StreamTest.all().toStream()`,
       );
       const token = response.data;
 
@@ -138,7 +138,7 @@ describe("StreamClient", () => {
     try {
       const getToken = async () => {
         const response = await client.query<StreamToken>(
-          fql`StreamTest.all().toStream()`
+          fql`StreamTest.all().toStream()`,
         );
         return response.data;
       };
@@ -163,7 +163,7 @@ describe("StreamClient", () => {
     let stream: StreamClient<DocumentT<StreamTest>> | null = null;
     try {
       const response = await client.query<StreamToken>(
-        fql`StreamTest.all().toStream()`
+        fql`StreamTest.all().toStream()`,
       );
       const token = response.data;
 
@@ -194,13 +194,13 @@ describe("StreamClient", () => {
     expect.assertions(2);
 
     const response = await client.query<StreamToken>(
-      fql`StreamTest.all().toStream()`
+      fql`StreamTest.all().toStream()`,
     );
     const token = response.data;
 
     const stream = new StreamClient<DocumentT<StreamTest>>(
       token,
-      defaultStreamConfig
+      defaultStreamConfig,
     );
 
     // create some events that will be played back
@@ -236,7 +236,7 @@ describe("StreamClient", () => {
       // create a stream with a bad token
       const stream = new StreamClient(
         new StreamToken("2"),
-        defaultStreamConfig
+        defaultStreamConfig,
       );
 
       for await (const _ of stream) {
@@ -263,7 +263,7 @@ describe("StreamClient", () => {
       function onError(e) {
         expect(e).toBeInstanceOf(InvalidRequestError);
         resolve();
-      }
+      },
     );
 
     await promise;
@@ -275,7 +275,7 @@ describe("StreamClient", () => {
     let stream: StreamClient<DocumentT<StreamTest>> | null = null;
     try {
       const response = await client.query<StreamToken>(
-        fql`StreamTest.all().map((doc) => abort("oops")).toStream()`
+        fql`StreamTest.all().map((doc) => abort("oops")).toStream()`,
       );
       const token = response.data;
 
@@ -289,7 +289,7 @@ describe("StreamClient", () => {
       }
     } catch (e: any) {
       expect(e).toBeInstanceOf(AbortError);
-      expect(e.httpStatus).toBe(400);
+      expect(e.httpStatus).toBe(-1);
       expect(e.abort).toBe("oops");
     } finally {
       stream?.close();
@@ -302,7 +302,7 @@ describe("StreamClient", () => {
     let stream: StreamClient<DocumentT<StreamTest>> | null = null;
     try {
       const response = await client.query<StreamToken>(
-        fql`StreamTest.all().map((doc) => notARealFn(doc)).toStream()`
+        fql`StreamTest.all().map((doc) => notARealFn(doc)).toStream()`,
       );
       const token = response.data;
 
@@ -316,7 +316,7 @@ describe("StreamClient", () => {
       }
     } catch (e: any) {
       expect(e).toBeInstanceOf(QueryRuntimeError);
-      expect(e.httpStatus).toBe(400);
+      expect(e.httpStatus).toBe(-1);
     } finally {
       stream?.close();
     }
@@ -326,13 +326,13 @@ describe("StreamClient", () => {
     expect.assertions(2);
 
     const response = await client.query<StreamToken>(
-      fql`StreamTest.all().map((doc) => abort("oops")).toStream()`
+      fql`StreamTest.all().map((doc) => abort("oops")).toStream()`,
     );
     const token = response.data;
 
     const stream = new StreamClient<DocumentT<StreamTest>>(
       token,
-      defaultStreamConfig
+      defaultStreamConfig,
     );
 
     // create some events that will be played back
@@ -347,11 +347,11 @@ describe("StreamClient", () => {
       function onEvent(_) {},
       function onError(e) {
         if (e instanceof AbortError) {
-          expect(e.httpStatus).toBe(400);
+          expect(e.httpStatus).toBe(-1);
           expect(e.abort).toBe("oops");
         }
         resolve();
-      }
+      },
     );
 
     await promise;
@@ -361,13 +361,13 @@ describe("StreamClient", () => {
     expect.assertions(1);
 
     const response = await client.query<StreamToken>(
-      fql`StreamTest.all().map((doc) => notARealFn(doc)).toStream()`
+      fql`StreamTest.all().map((doc) => notARealFn(doc)).toStream()`,
     );
     const token = response.data;
 
     const stream = new StreamClient<DocumentT<StreamTest>>(
       token,
-      defaultStreamConfig
+      defaultStreamConfig,
     );
 
     // create some events that will be played back
@@ -382,16 +382,14 @@ describe("StreamClient", () => {
       function onEvent(_) {},
       function onError(e) {
         if (e instanceof QueryRuntimeError) {
-          expect(e.httpStatus).toBe(400);
+          expect(e.httpStatus).toBe(-1);
         }
         resolve();
-      }
+      },
     );
 
     await promise;
   });
-
-  // TODO: test other error events
 
   it("decodes values from streams correctly", async () => {
     expect.assertions(5);
@@ -405,7 +403,7 @@ describe("StreamClient", () => {
           date: Date.today(),
           doc: doc,
           bigInt: 922337036854775808,
-        }).toStream()`
+        }).toStream()`,
       );
       const token = response.data;
 
@@ -456,7 +454,7 @@ describe("StreamClient", () => {
       await client.query(fql`StreamTest.all().forEach(.delete())`);
 
       const response = await client.query<StreamToken>(
-        fql`StreamTest.all().toStream()`
+        fql`StreamTest.all().toStream()`,
       );
       const token = response.data;
 

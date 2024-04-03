@@ -1,7 +1,7 @@
 /** following reference needed to include types for experimental fetch API in Node */
 /// <reference lib="dom" />
 
-import { getServiceError, NetworkError, ServiceError } from "../errors";
+import { getServiceError, NetworkError } from "../errors";
 import { QueryFailure } from "../wire-protocol";
 import {
   HTTPClient,
@@ -95,7 +95,7 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
           "The network connection encountered a problem.",
           {
             cause: error,
-          }
+          },
         );
       });
       const status = response.status;

@@ -22,7 +22,7 @@ const client = getClient(
     query_timeout_ms: 60,
   },
   // use the FetchClient implementation, so we can mock requests
-  new FetchClient(getDefaultHTTPClientOptions())
+  new FetchClient(getDefaultHTTPClientOptions()),
 );
 
 describe("query", () => {
@@ -30,15 +30,15 @@ describe("query", () => {
     fetchMock.resetMocks();
   });
 
-  // do not treat these codes as canonical. Refer to documentation. These are simply for logical testing.
+  // Error handling uses the code field to determine the error type. These codes must match the actual code expected from the API.
   it.each`
     httpStatus | expectedErrorType       | expectedErrorFields
-    ${403}     | ${AuthorizationError}   | ${{ code: "no_permission", message: "nope" }}
-    ${440}     | ${QueryTimeoutError}    | ${{ code: "query_timeout", message: "too slow - increase your timeout" }}
+    ${403}     | ${AuthorizationError}   | ${{ code: "forbidden", message: "nope" }}
+    ${440}     | ${QueryTimeoutError}    | ${{ code: "time_out", message: "too slow - increase your timeout" }}
     ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!" }}
     ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much" }}
     ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error" }}
-    ${503}     | ${ServiceTimeoutError}  | ${{ code: "service_timeout", message: "too slow on our side" }}
+    ${503}     | ${ServiceTimeoutError}  | ${{ code: "time_out", message: "too slow on our side" }}
   `(
     "throws an $expectedErrorType on a $httpStatus",
     async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
@@ -56,56 +56,18 @@ describe("query", () => {
           expect(e.code).toEqual(expectedErrorFields.code);
         }
       }
-    }
+    },
   );
 
-  // do not treat these codes as canonical. Refer to documentation. These are simply for logical testing.
+  // Error handling uses the code field to determine the error type. These codes must match the actual code expected from the API.
   it.each`
     httpStatus | expectedErrorType       | expectedErrorFields
-    ${403}     | ${AuthorizationError}   | ${{ code: "no_permission", message: "nope", summary: "the summary" }}
-    ${440}     | ${QueryTimeoutError}    | ${{ code: "query_timeout", message: "too slow - increase your timeout", summary: "the summary" }}
-    ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!", summary: "the summary" }}
-    ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much", summary: "the summary" }}
-    ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error", summary: "the summary" }}
-    ${503}     | ${ServiceTimeoutError}  | ${{ code: "service_timeout", message: "too slow on our side", summary: "the summary" }}
-  `(
-    "Includes a summary when present in error field",
-    async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
-      expect.assertions(5);
-      fetchMock.mockResponse(
-        JSON.stringify({
-          error: {
-            code: expectedErrorFields.code,
-            message: expectedErrorFields.message,
-          },
-          summary: expectedErrorFields.summary,
-        }),
-        {
-          status: httpStatus,
-        }
-      );
-      try {
-        await client.query(fql`'foo'.length`);
-      } catch (e) {
-        if (e instanceof ServiceError) {
-          expect(e).toBeInstanceOf(expectedErrorType);
-          expect(e.message).toEqual(expectedErrorFields.message);
-          expect(e.httpStatus).toEqual(httpStatus);
-          expect(e.code).toEqual(expectedErrorFields.code);
-          expect(e.queryInfo?.summary).toEqual(expectedErrorFields.summary);
-        }
-      }
-    }
-  );
-
-  it.each`
-    httpStatus | expectedErrorType       | expectedErrorFields
-    ${403}     | ${AuthorizationError}   | ${{ code: "no_permission", message: "nope" }}
-    ${440}     | ${QueryTimeoutError}    | ${{ code: "query_timeout", message: "too slow - increase your timeout" }}
+    ${403}     | ${AuthorizationError}   | ${{ code: "forbidden", message: "nope" }}
+    ${440}     | ${QueryTimeoutError}    | ${{ code: "time_out", message: "too slow - increase your timeout" }}
     ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!" }}
     ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much" }}
     ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error" }}
-    ${503}     | ${ServiceTimeoutError}  | ${{ code: "service_timeout", message: "too slow on our side" }}
+    ${503}     | ${ServiceTimeoutError}  | ${{ code: "time_out", message: "too slow on our side" }}
   `(
     "Includes a summary when not present in error field but present at top-level",
     async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
@@ -117,7 +79,7 @@ describe("query", () => {
         }),
         {
           status: httpStatus,
-        }
+        },
       );
 
       try {
@@ -131,7 +93,7 @@ describe("query", () => {
           expect(e.queryInfo?.summary).toEqual("the summary");
         }
       }
-    }
+    },
   );
 
   it("retries throttling errors and then succeeds", async () => {
@@ -146,7 +108,7 @@ describe("query", () => {
       [
         JSON.stringify({ data: 3, summary: "the summary", stats: {} }),
         { status: 200 },
-      ]
+      ],
     );
     const actual = await client.query(fql`'foo'.length`);
     expect(actual.data).toEqual(3);

@@ -71,7 +71,7 @@ export class ServiceError extends FaunaError {
  * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class QueryRuntimeError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 400) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryRuntimeError);
@@ -89,7 +89,7 @@ export class QueryRuntimeError extends ServiceError {
  * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class QueryCheckError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 400) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryCheckError);
@@ -105,7 +105,7 @@ export class QueryCheckError extends ServiceError {
  * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class InvalidRequestError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 400) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, InvalidRequestError);
@@ -129,7 +129,7 @@ export class AbortError extends ServiceError {
 
   constructor(
     failure: QueryFailure & { error: { abort: QueryValue } },
-    httpStatus: 400
+    httpStatus: number,
   ) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
@@ -145,7 +145,7 @@ export class AbortError extends ServiceError {
  * used.
  */
 export class AuthenticationError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 401) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthenticationError);
@@ -159,7 +159,7 @@ export class AuthenticationError extends ServiceError {
  * permission to perform the requested action.
  */
 export class AuthorizationError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 403) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthorizationError);
@@ -172,7 +172,7 @@ export class AuthorizationError extends ServiceError {
  * An error due to a contended transaction.
  */
 export class ContendedTransactionError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 409) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, InvalidRequestError);
@@ -186,7 +186,7 @@ export class ContendedTransactionError extends ServiceError {
  * and thus the request could not be served.
  */
 export class ThrottlingError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 429) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ThrottlingError);
@@ -208,7 +208,7 @@ export class QueryTimeoutError extends ServiceError {
    */
   readonly stats?: { [key: string]: number };
 
-  constructor(failure: QueryFailure, httpStatus: 440) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryTimeoutError);
@@ -222,7 +222,7 @@ export class QueryTimeoutError extends ServiceError {
  * ServiceInternalError indicates Fauna failed unexpectedly.
  */
 export class ServiceInternalError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 500) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ServiceInternalError);
@@ -236,7 +236,7 @@ export class ServiceInternalError extends ServiceError {
  * the request before the timeout was reached.
  */
 export class ServiceTimeoutError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 503) {
+  constructor(failure: QueryFailure, httpStatus: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ServiceTimeoutError);
@@ -313,48 +313,91 @@ export class ProtocolError extends FaunaError {
   }
 }
 
-const QUERY_CHECK_FAILURE_CODES = [
-  "invalid_function_definition",
-  "invalid_identifier",
-  "invalid_query",
-  "invalid_syntax",
-  "invalid_type",
-];
-
 export const getServiceError = (
   failure: QueryFailure,
-  httpStatus: number
+  httpStatus: number,
 ): ServiceError => {
-  switch (httpStatus) {
-    case 400:
-      if (QUERY_CHECK_FAILURE_CODES.includes(failure.error.code)) {
-        return new QueryCheckError(failure, httpStatus);
-      }
-      if (failure.error.code === "invalid_request") {
-        return new InvalidRequestError(failure, httpStatus);
-      }
-      if (failure.error.code === "abort" && failure.error.abort !== undefined) {
+  const failureCode = failure.error.code;
+
+  switch (failureCode) {
+    case "invalid_function_definition":
+    case "invalid_identifier":
+    case "invalid_query":
+    case "invalid_syntax":
+    case "invalid_type":
+      return new QueryCheckError(failure, httpStatus);
+
+    case "unbound_variable":
+    case "index_out_of_bounds":
+    case "type_mismatch":
+    case "invalid_argument":
+    case "invalid_bounds":
+    case "invalid_regex":
+    case "constraint_failure":
+    case "invalid_schema":
+    case "invalid_document_id":
+    case "document_id_exists":
+    case "document_not_found":
+    case "document_deleted":
+    case "invalid_function_invocation":
+    case "invalid_index_invocation":
+    case "null_value":
+    case "invalid_null_access":
+    case "invalid_cursor":
+    case "permission_denied":
+    case "invalid_effect":
+    case "invalid_write":
+    case "internal_failure":
+    case "divide_by_zero":
+    case "invalid_id":
+    case "invalid_secret":
+    case "invalid_time":
+    case "invalid_unit":
+    case "invalid_date":
+    case "limit_exceeded":
+    case "stack_overflow":
+    case "invalid_computed_field_access":
+    case "disabled_feature":
+    case "invalid_receiver":
+    case "invalid_timestamp_field_access":
+      return new QueryRuntimeError(failure, httpStatus);
+
+    case "invalid_request":
+      return new InvalidRequestError(failure, httpStatus);
+
+    case "abort":
+      if (failure.error.abort !== undefined) {
         return new AbortError(
           failure as QueryFailure & { error: { abort: QueryValue } },
-          httpStatus
+          httpStatus,
         );
       }
       return new QueryRuntimeError(failure, httpStatus);
-    case 401:
+
+    case "unauthorized":
       return new AuthenticationError(failure, httpStatus);
-    case 403:
+
+    case "forbidden":
       return new AuthorizationError(failure, httpStatus);
-    case 409:
+
+    case "contended_transaction":
       return new ContendedTransactionError(failure, httpStatus);
-    case 429:
+
+    case "throttle":
       return new ThrottlingError(failure, httpStatus);
-    case 440:
-      return new QueryTimeoutError(failure, httpStatus);
-    case 500:
+
+    case "time_out":
+      if (httpStatus === 440) {
+        return new QueryTimeoutError(failure, 440);
+      } else if (httpStatus === 503) {
+        return new ServiceTimeoutError(failure, 503);
+      }
+      break;
+
+    case "internal_error":
       return new ServiceInternalError(failure, httpStatus);
-    case 503:
-      return new ServiceTimeoutError(failure, httpStatus);
-    default:
-      return new ServiceError(failure, httpStatus);
   }
+
+  // default
+  return new ServiceError(failure, httpStatus ?? -1);
 };

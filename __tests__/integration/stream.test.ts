@@ -247,7 +247,7 @@ describe("StreamClient", () => {
     }
   });
 
-  it("handles InvalidRequestError when via callback when establishing a stream", async () => {
+  it("handles InvalidRequestError via callback when establishing a stream", async () => {
     expect.assertions(1);
 
     // create a stream with a bad token

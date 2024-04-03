@@ -60,6 +60,7 @@ export class DocumentReference {
  */
 export class Document extends DocumentReference {
   readonly ts: TimeStub;
+  readonly ttl?: TimeStub;
 
   constructor(obj: {
     coll: Module | string;
@@ -73,8 +74,8 @@ export class Document extends DocumentReference {
     Object.assign(this, rest);
   }
 
-  toObject(): { coll: Module; id: string; ts: TimeStub } {
-    return { ...this } as { coll: Module; id: string; ts: TimeStub };
+  toObject(): { coll: Module; id: string; ts: TimeStub; ttl?: TimeStub } {
+    return { ...this };
   }
 }
 
@@ -146,7 +147,7 @@ export class NamedDocumentReference {
  * ```
  */
 export class NamedDocument<
-  T extends QueryValueObject = Record<string, never>
+  T extends QueryValueObject = Record<string, never>,
 > extends NamedDocumentReference {
   readonly ts: TimeStub;
   readonly data: T;

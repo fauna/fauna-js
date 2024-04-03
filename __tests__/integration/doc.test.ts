@@ -138,11 +138,23 @@ describe("querying for doc types", () => {
     expect(result.data.module).toBeInstanceOf(Module);
     expect(result.data.document).toBeInstanceOf(Document);
     expect(result.data.document.documentReference).toBeInstanceOf(
-      DocumentReference
+      DocumentReference,
     );
     expect(result.data.document.namedDocumentReference).toBeInstanceOf(
-      NamedDocumentReference
+      NamedDocumentReference,
     );
     expect(result.data.namedDocument).toBeInstanceOf(NamedDocument);
+  });
+
+  it("can set and read ttl", async () => {
+    const queryBuilder = fql`${testDoc}`;
+    const result = await client.query<Document>(queryBuilder);
+
+    expect(result.data.ttl).toBeUndefined();
+
+    const queryBuilderUpdate = fql`${testDoc}.update({ ttl: Time.now().add(1, "day") })`;
+    const resultUpdate = await client.query<Document>(queryBuilderUpdate);
+
+    expect(resultUpdate.data.ttl).toBeInstanceOf(TimeStub);
   });
 });

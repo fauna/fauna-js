@@ -198,7 +198,7 @@ const encodeMap = {
   namedDocument: (value: NamedDocument): TaggedRef => ({
     "@ref": { name: value.name, coll: { "@mod": value.coll.name } },
   }),
-  // es-lint-disable-next-line @typescript-eslint/no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   set: (value: Page<QueryValue> | EmbeddedSet) => {
     throw new ClientError(
       "Page could not be encoded. Fauna does not accept encoded Set values, yet. Use Page.data and Page.after as arguments, instead."

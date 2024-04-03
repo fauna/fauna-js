@@ -279,8 +279,7 @@ Example output:
 
 ## Pagination
 
-By default, FQL paginates returned sets that contain more than 16 items.
-Use the `Client.paginate()` method to iterate through pages of results.
+Use the `Client.paginate()` method to iterate sets that contain more than one page of results.
 
 `Client.paginate()` accepts the same [query options](#query-options) as
 `Client.query()`.

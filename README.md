@@ -18,6 +18,7 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
     - [Typescript support](#typescript-support)
     - [Query options](#query-options)
     - [Query statistics](#query-statistics)
+  - [Pagination](#pagination)
   - [Event Streaming (beta)](#event-streaming-beta)
   - [Client configuration](#client-configuration)
     - [Environment variables](#environment-variables)
@@ -274,6 +275,42 @@ Example output:
   storage_bytes_write: 0,
   contention_retries: 0
 }
+```
+
+## Pagination
+
+By default, FQL paginates returned sets that contain more than 16 items.
+Use the `Client.paginate()` method to iterate through pages of results.
+
+`Client.paginate()` accepts the same [query options](#query-options) as
+`Client.query()`.
+
+Change the default items per page using FQL's `<set>.pageSize()` method.
+
+```typescript
+import { fql, Client, type SetIterator, type QueryValue } from "fauna";
+
+const client = new Client();
+
+// Adjust `pageSize()` size as needed.
+const query = fql`
+  Product
+    .byName("limes")
+    .pageSize(60) { description }`;
+
+const options = {
+  query_timeout_ms: 60_000,
+};
+
+const pages: SetIterator<QueryValue> = client.paginate(query, options);
+
+for await (const products of pages) {
+  for (const product of products) {
+    console.log(product)
+  }
+}
+
+client.close();
 ```
 
 

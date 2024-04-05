@@ -485,6 +485,33 @@ stream.start(
 );
 ```
 
+_Close a stream_
+
+Use the `<stream>.close()` method to close a stream.
+
+```javascript
+import { Client, fql } from "fauna"
+const client = new Client()
+
+const stream = await client.stream(fql`Product.all().toStream()`)
+
+let count = 0;
+for await (const event of stream) {
+  console.log(event.type)
+  console.log(event.data)
+  count++;
+
+  // Close the stream after 2 events
+  if (count === 2) {
+    console.log("Closing the stream ...")
+    stream.close()
+    break;
+  }
+}
+
+client.close();
+```
+
 # Contributing
 
 Any contributions are from the community are greatly appreciated!

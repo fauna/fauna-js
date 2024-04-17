@@ -11,6 +11,7 @@ export {
   AuthorizationError,
   ClientError,
   ClientClosedError,
+  ConstraintFailureError,
   ContendedTransactionError,
   FaunaError,
   InvalidRequestError,
@@ -21,7 +22,6 @@ export {
   QueryTimeoutError,
   ServiceError,
   ServiceInternalError,
-  ServiceTimeoutError,
   ThrottlingError,
 } from "./errors";
 export { type Query, fql } from "./query-builder";

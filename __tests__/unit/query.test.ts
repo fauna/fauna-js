@@ -8,7 +8,6 @@ import {
   QueryTimeoutError,
   ServiceError,
   ServiceInternalError,
-  ServiceTimeoutError,
   ThrottlingError,
 } from "../../src";
 import { getClient, getDefaultHTTPClientOptions } from "../client";
@@ -38,7 +37,7 @@ describe("query", () => {
     ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!" }}
     ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much" }}
     ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error" }}
-    ${503}     | ${ServiceTimeoutError}  | ${{ code: "time_out", message: "too slow on our side" }}
+    ${503}     | ${QueryTimeoutError}    | ${{ code: "time_out", message: "too slow on our side" }}
   `(
     "throws an $expectedErrorType on a $httpStatus",
     async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {
@@ -67,7 +66,7 @@ describe("query", () => {
     ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!" }}
     ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much" }}
     ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error" }}
-    ${503}     | ${ServiceTimeoutError}  | ${{ code: "time_out", message: "too slow on our side" }}
+    ${503}     | ${QueryTimeoutError}    | ${{ code: "time_out", message: "too slow on our side" }}
   `(
     "Includes a summary when not present in error field but present at top-level",
     async ({ httpStatus, expectedErrorType, expectedErrorFields }) => {

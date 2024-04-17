@@ -791,7 +791,7 @@ export class StreamClient<T extends QueryValue = any> {
       if (deserializedEvent.type === "error") {
         // Errors sent from Fauna are assumed fatal
         this.close();
-        throw getServiceError(deserializedEvent, -1);
+        throw getServiceError(deserializedEvent);
       }
 
       this.#last_ts = deserializedEvent.txn_ts;

@@ -289,7 +289,7 @@ describe("StreamClient", () => {
       }
     } catch (e: any) {
       expect(e).toBeInstanceOf(AbortError);
-      expect(e.httpStatus).toBe(-1);
+      expect(e.httpStatus).toBeUndefined();
       expect(e.abort).toBe("oops");
     } finally {
       stream?.close();
@@ -316,7 +316,7 @@ describe("StreamClient", () => {
       }
     } catch (e: any) {
       expect(e).toBeInstanceOf(QueryRuntimeError);
-      expect(e.httpStatus).toBe(-1);
+      expect(e.httpStatus).toBeUndefined();
     } finally {
       stream?.close();
     }
@@ -347,7 +347,7 @@ describe("StreamClient", () => {
       function onEvent(_) {},
       function onError(e) {
         if (e instanceof AbortError) {
-          expect(e.httpStatus).toBe(-1);
+          expect(e.httpStatus).toBeUndefined();
           expect(e.abort).toBe("oops");
         }
         resolve();
@@ -382,7 +382,7 @@ describe("StreamClient", () => {
       function onEvent(_) {},
       function onError(e) {
         if (e instanceof QueryRuntimeError) {
-          expect(e.httpStatus).toBe(-1);
+          expect(e.httpStatus).toBeUndefined();
         }
         resolve();
       },

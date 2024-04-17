@@ -121,9 +121,7 @@ export class InvalidRequestError extends ServiceError {
  */
 export class ConstraintFailureError extends ServiceError {
   /**
-   * The user provided value passed to the originating `abort()` call.
-   * Present only when the query encountered an `abort()` call, which is denoted
-   * by the error code `"abort"`
+   * The list of constraints that failed.
    */
   readonly constraint_failures: Array<ConstraintFailure>;
 

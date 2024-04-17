@@ -205,7 +205,12 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
           .request(httpRequestHeaders)
           .setEncoding("utf8")
           .on("error", (error: any) => {
-            rejectPromise(error);
+            rejectPromise(
+              new NetworkError(
+                "The network connection encountered a problem while streaming events.",
+                { cause: error },
+              ),
+            );
           })
           .on("response", onResponse);
 
@@ -218,7 +223,12 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
 
         req.end();
       } catch (error) {
-        rejectPromise(error);
+        rejectPromise(
+          new NetworkError(
+            "The network connection encountered a problem while streaming events.",
+            { cause: error },
+          ),
+        );
       }
     });
   }

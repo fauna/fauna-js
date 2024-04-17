@@ -110,8 +110,15 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
       }
       const reader = body.getReader();
 
-      for await (const line of readLines(reader)) {
-        yield line;
+      try {
+        for await (const line of readLines(reader)) {
+          yield line;
+        }
+      } catch (error) {
+        throw new NetworkError(
+          "The network connection encountered a problem while streaming events.",
+          { cause: error },
+        );
       }
     }
 

@@ -1,7 +1,8 @@
 /** following reference needed to include types for experimental fetch API in Node */
 /// <reference lib="dom" />
 
-import { NetworkError, ServiceError } from "../errors";
+import { getServiceError, NetworkError } from "../errors";
+import { QueryFailure } from "../wire-protocol";
 import {
   HTTPClient,
   HTTPClientOptions,
@@ -94,13 +95,13 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
           "The network connection encountered a problem.",
           {
             cause: error,
-          }
+          },
         );
       });
       const status = response.status;
       if (!(status >= 200 && status < 400)) {
-        const body = await response.json();
-        throw new ServiceError(body, status);
+        const failure: QueryFailure = await response.json();
+        throw getServiceError(failure, status);
       }
 
       const body = response.body;
@@ -109,8 +110,15 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
       }
       const reader = body.getReader();
 
-      for await (const line of readLines(reader)) {
-        yield line;
+      try {
+        for await (const line of readLines(reader)) {
+          yield line;
+        }
+      } catch (error) {
+        throw new NetworkError(
+          "The network connection encountered a problem while streaming events.",
+          { cause: error },
+        );
       }
     }
 

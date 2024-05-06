@@ -218,7 +218,7 @@ const encodeMap = {
   // TODO: encode as a tagged value if provided as a query arg?
   // streamToken: (value: StreamToken): TaggedStreamToken => ({ "@stream": value.token }),
   streamToken: (value: StreamToken): string => value.token,
-  bytes: (value: Uint8Array): TaggedBytes => ({
+  bytes: (value: ArrayBuffer | ArrayBufferView): TaggedBytes => ({
     "@bytes": bufferToBase64(value),
   }),
 };
@@ -267,14 +267,8 @@ const encode = (input: QueryValue): QueryValue => {
         return encodeMap["set"](input);
       } else if (input instanceof StreamToken) {
         return encodeMap["streamToken"](input);
-      } else if (input instanceof Uint8Array) {
+      } else if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
         return encodeMap["bytes"](input);
-      } else if (input instanceof ArrayBuffer) {
-        return encodeMap["bytes"](new Uint8Array(input));
-      } else if (ArrayBuffer.isView(input)) {
-        return encodeMap["bytes"](
-          new Uint8Array(input.buffer, input.byteOffset, input.byteLength),
-        );
       } else {
         return encodeMap["object"](input);
       }
@@ -282,35 +276,21 @@ const encode = (input: QueryValue): QueryValue => {
   // anything here would be unreachable code
 };
 
-// function bufferToBase64(value: ArrayBuffer | ArrayBufferView): string {
-//   if (value instanceof ArrayBuffer) {
-//     return base64.fromByteArray(new Uint8Array(value));
-//   } else if (value instanceof Uint8Array) {
-//     return base64.fromByteArray(value);
-//   } else {
-//     return base64.fromByteArray(
-//       new Uint8Array(value.buffer, value.byteOffset, value.byteLength),
-//     );
-//   }
-// }
-
-// function base64toBuffer(value: string): ArrayBuffer {
-//   return base64.toByteArray(value).buffer;
-// }
-
-function base64toBuffer(base64: string): Uint8Array {
+function base64toBuffer(value: string): Uint8Array {
   const isNodeJs =
     typeof process !== "undefined" && process.versions && process.versions.node;
 
   if (isNodeJs) {
-    const binaryBuffer = Buffer.from(base64, "base64");
+    const binaryBuffer = Buffer.from(value, "base64");
     return Uint8Array.from(binaryBuffer);
   } else {
     if (typeof window?.atob === "undefined") {
-      throw new Error("This environment does not support atob");
+      throw new ClientError(
+        `Error encoding argument. This environment does not support atob. Provided: ${value}`,
+      );
     }
 
-    const binaryString = window.atob(base64);
+    const binaryString = window.atob(value);
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i);
@@ -319,20 +299,32 @@ function base64toBuffer(base64: string): Uint8Array {
   }
 }
 
-function bufferToBase64(value: Uint8Array): string {
+function bufferToBase64(value: ArrayBuffer | ArrayBufferView): string {
+  let arr: Uint8Array;
+
+  if (value instanceof Uint8Array) {
+    arr = value;
+  } else if (value instanceof ArrayBuffer) {
+    arr = new Uint8Array(value);
+  } else {
+    arr = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  }
+
   const isNodeJs =
     typeof process !== "undefined" && process.versions && process.versions.node;
 
   if (isNodeJs) {
-    return Buffer.from(value).toString("base64");
+    return Buffer.from(arr).toString("base64");
   } else {
     if (typeof window?.btoa === "undefined") {
-      throw new Error("This environment does not support btoa");
+      throw new ClientError(
+        `Error encoding argument. This environment does not support btoa. Provided: ${value}`,
+      );
     }
 
     let binaryString = "";
-    for (let i = 0; i < value.length; i++) {
-      binaryString += String.fromCharCode(value[i]);
+    for (let i = 0; i < arr.length; i++) {
+      binaryString += String.fromCharCode(arr[i]);
     }
     return window.btoa(binaryString);
   }

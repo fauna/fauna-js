@@ -1,4 +1,4 @@
-import { fql } from "../../src";
+import { fql, TimeStub } from "../../src";
 import { getClient } from "../client";
 
 const client = getClient({
@@ -117,5 +117,58 @@ describe("query using template format", () => {
     `;
     const response = await client.query(queryBuilder);
     expect(response.data).toBe("Hello, Alice");
+  });
+
+  it("succeeds with a Date arg", async () => {
+    const date = new Date();
+    const queryBuilder = fql`${date}`;
+    const response = await client.query<TimeStub>(queryBuilder);
+    expect(response.data.isoString).toBe(date.toISOString());
+  });
+
+  it("succeeds with an ArrayBuffer variable", async () => {
+    const buf = new Uint8Array([1, 2, 3]).buffer;
+    const queryBuilder = fql`${buf}`;
+    const response = await client.query<ArrayBuffer>(queryBuilder);
+    expect(response.data).toEqual(buf);
+    expect(response.data.byteLength).toBe(3);
+  });
+
+  it("succeeds with ArrayBufferView variables", async () => {
+    const buf1 = new Uint8Array([1]);
+    const buf2 = new Int8Array([1, 2]);
+    const buf3 = new Uint16Array([1, 2, 3]);
+    const buf4 = new Int16Array([1, 2, 3, 4]);
+    const queryBuilder = fql`
+      [
+        ${buf1},
+        ${buf2},
+        ${buf3},
+        ${buf4},
+      ]
+    `;
+    const response =
+      await client.query<[ArrayBuffer, ArrayBuffer, ArrayBuffer, ArrayBuffer]>(
+        queryBuilder,
+      );
+    expect(response.data[0]).toEqual(buf1.buffer);
+    expect(response.data[0].byteLength).toEqual(1);
+    expect(response.data[1]).toEqual(buf2.buffer);
+    expect(response.data[1].byteLength).toEqual(2);
+    expect(response.data[2]).toEqual(buf3.buffer);
+    expect(response.data[2].byteLength).toEqual(6);
+    expect(response.data[3]).toEqual(buf4.buffer);
+    expect(response.data[3].byteLength).toEqual(8);
+  });
+
+  it("succeeds using Node Buffer to encode strings", async () => {
+    const str =
+      "This is a test string 🚀 with various characters: !@#$%^&*()_+=-`~[]{}|;:'\",./<>?";
+    const buf = Buffer.from(str);
+    const queryBuilder = fql`${buf}`;
+    const response = await client.query<ArrayBuffer>(queryBuilder);
+
+    const decoded = Buffer.from(response.data).toString();
+    expect(decoded).toBe(str);
   });
 });

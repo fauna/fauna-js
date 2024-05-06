@@ -14,6 +14,25 @@ import {
   EmbeddedSet,
 } from "../../src";
 
+const testBytesString =
+  "This is a test string 🚀 with various characters: !@#$%^&*()_+=-`~[]{}|;:'\",./<>?";
+const testBuffer = Buffer.from(testBytesString);
+const testBytesBase64 = Buffer.from(testBytesString).toString("base64");
+
+const testArrayBufferU8 = new ArrayBuffer(4);
+const testArrayBufferViewU8 = new Uint8Array(testArrayBufferU8);
+testArrayBufferViewU8[1] = 1;
+testArrayBufferViewU8[2] = 2;
+testArrayBufferViewU8[3] = 3;
+testArrayBufferViewU8[4] = 4;
+
+const testArrayBufferI8 = new ArrayBuffer(4);
+const testArrayBufferViewI8 = new Int8Array(testArrayBufferI8);
+testArrayBufferViewI8[1] = -1;
+testArrayBufferViewI8[2] = -2;
+testArrayBufferViewI8[3] = -3;
+testArrayBufferViewI8[4] = -4;
+
 describe.each`
   long_type
   ${"number"}
@@ -79,7 +98,8 @@ describe.each`
         }
       },
       "page": { "@set": { "data": ["a", "b"] } },
-      "embeddedSet": { "@set": "abc123" }
+      "embeddedSet": { "@set": "abc123" },
+      "bytes": { "@bytes": "${testBytesBase64}" }
     }`;
 
     const bugs_mod = new Module("Bugs");
@@ -125,7 +145,9 @@ describe.each`
     expect(result.measurements[1].time).toBeInstanceOf(TimeStub);
     expect(result.molecules).toEqual(
       // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
-      long_type === "number" ? 999999999999999999 : BigInt("999999999999999999")
+      long_type === "number"
+        ? 999999999999999999
+        : BigInt("999999999999999999"),
     );
     expect(result.null).toBeNull();
     expect(result.mod).toStrictEqual(bugs_mod);
@@ -136,6 +158,7 @@ describe.each`
     expect(result.nullDoc).toStrictEqual(nullDoc);
     expect(result.page).toStrictEqual(page);
     expect(result.embeddedSet).toStrictEqual(embeddedSet);
+    expect(Buffer.from(result.bytes).toString()).toEqual(testBytesString);
   });
 
   it("can be encoded", () => {
@@ -188,14 +211,18 @@ describe.each`
         }),
         nullDoc: new NullDocument(
           new DocumentReference({ coll: bugs_mod, id: "123" }),
-          "not found"
+          "not found",
         ),
+        bytes_array_buffer: testArrayBufferU8,
+        bytes_array_buffer_view_u8: testArrayBufferViewU8,
+        bytes_array_buffer_view_i8: testArrayBufferViewI8,
+        bytes_from_string: testBuffer,
         // Set types
         // TODO: uncomment to add test once core accepts `@set` tagged values
         // page: new Page({ data: ["a", "b"] }),
         // TODO: uncomment to add test once core accepts `@set` tagged values
         // page_string: new Page({ after: "abc123" }),
-      })
+      }),
     );
 
     const backToObj = JSON.parse(result)["@object"];
@@ -224,6 +251,18 @@ describe.each`
     });
     expect(backToObj.nullDoc).toStrictEqual({
       "@ref": { coll: { "@mod": "Bugs" }, id: "123" },
+    });
+    expect(backToObj.bytes_array_buffer).toStrictEqual({
+      "@bytes": Buffer.from(testArrayBufferU8).toString("base64"),
+    });
+    expect(backToObj.bytes_array_buffer_view_u8).toStrictEqual({
+      "@bytes": Buffer.from(testArrayBufferViewU8).toString("base64"),
+    });
+    expect(backToObj.bytes_array_buffer_view_i8).toStrictEqual({
+      "@bytes": Buffer.from(testArrayBufferViewI8).toString("base64"),
+    });
+    expect(backToObj.bytes_from_string).toStrictEqual({
+      "@bytes": testBytesBase64,
     });
     // Set types
     // TODO: uncomment to add test once core accepts `@set` tagged values
@@ -264,10 +303,10 @@ describe.each`
               "@time": new Date("2022-12-02T02:00:00.000Z"),
             },
           },
-        })
-      )
+        }),
+      ),
     ).toEqual(
-      '{"@object":{"@date":{"@object":{"@date":{"@object":{"@time":{"@time":"2022-12-02T02:00:00.000Z"}}}}}}}'
+      '{"@object":{"@date":{"@object":{"@date":{"@object":{"@time":{"@time":"2022-12-02T02:00:00.000Z"}}}}}}}',
     );
   });
 
@@ -276,8 +315,8 @@ describe.each`
       JSON.stringify(
         TaggedTypeFormat.encode({
           "@foo": true,
-        })
-      )
+        }),
+      ),
     ).toEqual('{"@object":{"@foo":true}}');
   });
 
@@ -318,11 +357,11 @@ describe.each`
       expect(encodedKey).toEqual(tag);
       const decoded = TaggedTypeFormat.decode(
         JSON.stringify(encoded),
-        decodeOptions
+        decodeOptions,
       );
       expect(typeof decoded).toBe(expectedType);
       expect(decoded).toEqual(expected);
-    }
+    },
   );
 
   it.each`

@@ -24,7 +24,7 @@ export {
   ServiceInternalError,
   ThrottlingError,
 } from "./errors";
-export { type Query, fql } from "./query-builder";
+export { type Query, type QueryArgument, fql } from "./query-builder";
 export { LONG_MAX, LONG_MIN, TaggedTypeFormat } from "./tagged-type";
 export {
   type QueryValueObject,

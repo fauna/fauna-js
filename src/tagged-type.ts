@@ -311,7 +311,9 @@ function bufferToBase64(value: ArrayBuffer | ArrayBufferView): string {
   }
 
   const isNodeJs =
-    typeof process !== "undefined" && process.versions && process.versions.node;
+    typeof process !== "undefined" &&
+    process &&
+    process.release?.name === "node";
 
   if (isNodeJs) {
     return Buffer.from(arr).toString("base64");

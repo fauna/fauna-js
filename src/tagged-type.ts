@@ -276,21 +276,23 @@ const encode = (input: QueryValue): QueryValue => {
   // anything here would be unreachable code
 };
 
-function base64toBuffer(value: string): Uint8Array {
-  const isNodeJs =
-    typeof process !== "undefined" && process.versions && process.versions.node;
+const isNodeJs =
+  typeof process !== "undefined" && process && process.release?.name === "node";
 
+function base64toBuffer(value: string): Uint8Array {
   if (isNodeJs) {
     const binaryBuffer = Buffer.from(value, "base64");
     return Uint8Array.from(binaryBuffer);
   } else {
+    const _atob = atob ?? window?.atob;
+
     if (typeof window?.atob === "undefined") {
       throw new ClientError(
         `Error encoding argument. This environment does not support atob. Provided: ${value}`,
       );
     }
 
-    const binaryString = window.atob(value);
+    const binaryString = _atob(value);
     const bytes = new Uint8Array(binaryString.length);
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i);
@@ -310,15 +312,12 @@ function bufferToBase64(value: ArrayBuffer | ArrayBufferView): string {
     arr = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
   }
 
-  const isNodeJs =
-    typeof process !== "undefined" &&
-    process &&
-    process.release?.name === "node";
-
   if (isNodeJs) {
     return Buffer.from(arr).toString("base64");
   } else {
-    if (typeof window?.btoa === "undefined") {
+    const _btoa = btoa ?? window?.btoa;
+
+    if (typeof _btoa === "undefined") {
       throw new ClientError(
         `Error encoding argument. This environment does not support btoa. Provided: ${value}`,
       );
@@ -328,6 +327,6 @@ function bufferToBase64(value: ArrayBuffer | ArrayBufferView): string {
     for (let i = 0; i < arr.length; i++) {
       binaryString += String.fromCharCode(arr[i]);
     }
-    return window.btoa(binaryString);
+    return _btoa(binaryString);
   }
 }

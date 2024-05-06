@@ -38,6 +38,24 @@ describe("Document", () => {
     expect(doc.ts.isoString).toBe("2023-10-16T00:00:00Z");
   });
 
+  it("can access ttl", () => {
+    const doc = new Document({
+      coll: new Module("User"),
+      id: "1234",
+      ts: TimeStub.from("2023-03-09T00:00:00Z"),
+    });
+
+    const doc_w_ttl = new Document({
+      coll: new Module("User"),
+      id: "1234",
+      ts: TimeStub.from("2023-03-09T00:00:00Z"),
+      ttl: TimeStub.from("2023-03-10T00:00:00Z"),
+    });
+
+    expect(doc.ttl).toBeUndefined();
+    expect(doc_w_ttl.ttl).toBeInstanceOf(TimeStub);
+  });
+
   it("can access user data", () => {
     const doc = new Document({
       coll: new Module("User"),

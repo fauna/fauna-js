@@ -13,7 +13,8 @@ import {
   HTTPStreamRequest,
   StreamAdapter,
 } from "./http-client";
-import { ServiceError, NetworkError } from "../errors";
+import { NetworkError, getServiceError } from "../errors";
+import { QueryFailure } from "../wire-protocol";
 
 // alias http2 types
 type ClientHttp2Session = any;
@@ -59,7 +60,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
     if (!NodeHTTP2Client.#clients.has(clientKey)) {
       NodeHTTP2Client.#clients.set(
         clientKey,
-        new NodeHTTP2Client(httpClientOptions)
+        new NodeHTTP2Client(httpClientOptions),
       );
     }
     // we know that we have a client here
@@ -98,7 +99,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
             "The network connection encountered a problem.",
             {
               cause: error,
-            }
+            },
           );
         }
         memoizedError = error;
@@ -169,10 +170,10 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
     return new Promise<HTTPResponse>((resolvePromise, rejectPromise) => {
       let req: ClientHttp2Stream;
       const onResponse = (
-        http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader
+        http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader,
       ) => {
         const status = Number(
-          http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
+          http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS],
         );
         let responseData = "";
 
@@ -204,7 +205,12 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
           .request(httpRequestHeaders)
           .setEncoding("utf8")
           .on("error", (error: any) => {
-            rejectPromise(error);
+            rejectPromise(
+              new NetworkError(
+                "The network connection encountered a problem while streaming events.",
+                { cause: error },
+              ),
+            );
           })
           .on("response", onResponse);
 
@@ -217,7 +223,12 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
 
         req.end();
       } catch (error) {
-        rejectPromise(error);
+        rejectPromise(
+          new NetworkError(
+            "The network connection encountered a problem while streaming events.",
+            { cause: error },
+          ),
+        );
       }
     });
   }
@@ -241,10 +252,10 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
 
     let req: ClientHttp2Stream;
     const onResponse = (
-      http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader
+      http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader,
     ) => {
       const status = Number(
-        http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
+        http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS],
       );
       if (!(status >= 200 && status < 400)) {
         // Get the error body and then throw an error
@@ -257,10 +268,17 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
         });
 
         // Once the response is finished, resolve the promise
-        // TODO: The Client contains the information for how to parse an error
-        // into the appropriate class, so lift this logic out of the HTTPClient.
         req.on("end", () => {
-          rejectChunk(new ServiceError(JSON.parse(responseData), status));
+          try {
+            const failure: QueryFailure = JSON.parse(responseData);
+            rejectChunk(getServiceError(failure, status));
+          } catch (error) {
+            rejectChunk(
+              new NetworkError("Could not process query failure.", {
+                cause: error,
+              }),
+            );
+          }
         });
       } else {
         let partOfLine = "";

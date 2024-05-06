@@ -4,23 +4,14 @@ import {
   endpoints,
 } from "./client-configuration";
 import {
-  AuthenticationError,
-  AuthorizationError,
   ClientClosedError,
   ClientError,
+  FaunaError,
   NetworkError,
   ProtocolError,
-  AbortError,
-  QueryCheckError,
-  QueryRuntimeError,
-  QueryTimeoutError,
   ServiceError,
-  ServiceInternalError,
-  ServiceTimeoutError,
   ThrottlingError,
-  ContendedTransactionError,
-  InvalidRequestError,
-  FaunaError,
+  getServiceError,
 } from "./errors";
 import {
   HTTPStreamClient,
@@ -41,7 +32,6 @@ import {
   StreamEvent,
   StreamEventData,
   StreamEventStatus,
-  type QueryFailure,
   type QueryOptions,
   type QuerySuccess,
   type QueryValue,
@@ -114,7 +104,7 @@ export class Client {
    */
   constructor(
     clientConfiguration?: ClientConfiguration,
-    httpClient?: HTTPClient
+    httpClient?: HTTPClient,
   ) {
     this.#clientConfiguration = {
       ...DEFAULT_CLIENT_CONFIG,
@@ -170,7 +160,7 @@ export class Client {
   close() {
     if (this.#isClosed) {
       throw new ClientClosedError(
-        "Your client is closed. You cannot close it again."
+        "Your client is closed. You cannot close it again.",
       );
     }
     this.#httpClient.close();
@@ -221,7 +211,7 @@ export class Client {
    */
   paginate<T extends QueryValue>(
     iterable: Page<T> | EmbeddedSet | Query,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): SetIterator<T> {
     if (iterable instanceof Query) {
       return SetIterator.fromQuery(this, iterable, options);
@@ -243,10 +233,7 @@ export class Client {
    *
    * @throws {@link ServiceError} Fauna emitted an error. The ServiceError will be
    *   one of ServiceError's child classes if the error can be further categorized,
-   *   or a concrete ServiceError if it cannot. ServiceError child types are
-   *   {@link AuthenticaionError}, {@link AuthorizationError}, {@link QueryCheckError}
-   *   {@link QueryRuntimeError}, {@link QueryTimeoutError}, {@link ServiceInternalError}
-   *   {@link ServiceTimeoutError}, {@link ThrottlingError}.
+   *   or a concrete ServiceError if it cannot.
    *   You can use either the type, or the underlying httpStatus + code to determine
    *   the root cause.
    * @throws {@link ProtocolError} the client a HTTP error not sent by Fauna.
@@ -258,11 +245,11 @@ export class Client {
    */
   async query<T extends QueryValue>(
     query: Query,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): Promise<QuerySuccess<T>> {
     if (this.#isClosed) {
       throw new ClientClosedError(
-        "Your client is closed. No further requests can be issued."
+        "Your client is closed. No further requests can be issued.",
       );
     }
 
@@ -330,14 +317,13 @@ export class Client {
    *  );
    * ```
    */
-  // TODO: implement options
   stream<T extends QueryValue>(
     tokenOrQuery: StreamToken | Query,
-    options?: Partial<StreamClientConfiguration>
+    options?: Partial<StreamClientConfiguration>,
   ): StreamClient<T> {
     if (this.#isClosed) {
       throw new ClientClosedError(
-        "Your client is closed. No further requests can be issued."
+        "Your client is closed. No further requests can be issued.",
       );
     }
 
@@ -364,7 +350,7 @@ export class Client {
   async #queryWithRetries<T extends QueryValue>(
     queryInterpolation: string | QueryInterpolation,
     options?: QueryOptions,
-    attempt = 0
+    attempt = 0,
   ): Promise<QuerySuccess<T>> {
     const maxBackoff =
       this.clientConfiguration.max_backoff ?? DEFAULT_CLIENT_CONFIG.max_backoff;
@@ -404,7 +390,7 @@ export class Client {
       if (isQueryFailure(e.body)) {
         const failure = e.body;
         const status = e.status;
-        return this.#getServiceError(failure, status);
+        return getServiceError(failure, status);
       }
 
       // we got a different error from the protocol layer
@@ -419,7 +405,7 @@ export class Client {
       "A client level error occurred. Fauna was not called.",
       {
         cause: e,
-      }
+      },
     );
   }
 
@@ -440,7 +426,7 @@ export class Client {
       throw new TypeError(
         "You must provide a secret to the driver. Set it \
 in an environmental variable named FAUNA_SECRET or pass it to the Client\
- constructor."
+ constructor.",
       );
     }
     return maybeSecret;
@@ -455,7 +441,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       partialClientConfig.endpoint === undefined
     ) {
       throw new TypeError(
-        `ClientConfiguration option endpoint must be defined.`
+        `ClientConfiguration option endpoint must be defined.`,
       );
     }
 
@@ -475,48 +461,10 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     return partialClientConfig?.endpoint ?? env_endpoint ?? endpoints.default;
   }
 
-  #getServiceError(failure: QueryFailure, httpStatus: number): ServiceError {
-    switch (httpStatus) {
-      case 400:
-        if (QUERY_CHECK_FAILURE_CODES.includes(failure.error.code)) {
-          return new QueryCheckError(failure, httpStatus);
-        }
-        if (failure.error.code === "invalid_request") {
-          return new InvalidRequestError(failure, httpStatus);
-        }
-        if (
-          failure.error.code === "abort" &&
-          failure.error.abort !== undefined
-        ) {
-          return new AbortError(
-            failure as QueryFailure & { error: { abort: QueryValue } },
-            httpStatus
-          );
-        }
-        return new QueryRuntimeError(failure, httpStatus);
-      case 401:
-        return new AuthenticationError(failure, httpStatus);
-      case 403:
-        return new AuthorizationError(failure, httpStatus);
-      case 409:
-        return new ContendedTransactionError(failure, httpStatus);
-      case 429:
-        return new ThrottlingError(failure, httpStatus);
-      case 440:
-        return new QueryTimeoutError(failure, httpStatus);
-      case 500:
-        return new ServiceInternalError(failure, httpStatus);
-      case 503:
-        return new ServiceTimeoutError(failure, httpStatus);
-      default:
-        return new ServiceError(failure, httpStatus);
-    }
-  }
-
   async #query<T extends QueryValue>(
     queryInterpolation: string | QueryInterpolation,
     options?: QueryOptions,
-    attempt = 0
+    attempt = 0,
   ): Promise<QuerySuccess<T>> {
     try {
       const requestConfig = {
@@ -603,12 +551,12 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
   #setHeaders(
     fromObject: QueryOptions,
-    headerObject: Record<string, string | number>
+    headerObject: Record<string, string | number>,
   ): void {
     const setHeader = <V>(
       header: string,
       value: V | undefined,
-      transform: (v: V) => string | number = (v) => String(v)
+      transform: (v: V) => string | number = (v) => String(v),
     ) => {
       if (value !== undefined) {
         headerObject[header] = transform(value);
@@ -624,7 +572,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     setHeader("x-query-tags", fromObject.query_tags, (tags) =>
       Object.entries(tags)
         .map((tag) => tag.join("="))
-        .join(",")
+        .join(","),
     );
     setHeader("x-last-txn-ts", this.#lastTxnTs, (v) => v); // x-last-txn-ts doesn't get stringified
     setHeader("x-driver-env", Client.#driverEnvHeader);
@@ -648,7 +596,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     required_options.forEach((option) => {
       if (config[option] === undefined) {
         throw new TypeError(
-          `ClientConfiguration option '${option}' must be defined.`
+          `ClientConfiguration option '${option}' must be defined.`,
         );
       }
     });
@@ -659,7 +607,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
     if (config.client_timeout_buffer_ms <= 0) {
       throw new RangeError(
-        `'client_timeout_buffer_ms' must be greater than zero.`
+        `'client_timeout_buffer_ms' must be greater than zero.`,
       );
     }
 
@@ -707,10 +655,9 @@ export class StreamClient<T extends QueryValue = any> {
    *  const streamClient = client.stream(streamToken);
    * ```
    */
-  // TODO: implement stream-specific options
   constructor(
     token: StreamToken | (() => Promise<StreamToken>),
-    clientConfiguration: StreamClientConfiguration
+    clientConfiguration: StreamClientConfiguration,
   ) {
     if (token instanceof StreamToken) {
       this.#query = () => Promise.resolve(token);
@@ -732,16 +679,16 @@ export class StreamClient<T extends QueryValue = any> {
    */
   start(
     onEvent: (event: StreamEventData<T> | StreamEventStatus) => void,
-    onError?: (error: Error) => void
+    onError?: (error: Error) => void,
   ) {
     if (typeof onEvent !== "function") {
       throw new TypeError(
-        `Expected a function as the 'onEvent' argument, but received ${typeof onEvent}. Please provide a valid function.`
+        `Expected a function as the 'onEvent' argument, but received ${typeof onEvent}. Please provide a valid function.`,
       );
     }
     if (onError && typeof onError !== "function") {
       throw new TypeError(
-        `Expected a function as the 'onError' argument, but received ${typeof onError}. Please provide a valid function.`
+        `Expected a function as the 'onError' argument, but received ${typeof onError}. Please provide a valid function.`,
       );
     }
     const run = async () => {
@@ -770,7 +717,7 @@ export class StreamClient<T extends QueryValue = any> {
         if (!(maybeStreamToken instanceof StreamToken)) {
           throw new ClientError(
             `Error requesting a stream token. Expected a StreamToken as the query result, but received ${typeof maybeStreamToken}. Your query must return the result of '<Set>.toStream' or '<Set>.changesOn')\n` +
-              `Query result: ${JSON.stringify(maybeStreamToken, null)}`
+              `Query result: ${JSON.stringify(maybeStreamToken, null)}`,
           );
         }
         return maybeStreamToken;
@@ -782,7 +729,7 @@ export class StreamClient<T extends QueryValue = any> {
       const backoffMs =
         Math.min(
           Math.random() * 2 ** this.#connectionAttempts,
-          this.#clientConfiguration.max_backoff
+          this.#clientConfiguration.max_backoff,
         ) * 1_000;
 
       try {
@@ -818,7 +765,7 @@ export class StreamClient<T extends QueryValue = any> {
   }
 
   async *#startStream(
-    start_ts?: number
+    start_ts?: number,
   ): AsyncGenerator<StreamEventData<T> | StreamEventStatus> {
     // Safety: This method must only be called after a stream token has been acquired
     const streamToken = this.#streamToken as StreamToken;
@@ -844,8 +791,7 @@ export class StreamClient<T extends QueryValue = any> {
       if (deserializedEvent.type === "error") {
         // Errors sent from Fauna are assumed fatal
         this.close();
-        // TODO: replace with appropriate class from existing error heirarchy
-        throw new ServiceError(deserializedEvent, 400);
+        throw getServiceError(deserializedEvent);
       }
 
       this.#last_ts = deserializedEvent.txn_ts;
@@ -879,7 +825,7 @@ export class StreamClient<T extends QueryValue = any> {
     required_options.forEach((option) => {
       if (config[option] === undefined) {
         throw new TypeError(
-          `ClientConfiguration option '${option}' must be defined.`
+          `ClientConfiguration option '${option}' must be defined.`,
         );
       }
     });
@@ -895,14 +841,6 @@ export class StreamClient<T extends QueryValue = any> {
 }
 
 // Private types and constants for internal logic.
-
-const QUERY_CHECK_FAILURE_CODES = [
-  "invalid_function_definition",
-  "invalid_identifier",
-  "invalid_query",
-  "invalid_syntax",
-  "invalid_type",
-];
 
 function wait(ms: number) {
   return new Promise((r) => setTimeout(r, ms));

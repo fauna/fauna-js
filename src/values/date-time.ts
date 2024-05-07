@@ -17,7 +17,7 @@ import * as PARSE from "../regex";
  * Converting to a Javascript date before sending to Fauna could result in loss
  * of precision.
  *
- * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/builtin_functions/time/time}
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#time}
  */
 export class TimeStub {
   readonly isoString: string;
@@ -104,7 +104,7 @@ export class TimeStub {
  * be taken to specify the desired date, since Javascript `Date`s use local
  * timezone info by default.
  *
- * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/builtin_functions/date/date}
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#date}
  */
 export class DateStub {
   readonly dateString: string;

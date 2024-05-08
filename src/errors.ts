@@ -67,8 +67,6 @@ export class ServiceError extends FaunaError {
  * QueryRuntimeError's occur when a bug in your query causes an invalid execution
  * to be requested.
  * The 'code' field will vary based on the specific error cause.
- *
- * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class QueryRuntimeError extends ServiceError {
   constructor(failure: QueryFailure, httpStatus: 400) {
@@ -85,8 +83,6 @@ export class QueryRuntimeError extends ServiceError {
 /**
  * An error due to a "compile-time" check of the query
  * failing.
- *
- * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class QueryCheckError extends ServiceError {
   constructor(failure: QueryFailure, httpStatus: 400) {
@@ -101,8 +97,6 @@ export class QueryCheckError extends ServiceError {
 /**
  * An error due to an invalid request to Fauna. Either the request body was not
  * valid JSON or did not conform to the API specification
- *
- * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class InvalidRequestError extends ServiceError {
   constructor(failure: QueryFailure, httpStatus: 400) {
@@ -116,8 +110,6 @@ export class InvalidRequestError extends ServiceError {
 
 /**
  * An error due to calling the FQL `abort` function.
- *
- * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/errors#runtime-errors}
  */
 export class AbortError extends ServiceError {
   /**

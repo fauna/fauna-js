@@ -4,7 +4,7 @@ import { QueryOptions, QueryValue } from "../wire-protocol";
 
 /**
  * A materialized view of a Set.
- * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#set}
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#set}
  */
 export class Page<T extends QueryValue> {
   /** A materialized page of data */
@@ -26,7 +26,7 @@ export class Page<T extends QueryValue> {
  * A un-materialized Set. Typically received when a materialized Set contains
  * another set, the EmbeddedSet does not contain any data to avoid potential
  * issues such as self-reference and infinite recursion
- * @see {@link https://fqlx-beta--fauna-docs.netlify.app/fqlx/beta/reference/language/types#set}
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#set}
  */
 export class EmbeddedSet {
   /**

@@ -1,3 +1,5 @@
+import base64 from "base64-js";
+
 import { ClientError } from "./errors";
 import {
   DateStub,
@@ -276,29 +278,8 @@ const encode = (input: QueryValue): QueryValue => {
   // anything here would be unreachable code
 };
 
-const isNodeJs =
-  typeof process !== "undefined" && process && process.release?.name === "node";
-
 function base64toBuffer(value: string): Uint8Array {
-  if (isNodeJs) {
-    const binaryBuffer = Buffer.from(value, "base64");
-    return Uint8Array.from(binaryBuffer);
-  } else {
-    const _atob = atob ?? window?.atob;
-
-    if (typeof window?.atob === "undefined") {
-      throw new ClientError(
-        `Error encoding argument. This environment does not support atob. Provided: ${value}`,
-      );
-    }
-
-    const binaryString = _atob(value);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes;
-  }
+  return base64.toByteArray(value);
 }
 
 function bufferToBase64(value: ArrayBuffer | ArrayBufferView): string {
@@ -312,21 +293,5 @@ function bufferToBase64(value: ArrayBuffer | ArrayBufferView): string {
     arr = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
   }
 
-  if (isNodeJs) {
-    return Buffer.from(arr).toString("base64");
-  } else {
-    const _btoa = btoa ?? window?.btoa;
-
-    if (typeof _btoa === "undefined") {
-      throw new ClientError(
-        `Error encoding argument. This environment does not support btoa. Provided: ${value}`,
-      );
-    }
-
-    let binaryString = "";
-    for (let i = 0; i < arr.length; i++) {
-      binaryString += String.fromCharCode(arr[i]);
-    }
-    return _btoa(binaryString);
-  }
+  return base64.fromByteArray(arr);
 }

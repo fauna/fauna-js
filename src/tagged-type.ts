@@ -220,7 +220,7 @@ const encodeMap = {
   // TODO: encode as a tagged value if provided as a query arg?
   // streamToken: (value: StreamToken): TaggedStreamToken => ({ "@stream": value.token }),
   streamToken: (value: StreamToken): string => value.token,
-  bytes: (value: ArrayBuffer | ArrayBufferView): TaggedBytes => ({
+  bytes: (value: ArrayBuffer | Uint8Array): TaggedBytes => ({
     "@bytes": bufferToBase64(value),
   }),
 };
@@ -269,8 +269,12 @@ const encode = (input: QueryValue): QueryValue => {
         return encodeMap["set"](input);
       } else if (input instanceof StreamToken) {
         return encodeMap["streamToken"](input);
-      } else if (input instanceof ArrayBuffer || ArrayBuffer.isView(input)) {
+      } else if (input instanceof Uint8Array || input instanceof ArrayBuffer) {
         return encodeMap["bytes"](input);
+      } else if (ArrayBuffer.isView(input)) {
+        throw new ClientError(
+          "Error encoding TypedArray to Fauna Bytes. Convert your TypedArray to Uint8Array or ArrayBuffer before passing it to Fauna. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray",
+        );
       } else {
         return encodeMap["object"](input);
       }
@@ -282,16 +286,9 @@ function base64toBuffer(value: string): Uint8Array {
   return base64.toByteArray(value);
 }
 
-function bufferToBase64(value: ArrayBuffer | ArrayBufferView): string {
-  let arr: Uint8Array;
-
-  if (value instanceof Uint8Array) {
-    arr = value;
-  } else if (value instanceof ArrayBuffer) {
-    arr = new Uint8Array(value);
-  } else {
-    arr = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
-  }
+function bufferToBase64(value: ArrayBuffer | Uint8Array): string {
+  const arr: Uint8Array =
+    value instanceof Uint8Array ? value : new Uint8Array(value);
 
   return base64.fromByteArray(arr);
 }

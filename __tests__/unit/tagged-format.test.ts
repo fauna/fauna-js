@@ -26,13 +26,6 @@ testArrayBufferViewU8[2] = 2;
 testArrayBufferViewU8[3] = 3;
 testArrayBufferViewU8[4] = 4;
 
-const testArrayBufferI8 = new ArrayBuffer(4);
-const testArrayBufferViewI8 = new Int8Array(testArrayBufferI8);
-testArrayBufferViewI8[1] = -1;
-testArrayBufferViewI8[2] = -2;
-testArrayBufferViewI8[3] = -3;
-testArrayBufferViewI8[4] = -4;
-
 describe.each`
   long_type
   ${"number"}
@@ -215,7 +208,6 @@ describe.each`
         ),
         bytes_array_buffer: testArrayBufferU8,
         bytes_array_buffer_view_u8: testArrayBufferViewU8,
-        bytes_array_buffer_view_i8: testArrayBufferViewI8,
         bytes_from_string: testBuffer,
         // Set types
         // TODO: uncomment to add test once core accepts `@set` tagged values
@@ -257,9 +249,6 @@ describe.each`
     });
     expect(backToObj.bytes_array_buffer_view_u8).toStrictEqual({
       "@bytes": Buffer.from(testArrayBufferViewU8).toString("base64"),
-    });
-    expect(backToObj.bytes_array_buffer_view_i8).toStrictEqual({
-      "@bytes": Buffer.from(testArrayBufferViewI8).toString("base64"),
     });
     expect(backToObj.bytes_from_string).toStrictEqual({
       "@bytes": testBytesBase64,

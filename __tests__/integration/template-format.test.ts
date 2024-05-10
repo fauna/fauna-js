@@ -1,4 +1,4 @@
-import { fql, TimeStub } from "../../src";
+import { ClientError, fql, TimeStub } from "../../src";
 import { getClient } from "../client";
 
 const client = getClient({
@@ -134,31 +134,46 @@ describe("query using template format", () => {
     expect(response.data).toEqual(buf);
   });
 
-  it("succeeds with ArrayBufferView variables", async () => {
-    const buf1 = new Uint8Array([1]);
-    const buf2 = new Int8Array([1, 2]);
-    const buf3 = new Uint16Array([100, 200, 300]);
-    const buf4 = new Int16Array([100, 200, 300, 400]);
-    const queryBuilder = fql`
-      [
-        ${buf1},
-        ${buf2},
-        ${buf3},
-        ${buf4},
-      ]
-    `;
-    const response =
-      await client.query<[Uint8Array, Uint8Array, Uint8Array, Uint8Array]>(
-        queryBuilder,
-      );
-    expect(response.data[0].byteLength).toEqual(1);
-    expect(response.data[0]).toEqual(buf1);
-    expect(response.data[1].byteLength).toEqual(2);
-    expect(new Int8Array(response.data[1].buffer)).toEqual(buf2);
-    expect(response.data[2].byteLength).toEqual(6);
-    expect(new Uint16Array(response.data[2].buffer)).toEqual(buf3);
-    expect(response.data[3].byteLength).toEqual(8);
-    expect(new Int16Array(response.data[3].buffer)).toEqual(buf4);
+  it("succeeds with Uint8Array variables", async () => {
+    const buf = new Uint8Array([1, 2, 3]);
+    const queryBuilder = fql`${buf}`;
+    const response = await client.query<Uint8Array>(queryBuilder);
+    expect(response.data.byteLength).toBe(3);
+    expect(response.data).toEqual(buf);
+  });
+
+  /**
+   * See table of various TypedArrays here
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#typedarray_objects
+   */
+  it.each`
+    ViewType
+    ${Int8Array}
+    ${Uint8ClampedArray}
+    ${Int16Array}
+    ${Uint16Array}
+    ${Int32Array}
+    ${Uint32Array}
+    ${Float32Array}
+    ${Float64Array}
+  `("fails with $ViewType variables", async ({ ViewType }) => {
+    const buf = new ViewType([1, 2]);
+
+    await expect(client.query(fql`${buf}`)).rejects.toThrow(ClientError);
+  });
+
+  /**
+   * See table of various TypedArrays here
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#typedarray_objects
+   */
+  it.each`
+    ViewType
+    ${BigInt64Array}
+    ${BigUint64Array}
+  `("fails with $ViewType variables", async ({ ViewType }) => {
+    const buf = new ViewType([BigInt(1), BigInt(2)]);
+
+    await expect(client.query(fql`${buf}`)).rejects.toThrow(ClientError);
   });
 
   it("succeeds using Node Buffer to encode strings", async () => {
@@ -166,7 +181,7 @@ describe("query using template format", () => {
       "This is a test string 🚀 with various characters: !@#$%^&*()_+=-`~[]{}|;:'\",./<>?";
     const buf = Buffer.from(str);
     const queryBuilder = fql`${buf}`;
-    const response = await client.query<ArrayBuffer>(queryBuilder);
+    const response = await client.query<Uint8Array>(queryBuilder);
 
     const decoded = Buffer.from(response.data).toString();
     expect(decoded).toBe(str);

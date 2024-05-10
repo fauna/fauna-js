@@ -7,7 +7,12 @@ import type {
   QueryOptions,
 } from "./wire-protocol";
 
-export type QueryArgument = QueryValue | Query | Date | ArrayBufferView;
+export type QueryArgument =
+  | QueryValue
+  | Query
+  | Date
+  | ArrayBuffer
+  | Uint8Array;
 
 /**
  * Creates a new Query. Accepts template literal inputs.

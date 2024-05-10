@@ -1,3 +1,5 @@
+import base64 from "base64-js";
+
 import { ClientError } from "./errors";
 import {
   DateStub,
@@ -98,6 +100,8 @@ Returning as Number with loss of precision. Use long_type 'bigint' instead.`);
         return value["@object"];
       } else if (value["@stream"]) {
         return new StreamToken(value["@stream"]);
+      } else if (value["@bytes"]) {
+        return base64toBuffer(value["@bytes"]);
       }
 
       return value;
@@ -105,6 +109,7 @@ Returning as Number with loss of precision. Use long_type 'bigint' instead.`);
   }
 }
 
+type TaggedBytes = { "@bytes": string };
 type TaggedDate = { "@date": string };
 type TaggedDouble = { "@double": string };
 type TaggedInt = { "@int": string };
@@ -127,7 +132,7 @@ const encodeMap = {
   bigint: (value: bigint): TaggedLong | TaggedInt => {
     if (value < LONG_MIN || value > LONG_MAX) {
       throw new RangeError(
-        "BigInt value exceeds max magnitude for a 64-bit Fauna long. Use a 'number' to represent doubles beyond that limit."
+        "BigInt value exceeds max magnitude for a 64-bit Fauna long. Use a 'number' to represent doubles beyond that limit.",
       );
     }
     if (value >= INT_MIN && value <= INT_MAX) {
@@ -201,7 +206,7 @@ const encodeMap = {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   set: (value: Page<QueryValue> | EmbeddedSet) => {
     throw new ClientError(
-      "Page could not be encoded. Fauna does not accept encoded Set values, yet. Use Page.data and Page.after as arguments, instead."
+      "Page could not be encoded. Fauna does not accept encoded Set values, yet. Use Page.data and Page.after as arguments, instead.",
     );
     // TODO: uncomment to encode Pages once core starts accepting `@set` tagged values
     // if (value.data === undefined) {
@@ -215,6 +220,9 @@ const encodeMap = {
   // TODO: encode as a tagged value if provided as a query arg?
   // streamToken: (value: StreamToken): TaggedStreamToken => ({ "@stream": value.token }),
   streamToken: (value: StreamToken): string => value.token,
+  bytes: (value: ArrayBuffer | Uint8Array): TaggedBytes => ({
+    "@bytes": bufferToBase64(value),
+  }),
 };
 
 const encode = (input: QueryValue): QueryValue => {
@@ -261,9 +269,26 @@ const encode = (input: QueryValue): QueryValue => {
         return encodeMap["set"](input);
       } else if (input instanceof StreamToken) {
         return encodeMap["streamToken"](input);
+      } else if (input instanceof Uint8Array || input instanceof ArrayBuffer) {
+        return encodeMap["bytes"](input);
+      } else if (ArrayBuffer.isView(input)) {
+        throw new ClientError(
+          "Error encoding TypedArray to Fauna Bytes. Convert your TypedArray to Uint8Array or ArrayBuffer before passing it to Fauna. See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray",
+        );
       } else {
         return encodeMap["object"](input);
       }
   }
   // anything here would be unreachable code
 };
+
+function base64toBuffer(value: string): Uint8Array {
+  return base64.toByteArray(value);
+}
+
+function bufferToBase64(value: ArrayBuffer | Uint8Array): string {
+  const arr: Uint8Array =
+    value instanceof Uint8Array ? value : new Uint8Array(value);
+
+  return base64.fromByteArray(arr);
+}

@@ -318,7 +318,8 @@ export type QueryValue =
   | NullDocument
   | Page<QueryValue>
   | EmbeddedSet
-  | StreamToken;
+  | StreamToken
+  | Uint8Array;
 
 export type StreamRequest = {
   token: string;

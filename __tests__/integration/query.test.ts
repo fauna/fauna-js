@@ -127,13 +127,13 @@ describe("query", () => {
             expect(req.headers[expectedHeader.key]).toBe(expectedHeader.value);
           });
           expect(req.headers["x-driver-env"]).toEqual(
-            expect.stringContaining("driver=")
+            expect.stringContaining("driver="),
           );
           expect(req.headers["x-driver-env"]).toEqual(
-            expect.stringContaining("os=")
+            expect.stringContaining("os="),
           );
           expect(req.headers["x-driver-env"]).toEqual(
-            expect.stringContaining("runtime=")
+            expect.stringContaining("runtime="),
           );
           return dummyResponse;
         },
@@ -150,33 +150,31 @@ describe("query", () => {
       const headers = { [fieldName]: fieldValue };
       await myClient.query<number>(fql`"taco".length`, headers);
       myClient.close();
-    }
+    },
   );
 
-  it(
-    "respects typechecked: undefined", async () => {
-      const httpClient: HTTPClient = {
-        async request(req) {
-          const contains = new Set(Object.keys(req.headers)).has("x-typecheck");
-          expect(contains).toBe(false);
-          return dummyResponse;
-        },
-        close() {},
-      };
+  it("respects typechecked: undefined", async () => {
+    const httpClient: HTTPClient = {
+      async request(req) {
+        const contains = new Set(Object.keys(req.headers)).has("x-typecheck");
+        expect(contains).toBe(false);
+        return dummyResponse;
+      },
+      close() {},
+    };
 
-      let clientConfiguration: Partial<ClientConfiguration> = {
-        typecheck: true,
-      };
-      let myClient = getClient(clientConfiguration, httpClient);
-      await myClient.query<number>(fql`"taco".length`, { typecheck: undefined });
-      myClient.close();
+    let clientConfiguration: Partial<ClientConfiguration> = {
+      typecheck: true,
+    };
+    let myClient = getClient(clientConfiguration, httpClient);
+    await myClient.query<number>(fql`"taco".length`, { typecheck: undefined });
+    myClient.close();
 
-      clientConfiguration = { typecheck: undefined };
-      myClient = getClient(clientConfiguration, httpClient);
-      await myClient.query<number>(fql`"taco".length`);
-      myClient.close();
-    }
-  );
+    clientConfiguration = { typecheck: undefined };
+    myClient = getClient(clientConfiguration, httpClient);
+    await myClient.query<number>(fql`"taco".length`);
+    myClient.close();
+  });
 
   it("can send arguments directly", async () => {
     const foo = {
@@ -234,10 +232,10 @@ describe("query", () => {
     expect.assertions(6);
     try {
       await client.query(
-        fql`Function.create({"name": "my_double", "body": "x => x * 2"})`
+        fql`Function.create({"name": "my_double", "body": "x => x * 2"})`,
       );
       await client.query(
-        fql`Function.create({"name": "my_double", "body": "x => x * 2"})`
+        fql`Function.create({"name": "my_double", "body": "x => x * 2"})`,
       );
     } catch (e) {
       if (e instanceof ServiceError) {
@@ -266,7 +264,7 @@ describe("query", () => {
             data: "{}" as unknown as QueryRequest,
           };
           return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(
-            bad_req
+            bad_req,
           );
         },
         close() {},
@@ -307,7 +305,7 @@ describe("query", () => {
     } catch (e) {
       if (e instanceof QueryTimeoutError) {
         expect(e.message).toEqual(
-          expect.stringContaining("aggressive deadline")
+          expect.stringContaining("aggressive deadline"),
         );
         expect(e.httpStatus).toBe(440);
         expect(e.code).toBe("time_out");
@@ -366,7 +364,7 @@ describe("query", () => {
   });
 
   it("throws a NetworkError on client timeout", async () => {
-    expect.assertions(2);
+    expect.assertions(3);
 
     const httpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
     const badHTTPClient = {
@@ -384,6 +382,7 @@ describe("query", () => {
     try {
       await badClient.query(fql``);
     } catch (e: any) {
+      expect(e).toBeInstanceOf(NetworkError);
       if (e instanceof NetworkError) {
         expect(e.message).toBe("The network connection encountered a problem.");
         expect(e.cause).toBeDefined();
@@ -403,7 +402,7 @@ describe("query", () => {
       {
         query_timeout_ms: 60,
       },
-      httpClient
+      httpClient,
     );
     try {
       await badClient.query(fql`foo`);
@@ -411,7 +410,7 @@ describe("query", () => {
       if (e instanceof ClientError) {
         expect(e.cause).toBeDefined();
         expect(e.message).toBe(
-          "A client level error occurred. Fauna was not called."
+          "A client level error occurred. Fauna was not called.",
         );
       }
     } finally {
@@ -440,13 +439,13 @@ describe("query", () => {
 
   it("session is closed regardless of number of clients", async () => {
     const httpClient1 = NodeHTTP2Client.getClient(
-      getDefaultHTTPClientOptions()
+      getDefaultHTTPClientOptions(),
     );
     const httpClient2 = NodeHTTP2Client.getClient(
-      getDefaultHTTPClientOptions()
+      getDefaultHTTPClientOptions(),
     );
     const httpClient3 = NodeHTTP2Client.getClient(
-      getDefaultHTTPClientOptions()
+      getDefaultHTTPClientOptions(),
     );
     const client1 = getClient({}, httpClient1);
     const client2 = getClient({}, httpClient2);
@@ -500,7 +499,7 @@ describe("query can encode / decode QueryValue correctly", () => {
     };
     // Do not use a dynamic Collection name by using `${new Module(collectionName)}`. See ENG-5003
     const docCreated = await client.query<any>(
-      fql`UndefinedTest.create(${toughInput})`
+      fql`UndefinedTest.create(${toughInput})`,
     );
     expect(docCreated.data.should_exist).toBeUndefined();
     expect(docCreated.data.nested_object.i_dont_exist).toBeUndefined();
@@ -519,7 +518,7 @@ describe("query can encode / decode QueryValue correctly", () => {
       if (e instanceof TypeError) {
         expect(e.name).toBe("TypeError");
         expect(e.message).toBe(
-          "Passing undefined as a QueryValue is not supported"
+          "Passing undefined as a QueryValue is not supported",
         );
       }
     }

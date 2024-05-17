@@ -7,6 +7,13 @@ import type {
   QueryOptions,
 } from "./wire-protocol";
 
+export type QueryArgument =
+  | QueryValue
+  | Query
+  | Date
+  | ArrayBuffer
+  | Uint8Array;
+
 /**
  * Creates a new Query. Accepts template literal inputs.
  * @param queryFragments - a {@link TemplateStringsArray} that constitute
@@ -25,7 +32,7 @@ import type {
  */
 export function fql(
   queryFragments: ReadonlyArray<string>,
-  ...queryArgs: (QueryValue | Query)[]
+  ...queryArgs: QueryArgument[]
 ): Query {
   return new Query(queryFragments, ...queryArgs);
 }
@@ -37,11 +44,11 @@ export function fql(
  */
 export class Query {
   readonly #queryFragments: ReadonlyArray<string>;
-  readonly #queryArgs: (QueryValue | Query)[];
+  readonly #queryArgs: QueryArgument[];
 
   constructor(
     queryFragments: ReadonlyArray<string>,
-    ...queryArgs: (QueryValue | Query)[]
+    ...queryArgs: QueryArgument[]
   ) {
     if (
       queryFragments.length === 0 ||

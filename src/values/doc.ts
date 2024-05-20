@@ -19,6 +19,8 @@ import { TimeStub } from "./date-time";
  *  const id = userDocumentReference.id;
  *  id === "101"; // returns true
  * ```
+ *
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#special}
  */
 export class DocumentReference {
   readonly coll: Module;
@@ -57,9 +59,12 @@ export class DocumentReference {
  *
  * @remarks The {@link Document} class cannot be generic because classes cannot
  * extend generic type arguments.
+ *
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#special}
  */
 export class Document extends DocumentReference {
   readonly ts: TimeStub;
+  readonly ttl?: TimeStub;
 
   constructor(obj: {
     coll: Module | string;
@@ -73,8 +78,8 @@ export class Document extends DocumentReference {
     Object.assign(this, rest);
   }
 
-  toObject(): { coll: Module; id: string; ts: TimeStub } {
-    return { ...this } as { coll: Module; id: string; ts: TimeStub };
+  toObject(): { coll: Module; id: string; ts: TimeStub; ttl?: TimeStub } {
+    return { ...this };
   }
 }
 
@@ -96,6 +101,8 @@ export class Document extends DocumentReference {
  *  const collectionName = namedDocumentReference.name;
  *  collectionName === "Users"; // returns true
  * ```
+ *
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#special}
  */
 export class NamedDocumentReference {
   readonly coll: Module;
@@ -144,9 +151,11 @@ export class NamedDocumentReference {
  *
  *  const metadata = userCollection.data.metadata;
  * ```
+ *
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#special}
  */
 export class NamedDocument<
-  T extends QueryValueObject = Record<string, never>
+  T extends QueryValueObject = Record<string, never>,
 > extends NamedDocumentReference {
   readonly ts: TimeStub;
   readonly data: T;
@@ -186,6 +195,8 @@ export class NamedDocument<
  *  `);
  *  const allUserDocuments = response.data;
  * ```
+ *
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#module}
  */
 export class Module {
   readonly name: string;
@@ -220,6 +231,8 @@ export class Module {
  *    const color = maybeUserDocument.color;
  *  }
  * ```
+ *
+ * @see {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#nulldoc}
  */
 export class NullDocument {
   readonly ref: DocumentReference | NamedDocumentReference;

@@ -19,16 +19,16 @@ resources:
     source:
       uri: git@github.com:fauna/fauna-js.git
       branch: main
-#      tag_filter: v*
+      #      tag_filter: v*
       private_key: ((github-ssh-key))
-      
+
   - name: beta.git
     type: git
     icon: github
     source:
       uri: git@github.com:fauna/fauna-js.git
       branch: beta
-#      tag_filter: v*
+      #      tag_filter: v*
       private_key: ((github-ssh-key))
 
   - name: testtools-repo
@@ -123,7 +123,8 @@ jobs:
             - task: query-limits-tests
               privileged: true
               file: main.git/concourse/tasks/query-limits-tests.yml
-              input_mapping: {repo.git: main.git, testtools-repo: testtools-repo}
+              input_mapping:
+                { repo.git: main.git, testtools-repo: testtools-repo }
               params:
                 QUERY_LIMITS_DB: limited
                 QUERY_LIMITS_COLL: limitCollection
@@ -146,7 +147,7 @@ jobs:
 
       - task: integration-tests
         file: main.git/concourse/tasks/integration-tests.yml
-        input_mapping: {repo.git: main.git}
+        input_mapping: { repo.git: main.git }
         privileged: true
         on_success:
           put: notify
@@ -159,7 +160,7 @@ jobs:
 
       - task: publish
         file: main.git/concourse/tasks/npm-publish.yml
-        input_mapping: {repo.git: main.git}
+        input_mapping: { repo.git: main.git }
         params:
           NPM_TOKEN: ((npm_token))
           NPM_TAG: latest
@@ -220,7 +221,8 @@ jobs:
             - task: query-limits-tests
               privileged: true
               file: beta.git/concourse/tasks/query-limits-tests.yml
-              input_mapping: {repo.git: beta.git, testtools-repo: testtools-repo}
+              input_mapping:
+                { repo.git: beta.git, testtools-repo: testtools-repo }
               params:
                 QUERY_LIMITS_DB: limited
                 QUERY_LIMITS_COLL: limitCollection
@@ -239,24 +241,22 @@ jobs:
     plan:
       - get: beta.git
         passed:
-          - set-self
-
-#      - task: integration-tests
-#        file: beta.git/concourse/tasks/integration-tests.yml
-#        input_mapping: {repo.git: beta.git}
-#        privileged: true
-#        on_success:
-#          put: notify
-#          params:
-#            text: "fauna-js driver release passed integration tests"
-#        on_failure:
-#          put: notify
-#          params:
-#            text: fauna-js driver release failed integration tests
+      #      - task: integration-tests
+      #        file: beta.git/concourse/tasks/integration-tests.yml
+      #        input_mapping: {repo.git: beta.git}
+      #        privileged: true
+      #        on_success:
+      #          put: notify
+      #          params:
+      #            text: "fauna-js driver release passed integration tests"
+      #        on_failure:
+      #          put: notify
+      #          params:
+      #            text: fauna-js driver release failed integration tests
 
       - task: publish
         file: beta.git/concourse/tasks/npm-publish.yml
-        input_mapping: {repo.git: beta.git}
+        input_mapping: { repo.git: beta.git }
         params:
           NPM_TOKEN: ((npm_token))
           NPM_TAG: beta

@@ -1,8 +1,9 @@
-export { Client } from "./client";
+export { Client, StreamClient } from "./client";
 export {
   endpoints,
   type ClientConfiguration,
   type Endpoints,
+  type StreamClientConfiguration,
 } from "./client-configuration";
 export {
   AbortError,
@@ -10,6 +11,7 @@ export {
   AuthorizationError,
   ClientError,
   ClientClosedError,
+  ConstraintFailureError,
   ContendedTransactionError,
   FaunaError,
   InvalidRequestError,
@@ -20,10 +22,9 @@ export {
   QueryTimeoutError,
   ServiceError,
   ServiceInternalError,
-  ServiceTimeoutError,
   ThrottlingError,
 } from "./errors";
-export { type Query, fql } from "./query-builder";
+export { type Query, type QueryArgument, fql } from "./query-builder";
 export { LONG_MAX, LONG_MIN, TaggedTypeFormat } from "./tagged-type";
 export {
   type QueryValueObject,
@@ -42,7 +43,6 @@ export {
   DateStub,
   Document,
   DocumentReference,
-  type DocumentT,
   EmbeddedSet,
   Module,
   NamedDocument,
@@ -50,14 +50,19 @@ export {
   NullDocument,
   Page,
   SetIterator,
+  StreamToken,
   TimeStub,
+  type DocumentT,
 } from "./values";
 export {
   FetchClient,
   getDefaultHTTPClient,
   isHTTPResponse,
+  isStreamClient,
   NodeHTTP2Client,
   type HTTPClient,
   type HTTPRequest,
   type HTTPResponse,
+  type HTTPStreamClient,
+  type StreamAdapter,
 } from "./http-client";

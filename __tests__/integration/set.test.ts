@@ -36,10 +36,10 @@ describe("SetIterator", () => {
   beforeAll(async () => {
     await client.query(fql`
       if (Collection.byName("IterTestSmall") != null) {
-        IterTestSmall.definition.delete()
+        Collection.byName("IterTestSmall")!.delete()
       }
       if (Collection.byName("IterTestBig") != null) {
-        IterTestBig.definition.delete()
+        Collection.byName("IterTestBig")!.delete()
       }
     `);
     await client.query(fql`
@@ -220,7 +220,7 @@ describe("SetIterator", () => {
       fql`IterTestBig.all()`,
       {
         query_timeout_ms: 12345,
-      }
+      },
     );
     const page = response.data;
     const setIterator = testClient.paginate(page, {

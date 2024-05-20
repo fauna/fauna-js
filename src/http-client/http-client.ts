@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Client } from "../client";
-import { QueryRequest } from "../wire-protocol";
+import { QueryRequest, StreamRequest } from "../wire-protocol";
 
 /**
  * An object representing an http request.
@@ -64,4 +64,43 @@ export interface HTTPClient {
    * is a no-op as there is no shared resource to close.
    */
   close(): void;
+}
+
+/**
+ * An object representing an http request.
+ * The {@link Client} provides this to the {@link HTTPStreamClient} implementation.
+ */
+export type HTTPStreamRequest = {
+  /** The encoded Fauna query to send */
+  // TODO: Allow type to be a QueryRequest once implemented by the db
+  data: StreamRequest;
+
+  /** Headers in object format */
+  headers: Record<string, string | undefined>;
+
+  /** HTTP method to use */
+  method: "POST";
+};
+
+/**
+ * A common interface for a StreamClient to operate a stream from any HTTPStreamClient
+ */
+export interface StreamAdapter {
+  read: AsyncGenerator<string>;
+  close: () => void;
+}
+
+/**
+ * An interface to provide implementation-specific, asyncronous http calls.
+ * This driver provides default implementations for common environments. Users
+ * can configure the {@link Client} to use custom implementations if desired.
+ */
+export interface HTTPStreamClient {
+  /**
+   * Makes an HTTP request and returns the response
+   * @param req - an {@link HTTPStreamRequest}
+   * @returns A Promise&lt;{@link HTTPResponse}&gt;
+   * @throws {@link NetworkError} on request timeout or other network issue.
+   */
+  stream(req: HTTPStreamRequest): StreamAdapter;
 }

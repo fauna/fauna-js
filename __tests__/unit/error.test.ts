@@ -44,7 +44,7 @@ describe("query", () => {
     ${400}       | ${"invalid_time"}                   | ${QueryRuntimeError}
     ${400}       | ${"invalid_unit"}                   | ${QueryRuntimeError}
     ${400}       | ${"invalid_date"}                   | ${QueryRuntimeError}
-    ${400}       | ${"limit_exceeded"}                 | ${QueryRuntimeError}
+    ${400}       | ${"limit_exceeded"}                 | ${ThrottlingError}
     ${400}       | ${"stack_overflow"}                 | ${QueryRuntimeError}
     ${400}       | ${"invalid_computed_field_access"}  | ${QueryRuntimeError}
     ${400}       | ${"disabled_feature"}               | ${QueryRuntimeError}

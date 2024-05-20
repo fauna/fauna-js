@@ -56,7 +56,7 @@ describe("query", () => {
     ${401}       | ${"unauthorized"}                   | ${AuthenticationError}
     ${403}       | ${"forbidden"}                      | ${AuthorizationError}
     ${409}       | ${"contended_transaction"}          | ${ContendedTransactionError}
-    ${429}       | ${"throttle"}                       | ${ThrottlingError}
+    ${429}       | ${"limit_exceeded"}                 | ${ThrottlingError}
     ${440}       | ${"time_out"}                       | ${QueryTimeoutError}
     ${503}       | ${"time_out"}                       | ${QueryTimeoutError}
     ${500}       | ${"internal_error"}                 | ${ServiceInternalError}

@@ -35,7 +35,7 @@ describe("query", () => {
     ${403}     | ${AuthorizationError}   | ${{ code: "forbidden", message: "nope" }}
     ${440}     | ${QueryTimeoutError}    | ${{ code: "time_out", message: "too slow - increase your timeout" }}
     ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!" }}
-    ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much" }}
+    ${429}     | ${ThrottlingError}      | ${{ code: "limit_exceeded", message: "too much" }}
     ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error" }}
     ${503}     | ${QueryTimeoutError}    | ${{ code: "time_out", message: "too slow on our side" }}
   `(
@@ -64,7 +64,7 @@ describe("query", () => {
     ${403}     | ${AuthorizationError}   | ${{ code: "forbidden", message: "nope" }}
     ${440}     | ${QueryTimeoutError}    | ${{ code: "time_out", message: "too slow - increase your timeout" }}
     ${999}     | ${ServiceError}         | ${{ code: "error_not_yet_subclassed_in_client", message: "who knows!!!" }}
-    ${429}     | ${ThrottlingError}      | ${{ code: "throttle", message: "too much" }}
+    ${429}     | ${ThrottlingError}      | ${{ code: "limit_exceeded", message: "too much" }}
     ${500}     | ${ServiceInternalError} | ${{ code: "internal_error", message: "unexpected error" }}
     ${503}     | ${QueryTimeoutError}    | ${{ code: "time_out", message: "too slow on our side" }}
   `(
@@ -97,7 +97,7 @@ describe("query", () => {
 
   it("retries throttling errors and then succeeds", async () => {
     const throttlingResponse = JSON.stringify({
-      error: { code: "throttle", message: "too much" },
+      error: { code: "limit_exceeded", message: "too much" },
       summary: "the summary",
     });
 

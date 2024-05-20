@@ -362,7 +362,7 @@ export const getServiceError = (
     case "contended_transaction":
       return new ContendedTransactionError(failure, httpStatus);
 
-    case "limit_exceeded":
+    case "throttle":
       return new ThrottlingError(failure, httpStatus);
 
     case "time_out":

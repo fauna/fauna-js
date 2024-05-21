@@ -94,7 +94,6 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
         // a GOAWAY can come and cause the request to fail
         // with a GOAWAY.
         if (error?.code !== "ERR_HTTP2_GOAWAY_SESSION") {
-          // TODO: be more discernable about error types
           throw new NetworkError(
             "The network connection encountered a problem.",
             {
@@ -205,12 +204,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
           .request(httpRequestHeaders)
           .setEncoding("utf8")
           .on("error", (error: any) => {
-            rejectPromise(
-              new NetworkError(
-                "The network connection encountered a problem while streaming events.",
-                { cause: error },
-              ),
-            );
+            rejectPromise(error);
           })
           .on("response", onResponse);
 
@@ -223,12 +217,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
 
         req.end();
       } catch (error) {
-        rejectPromise(
-          new NetworkError(
-            "The network connection encountered a problem while streaming events.",
-            { cause: error },
-          ),
-        );
+        rejectPromise(error);
       }
     });
   }

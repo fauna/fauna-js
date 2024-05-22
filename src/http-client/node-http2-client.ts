@@ -9,8 +9,12 @@ import {
   HTTPClientOptions,
   HTTPRequest,
   HTTPResponse,
+  HTTPStreamClient,
+  HTTPStreamRequest,
+  StreamAdapter,
 } from "./http-client";
-import { NetworkError } from "../errors";
+import { NetworkError, getServiceError } from "../errors";
+import { QueryFailure } from "../wire-protocol";
 
 // alias http2 types
 type ClientHttp2Session = any;
@@ -22,7 +26,7 @@ type OutgoingHttpHeaders = any;
 /**
  * An implementation for {@link HTTPClient} that uses the node http package
  */
-export class NodeHTTP2Client implements HTTPClient {
+export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
   static #clients: Map<string, NodeHTTP2Client> = new Map();
 
   #http2_session_idle_ms: number;
@@ -56,7 +60,7 @@ export class NodeHTTP2Client implements HTTPClient {
     if (!NodeHTTP2Client.#clients.has(clientKey)) {
       NodeHTTP2Client.#clients.set(
         clientKey,
-        new NodeHTTP2Client(httpClientOptions)
+        new NodeHTTP2Client(httpClientOptions),
       );
     }
     // we know that we have a client here
@@ -90,12 +94,11 @@ export class NodeHTTP2Client implements HTTPClient {
         // a GOAWAY can come and cause the request to fail
         // with a GOAWAY.
         if (error?.code !== "ERR_HTTP2_GOAWAY_SESSION") {
-          // TODO: be more discernable about error types
           throw new NetworkError(
             "The network connection encountered a problem.",
             {
               cause: error,
-            }
+            },
           );
         }
         memoizedError = error;
@@ -105,6 +108,11 @@ export class NodeHTTP2Client implements HTTPClient {
     throw new NetworkError("The network connection encountered a problem.", {
       cause: memoizedError,
     });
+  }
+
+  /** {@inheritDoc HTTPStreamClient.stream} */
+  stream(req: HTTPStreamRequest): StreamAdapter {
+    return this.#doStream(req);
   }
 
   /** {@inheritDoc HTTPClient.close} */
@@ -161,16 +169,16 @@ export class NodeHTTP2Client implements HTTPClient {
     return new Promise<HTTPResponse>((resolvePromise, rejectPromise) => {
       let req: ClientHttp2Stream;
       const onResponse = (
-        http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader
+        http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader,
       ) => {
         const status = Number(
-          http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS]
+          http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS],
         );
         let responseData = "";
 
         // append response data to the data string every time we receive new
         // data chunks in the response
-        req.on("data", (chunk: any) => {
+        req.on("data", (chunk: string) => {
           responseData += chunk;
         });
 
@@ -212,5 +220,118 @@ export class NodeHTTP2Client implements HTTPClient {
         rejectPromise(error);
       }
     });
+  }
+
+  /** {@inheritDoc HTTPStreamClient.stream} */
+  #doStream({
+    data: requestData,
+    headers: requestHeaders,
+    method,
+  }: HTTPStreamRequest): StreamAdapter {
+    let resolveChunk: (chunk: string[]) => void;
+    let rejectChunk: (reason: any) => void;
+
+    const setChunkPromise = () =>
+      new Promise<string[]>((res, rej) => {
+        resolveChunk = res;
+        rejectChunk = rej;
+      });
+
+    let chunkPromise = setChunkPromise();
+
+    let req: ClientHttp2Stream;
+    const onResponse = (
+      http2ResponseHeaders: IncomingHttpHeaders & IncomingHttpStatusHeader,
+    ) => {
+      const status = Number(
+        http2ResponseHeaders[http2.constants.HTTP2_HEADER_STATUS],
+      );
+      if (!(status >= 200 && status < 400)) {
+        // Get the error body and then throw an error
+        let responseData = "";
+
+        // append response data to the data string every time we receive new
+        // data chunks in the response
+        req.on("data", (chunk: string) => {
+          responseData += chunk;
+        });
+
+        // Once the response is finished, resolve the promise
+        req.on("end", () => {
+          try {
+            const failure: QueryFailure = JSON.parse(responseData);
+            rejectChunk(getServiceError(failure, status));
+          } catch (error) {
+            rejectChunk(
+              new NetworkError("Could not process query failure.", {
+                cause: error,
+              }),
+            );
+          }
+        });
+      } else {
+        let partOfLine = "";
+
+        // append response data to the data string every time we receive new
+        // data chunks in the response
+        req.on("data", (chunk: string) => {
+          const chunkLines = (partOfLine + chunk).split("\n");
+
+          // Yield all complete lines
+          resolveChunk(chunkLines.map((s) => s.trim()).slice(0, -1));
+          chunkPromise = setChunkPromise();
+
+          // Store the partial line
+          partOfLine = chunkLines[chunkLines.length - 1];
+        });
+
+        // Once the response is finished, resolve the promise
+        req.on("end", () => {
+          resolveChunk([partOfLine]);
+        });
+      }
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const self = this;
+
+    async function* reader(): AsyncGenerator<string> {
+      const httpRequestHeaders: OutgoingHttpHeaders = {
+        ...requestHeaders,
+        [http2.constants.HTTP2_HEADER_PATH]: "/stream/1",
+        [http2.constants.HTTP2_HEADER_METHOD]: method,
+      };
+
+      const session = self.#connect();
+      req = session
+        .request(httpRequestHeaders)
+        .setEncoding("utf8")
+        .on("error", (error: any) => {
+          rejectChunk(error);
+        })
+        .on("response", onResponse);
+
+      const body = JSON.stringify(requestData);
+
+      req.write(body, "utf8");
+
+      req.end();
+
+      while (true) {
+        const chunks = await chunkPromise;
+        for (const chunk of chunks) {
+          yield chunk;
+        }
+      }
+    }
+
+    return {
+      read: reader(),
+      close: () => {
+        if (req) {
+          req.close();
+        }
+      },
+    };
   }
 }

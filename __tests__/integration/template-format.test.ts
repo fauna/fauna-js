@@ -1,4 +1,4 @@
-import { fql } from "../../src";
+import { ClientError, fql, TimeStub } from "../../src";
 import { getClient } from "../client";
 
 const client = getClient({
@@ -117,5 +117,73 @@ describe("query using template format", () => {
     `;
     const response = await client.query(queryBuilder);
     expect(response.data).toBe("Hello, Alice");
+  });
+
+  it("succeeds with a Date arg", async () => {
+    const date = new Date();
+    const queryBuilder = fql`${date}`;
+    const response = await client.query<TimeStub>(queryBuilder);
+    expect(response.data.isoString).toBe(date.toISOString());
+  });
+
+  it("succeeds with an ArrayBuffer variable", async () => {
+    const buf = new Uint8Array([1, 2, 3]);
+    const queryBuilder = fql`${buf.buffer}`;
+    const response = await client.query<Uint8Array>(queryBuilder);
+    expect(response.data.byteLength).toBe(3);
+    expect(response.data).toEqual(buf);
+  });
+
+  it("succeeds with Uint8Array variables", async () => {
+    const buf = new Uint8Array([1, 2, 3]);
+    const queryBuilder = fql`${buf}`;
+    const response = await client.query<Uint8Array>(queryBuilder);
+    expect(response.data.byteLength).toBe(3);
+    expect(response.data).toEqual(buf);
+  });
+
+  /**
+   * See table of various TypedArrays here
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#typedarray_objects
+   */
+  it.each`
+    ViewType
+    ${Int8Array}
+    ${Uint8ClampedArray}
+    ${Int16Array}
+    ${Uint16Array}
+    ${Int32Array}
+    ${Uint32Array}
+    ${Float32Array}
+    ${Float64Array}
+  `("fails with $ViewType variables", async ({ ViewType }) => {
+    const buf = new ViewType([1, 2]);
+
+    await expect(client.query(fql`${buf}`)).rejects.toThrow(ClientError);
+  });
+
+  /**
+   * See table of various TypedArrays here
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray#typedarray_objects
+   */
+  it.each`
+    ViewType
+    ${BigInt64Array}
+    ${BigUint64Array}
+  `("fails with $ViewType variables", async ({ ViewType }) => {
+    const buf = new ViewType([BigInt(1), BigInt(2)]);
+
+    await expect(client.query(fql`${buf}`)).rejects.toThrow(ClientError);
+  });
+
+  it("succeeds using Node Buffer to encode strings", async () => {
+    const str =
+      "This is a test string 🚀 with various characters: !@#$%^&*()_+=-`~[]{}|;:'\",./<>?";
+    const buf = Buffer.from(str);
+    const queryBuilder = fql`${buf}`;
+    const response = await client.query<Uint8Array>(queryBuilder);
+
+    const decoded = Buffer.from(response.data).toString();
+    expect(decoded).toBe(str);
   });
 });

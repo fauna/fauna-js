@@ -21,7 +21,7 @@ export class ServiceError extends FaunaError {
   /**
    * The HTTP Status Code of the error.
    */
-  readonly httpStatus: number;
+  readonly httpStatus?: number;
   /**
    * A code for the error. Codes indicate the cause of the error.
    * It is safe to write programmatic logic against the code. They are
@@ -38,7 +38,7 @@ export class ServiceError extends FaunaError {
    */
   readonly constraint_failures?: Array<ConstraintFailure>;
 
-  constructor(failure: QueryFailure, httpStatus: number) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure.error.message);
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
@@ -69,7 +69,7 @@ export class ServiceError extends FaunaError {
  * The 'code' field will vary based on the specific error cause.
  */
 export class QueryRuntimeError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 400) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryRuntimeError);
@@ -85,7 +85,7 @@ export class QueryRuntimeError extends ServiceError {
  * failing.
  */
 export class QueryCheckError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 400) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryCheckError);
@@ -99,12 +99,36 @@ export class QueryCheckError extends ServiceError {
  * valid JSON or did not conform to the API specification
  */
 export class InvalidRequestError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 400) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, InvalidRequestError);
     }
     this.name = "InvalidRequestError";
+  }
+}
+
+/**
+ * A runtime error due to failing schema constraints.
+ */
+export class ConstraintFailureError extends ServiceError {
+  /**
+   * The list of constraints that failed.
+   */
+  readonly constraint_failures: Array<ConstraintFailure>;
+
+  constructor(
+    failure: QueryFailure & {
+      error: { constraint_failures: Array<ConstraintFailure> };
+    },
+    httpStatus?: number,
+  ) {
+    super(failure, httpStatus);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, QueryCheckError);
+    }
+    this.name = "ConstraintFailureError";
+    this.constraint_failures = failure.error.constraint_failures;
   }
 }
 
@@ -121,7 +145,7 @@ export class AbortError extends ServiceError {
 
   constructor(
     failure: QueryFailure & { error: { abort: QueryValue } },
-    httpStatus: 400
+    httpStatus?: number,
   ) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
@@ -137,7 +161,7 @@ export class AbortError extends ServiceError {
  * used.
  */
 export class AuthenticationError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 401) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthenticationError);
@@ -151,7 +175,7 @@ export class AuthenticationError extends ServiceError {
  * permission to perform the requested action.
  */
 export class AuthorizationError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 403) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, AuthorizationError);
@@ -164,7 +188,7 @@ export class AuthorizationError extends ServiceError {
  * An error due to a contended transaction.
  */
 export class ContendedTransactionError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 409) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, InvalidRequestError);
@@ -178,7 +202,7 @@ export class ContendedTransactionError extends ServiceError {
  * and thus the request could not be served.
  */
 export class ThrottlingError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 429) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ThrottlingError);
@@ -188,11 +212,16 @@ export class ThrottlingError extends ServiceError {
 }
 
 /**
- * A failure due to the timeout being exceeded, but the timeout
- * was set lower than the query's expected processing time.
- * This response is distinguished from a ServiceTimeoutException
- * in that a QueryTimeoutError shows Fauna behaving in an expected
- * manner.
+ * A failure due to the query timeout being exceeded.
+ *
+ * This error can have one of two sources:
+ *     1. Fauna is behaving expectedly, but the query timeout provided was too
+ *        aggressive and lower than the query's expected processing time.
+ *     2. Fauna was not available to service the request before the timeout was
+ *        reached.
+ *
+ * In either case, consider increasing the `query_timeout_ms` configuration for
+ * your client.
  */
 export class QueryTimeoutError extends ServiceError {
   /**
@@ -200,7 +229,7 @@ export class QueryTimeoutError extends ServiceError {
    */
   readonly stats?: { [key: string]: number };
 
-  constructor(failure: QueryFailure, httpStatus: 440) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, QueryTimeoutError);
@@ -214,26 +243,12 @@ export class QueryTimeoutError extends ServiceError {
  * ServiceInternalError indicates Fauna failed unexpectedly.
  */
 export class ServiceInternalError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 500) {
+  constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, ServiceInternalError);
     }
     this.name = "ServiceInternalError";
-  }
-}
-
-/**
- * ServiceTimeoutError indicates Fauna was not available to servce
- * the request before the timeout was reached.
- */
-export class ServiceTimeoutError extends ServiceError {
-  constructor(failure: QueryFailure, httpStatus: 503) {
-    super(failure, httpStatus);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, ServiceTimeoutError);
-    }
-    this.name = "ServiceTimeoutError";
   }
 }
 
@@ -304,3 +319,58 @@ export class ProtocolError extends FaunaError {
     this.httpStatus = error.httpStatus;
   }
 }
+
+export const getServiceError = (
+  failure: QueryFailure,
+  httpStatus?: number,
+): ServiceError => {
+  const failureCode = failure.error.code;
+
+  switch (failureCode) {
+    case "invalid_query":
+      return new QueryCheckError(failure, httpStatus);
+
+    case "invalid_request":
+      return new InvalidRequestError(failure, httpStatus);
+
+    case "abort":
+      if (failure.error.abort !== undefined) {
+        return new AbortError(
+          failure as QueryFailure & { error: { abort: QueryValue } },
+          httpStatus,
+        );
+      }
+      break;
+
+    case "constraint_failure":
+      if (failure.error.constraint_failures !== undefined) {
+        return new ConstraintFailureError(
+          failure as QueryFailure & {
+            error: { constraint_failures: Array<ConstraintFailure> };
+          },
+          httpStatus,
+        );
+      }
+      break;
+
+    case "unauthorized":
+      return new AuthenticationError(failure, httpStatus);
+
+    case "forbidden":
+      return new AuthorizationError(failure, httpStatus);
+
+    case "contended_transaction":
+      return new ContendedTransactionError(failure, httpStatus);
+
+    case "limit_exceeded":
+      return new ThrottlingError(failure, httpStatus);
+
+    case "time_out":
+      return new QueryTimeoutError(failure, httpStatus);
+
+    case "internal_error":
+      return new ServiceInternalError(failure, httpStatus);
+  }
+
+  return new QueryRuntimeError(failure, httpStatus);
+};

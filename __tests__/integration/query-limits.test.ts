@@ -19,7 +19,7 @@ beforeAll(async () => {
       Key.create({ role: "admin", database: ${limitedDbName} }) { secret }
     } else {
       abort("Database not found.")
-    }`
+    }`,
     )
     .then((res) => res.data.secret)
     .catch((err) => {
@@ -28,7 +28,7 @@ beforeAll(async () => {
     });
 
   for (let i = 0; i < 5; i++) {
-    clients.push(getClient({ secret: secret }));
+    clients.push(getClient({ secret: secret, max_attempts: 30 }));
   }
 });
 
@@ -57,7 +57,7 @@ maybeDescribe("Query with limits enabled", () => {
             console.log(err);
             throw err;
           });
-      })
+      }),
     );
 
     expect(throttled).toBeTruthy();

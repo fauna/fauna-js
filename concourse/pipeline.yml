@@ -22,15 +22,6 @@ resources:
       #      tag_filter: v*
       private_key: ((github-ssh-key))
 
-  - name: beta.git
-    type: git
-    icon: github
-    source:
-      uri: git@github.com:fauna/fauna-js.git
-      branch: beta
-      #      tag_filter: v*
-      private_key: ((github-ssh-key))
-
   - name: testtools-repo
     type: git
     icon: github
@@ -54,22 +45,11 @@ groups:
       - set-self
       - test
       - release
-      - test-beta
-      - release-beta
-  - name: standard-release
-    jobs:
-      - test
-      - release
-  - name: beta-release
-    jobs:
-      - test-beta
-      - release-beta
 
 jobs:
   - name: set-self
     serial: true
     plan:
-      - get: beta.git
       - get: main.git
         trigger: true
       - set_pipeline: self
@@ -164,102 +144,6 @@ jobs:
         params:
           NPM_TOKEN: ((npm_token))
           NPM_TAG: latest
-        on_success:
-          put: notify
-          params:
-            text_file: slack-message/publish
-        on_failure:
-          put: notify
-          params:
-            text_file: slack-message/publish
-
-  - name: test-beta
-    serial: true
-    plan:
-      - get: beta.git
-        passed:
-          - set-self
-
-      - get: testtools-repo
-      - get: testtools-image
-
-      - load_var: git-commit
-        reveal: true
-        file: beta.git/.git/ref
-
-      - in_parallel:
-          fail_fast: false
-          steps:
-            - task: aws-lambda-tests
-              image: testtools-image
-              file: testtools-repo/fauna-driver-platform-tests/concourse/tasks/js-aws-lambda-tests.yml
-              params:
-                GIT_COMMIT: ((.:git-commit))
-                FAUNA_SECRET: ((drivers-platform-tests/fauna-secret))
-                AWS_LAMBDA_ROLE_ARN: ((drivers-platform-tests/aws-lambda-role-arn))
-                AWS_ACCESS_KEY_ID: ((drivers-platform-tests/aws-access-key-id))
-                AWS_SECRET_ACCESS_KEY: ((drivers-platform-tests/aws-secret-key))
-
-            - task: cloudflare-tests
-              image: testtools-image
-              file: testtools-repo/fauna-driver-platform-tests/concourse/tasks/js-cloudflare-workers-tests.yml
-              params:
-                GIT_COMMIT: ((.:git-commit))
-                CLOUDFLARE_API_TOKEN: ((drivers-platform-tests/cloudflare-api-token))
-                FAUNA_SECRET: ((drivers-platform-tests/fauna-secret))
-                VERCEL_TOKEN: ((drivers-platform-tests/vercel-token))
-
-            - task: netlify-tests
-              image: testtools-image
-              file: testtools-repo/fauna-driver-platform-tests/concourse/tasks/js-netlify-tests.yml
-              params:
-                GIT_COMMIT: ((.:git-commit))
-                FAUNA_SECRET: ((drivers-platform-tests/fauna-secret))
-                NETLIFY_ACCOUNT: ((drivers-platform-tests/netlify-account))
-                NETLIFY_AUTH_TOKEN: ((drivers-platform-tests/netlify-auth-token))
-
-            - task: query-limits-tests
-              privileged: true
-              file: beta.git/concourse/tasks/query-limits-tests.yml
-              input_mapping:
-                { repo.git: beta.git, testtools-repo: testtools-repo }
-              params:
-                QUERY_LIMITS_DB: limited
-                QUERY_LIMITS_COLL: limitCollection
-
-            # - task: vercel-tests
-            #   image: testtools-image
-            #   file: testtools-repo/fauna-driver-platform-tests/concourse/tasks/js-vercel-tests.yml
-            #   params:
-            #     GIT_COMMIT: ((.:git-commit))
-            #     FAUNA_SECRET: ((drivers-platform-tests/fauna-secret))
-            #     VERCEL_TOKEN: ((drivers-platform-tests/vercel-token))
-
-  - name: release-beta
-    serial: true
-    public: false
-    plan:
-      - get: beta.git
-        passed:
-      #      - task: integration-tests
-      #        file: beta.git/concourse/tasks/integration-tests.yml
-      #        input_mapping: {repo.git: beta.git}
-      #        privileged: true
-      #        on_success:
-      #          put: notify
-      #          params:
-      #            text: "fauna-js driver release passed integration tests"
-      #        on_failure:
-      #          put: notify
-      #          params:
-      #            text: fauna-js driver release failed integration tests
-
-      - task: publish
-        file: beta.git/concourse/tasks/npm-publish.yml
-        input_mapping: { repo.git: beta.git }
-        params:
-          NPM_TOKEN: ((npm_token))
-          NPM_TAG: beta
         on_success:
           put: notify
           params:

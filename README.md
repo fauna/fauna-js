@@ -393,7 +393,7 @@ There are a few different timeout settings that can be configured; each comes wi
 
 #### Query timeout
 
-The query timeout is the time, in milliseconds, that Fauna will spend executing your query before aborting with a 503 Timeout error. If a query timeout occurs, the driver will throw an instance of `ServiceTimeoutError`.
+The query timeout is the time, in milliseconds, that Fauna will spend executing your query before aborting with a 503 Timeout error. If a query timeout occurs, the driver will throw an instance of `QueryTimeoutError`.
 
 The query timeout can be set using the `ClientConfiguration.query_timeout_ms` option. The default value if you do not provide one is 5000 ms (5 seconds).
 

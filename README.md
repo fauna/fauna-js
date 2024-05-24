@@ -283,12 +283,10 @@ Example output:
 
 ## Pagination
 
-Use the `Client.paginate()` method to iterate sets that contain more than one page of results.
+Use `paginate()` to iterate sets that contain more than one page of results.
 
-`Client.paginate()` accepts the same [query options](#query-options) as
-`Client.query()`.
-
-Change the default items per page using FQL's `<set>.pageSize()` method.
+`paginate()` accepts the same [query options](#query-options) as
+`query()`.
 
 ```typescript
 import { fql, Client, type SetIterator, type QueryValue } from "fauna";
@@ -314,6 +312,16 @@ for await (const products of pages) {
 }
 
 client.close();
+```
+
+Use `flatten()` to get paginated results as a single, flat array:
+
+```typescript
+const pages: SetIterator<QueryValue> = client.paginate(query, options);
+
+for await (const product of pages.flatten()) {
+  console.log(product)
+}
 ```
 
 ## Client configuration
@@ -395,13 +403,15 @@ There are a few different timeout settings that can be configured; each comes wi
 
 The query timeout is the time, in milliseconds, that Fauna will spend executing your query before aborting with a 503 Timeout error. If a query timeout occurs, the driver will throw an instance of `QueryTimeoutError`.
 
-The query timeout can be set using the `ClientConfiguration.query_timeout_ms` option. The default value if you do not provide one is 5000 ms (5 seconds).
+The query timeout can be set using the `query_timeout_ms` client configuration option. The default value if you do not provide one is 5000 ms (5 seconds).
 
 ```javascript
 const client = new Client({ query_timeout_ms: 20_000 });
 ```
 
-The query timeout can also be set to a different value for each query using the `QueryOptions.query_timeout_ms` option. Doing so overrides the client configuration when performing this query.
+The query timeout can also be set to a different value for each query using the
+`query_timeout_ms` query option. Doing so overrides the client configuration
+when performing this query.
 
 ```javascript
 const response = await client.query(myQuery, { query_timeout_ms: 20_000 });
@@ -432,7 +442,7 @@ const client = new Client({ http2_session_idle_ms: 6000 });
 ```
 
 > **Note**
-> Your application process may continue executing after all requests are completed for the duration of the session idle timeout. To prevent this, it is recommended to call `Client.close()` once all requests are complete. It is not recommended to set `http2_session_idle_ms` to small values.
+> Your application process may continue executing after all requests are completed for the duration of the session idle timeout. To prevent this, it is recommended to call `close()` once all requests are complete. It is not recommended to set `http2_session_idle_ms` to small values.
 
 > **Warning**
 > Setting `http2_session_idle_ms` to small values can lead to a race condition where requests cannot be transmitted before the session is closed, yielding `ERR_HTTP2_GOAWAY_SESSION` errors.
@@ -450,7 +460,7 @@ or
 to a set from a [supported
 source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources).
 
-To start and subscribe to the stream, pass the stream token to `Client.stream()`:
+To start and subscribe to the stream, pass the stream token to `stream()`:
 
 ```javascript
 const response = await client.query(fql`
@@ -466,7 +476,7 @@ const { initialPage, streamToken } = response.data;
 client.stream(streamToken)
 ```
 
-You can also pass a query that produces a stream token directly to `Client.stream()`:
+You can also pass a query that produces a stream token directly to `stream()`:
 
 ```javascript
 const query = fql`Product.all().changesOn(.price, .quantity)`
@@ -525,7 +535,7 @@ stream.start(
 
 ### Close a stream
 
-Use `<stream>.close()` to close a stream:
+Use `close()` to close a stream:
 
 ```javascript
 const stream = await client.stream(fql`Product.all().toStream()`)
@@ -547,7 +557,7 @@ for await (const event of stream) {
 ### Stream options
 
 The [client configuration](#client-configuration) sets default options for the
-`Client.stream()` method.
+`stream()` method.
 
 You can pass an `options` object to override these defaults:
 

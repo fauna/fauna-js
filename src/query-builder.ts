@@ -75,19 +75,16 @@ export class Query {
   }
 
   /**
-   * Converts this Query to a {@link QueryRequest} you can send
+   * Converts this Query to an {@link FQLFragment} you can send
    * to Fauna.
-   * @param options - optional {@link QueryOptions} to include
-   *   in the request (and thus override the defaults in your {@link ClientConfiguration}.
-   *   If not passed in, no headers will be set as overrides.
-   * @returns a {@link QueryRequest}.
+   * @returns a {@link FQLFragment}.
    * @example
    * ```typescript
    *  const num = 8;
    *  const queryBuilder = fql`'foo'.length == ${num}`;
    *  const queryRequest = queryBuilder.toQuery();
    *  // produces:
-   *  { query: { fql: ["'foo'.length == ", { value: { "@int": "8" } }, ""] }}
+   *  { fql: ["'foo'.length == ", { value: { "@int": "8" } }, ""] }
    * ```
    */
   encode(): FQLFragment {

@@ -3,8 +3,6 @@ import type {
   FQLFragment,
   QueryValue,
   QueryInterpolation,
-  QueryRequest,
-  EncodedObject,
 } from "./wire-protocol";
 
 /**
@@ -92,20 +90,7 @@ export class Query {
    *  { query: { fql: ["'foo'.length == ", { value: { "@int": "8" } }, ""] }}
    * ```
    */
-  toQuery(queryArgs?: QueryArgumentObject): QueryRequest<FQLFragment> {
-    const result: QueryRequest<FQLFragment> = {
-      query: this.#render_query(),
-    };
-
-    if (queryArgs) {
-      // Type cast safety: A QueryArgumentObject will always encode into an EncodedObject
-      result.arguments = TaggedTypeFormat.encode(queryArgs) as EncodedObject;
-    }
-
-    return result;
-  }
-
-  #render_query(): FQLFragment {
+  encode(): FQLFragment {
     if (this.#queryFragments.length === 1) {
       return { fql: [this.#queryFragments[0]] };
     }

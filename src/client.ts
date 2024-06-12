@@ -26,6 +26,7 @@ import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
 import { EmbeddedSet, Page, SetIterator, StreamToken } from "./values";
 import {
+  EncodedObject,
   isQueryFailure,
   isQuerySuccess,
   QueryOptions,
@@ -253,7 +254,15 @@ export class Client {
       );
     }
 
-    const request = query.toQuery(options?.arguments);
+    const request: QueryRequest = {
+      query: query.encode(),
+    };
+
+    if (options?.arguments) {
+      request.arguments = TaggedTypeFormat.encode(
+        options.arguments,
+      ) as EncodedObject;
+    }
 
     return this.#queryWithRetries(request, options);
   }

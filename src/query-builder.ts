@@ -1,18 +1,34 @@
 import { TaggedTypeFormat } from "./tagged-type";
 import type {
-  QueryValueObject,
+  FQLFragment,
   QueryValue,
   QueryInterpolation,
   QueryRequest,
-  QueryOptions,
+  EncodedObject,
 } from "./wire-protocol";
 
+/**
+ * A QueryArgumentObject is a plain javascript object where each property is a
+ * valid QueryArgument.
+ * These objects can be set as values in the {@link fql} function.
+ */
+export type QueryArgumentObject = {
+  [key: string]: QueryArgument;
+};
+
+/**
+ * A QueryArgument is a plain javascript object where each property is a
+ * valid QueryArgument.
+ * These objects can be set as values in the {@link fql} function.
+ */
 export type QueryArgument =
   | QueryValue
   | Query
   | Date
   | ArrayBuffer
-  | Uint8Array;
+  | Uint8Array
+  | Array<QueryArgument>
+  | QueryArgumentObject;
 
 /**
  * Creates a new Query. Accepts template literal inputs.
@@ -44,7 +60,7 @@ export function fql(
  */
 export class Query {
   readonly #queryFragments: ReadonlyArray<string>;
-  readonly #queryArgs: QueryArgument[];
+  readonly #interpolatedArgs: QueryArgument[];
 
   constructor(
     queryFragments: ReadonlyArray<string>,
@@ -57,13 +73,13 @@ export class Query {
       throw new Error("invalid query constructed");
     }
     this.#queryFragments = queryFragments;
-    this.#queryArgs = queryArgs;
+    this.#interpolatedArgs = queryArgs;
   }
 
   /**
    * Converts this Query to a {@link QueryRequest} you can send
    * to Fauna.
-   * @param requestHeaders - optional {@link QueryOptions} to include
+   * @param options - optional {@link QueryOptions} to include
    *   in the request (and thus override the defaults in your {@link ClientConfiguration}.
    *   If not passed in, no headers will be set as overrides.
    * @returns a {@link QueryRequest}.
@@ -76,42 +92,43 @@ export class Query {
    *  { query: { fql: ["'foo'.length == ", { value: { "@int": "8" } }, ""] }}
    * ```
    */
-  toQuery(requestHeaders: QueryOptions = {}): QueryRequest {
-    return { ...this.#render(requestHeaders), ...requestHeaders };
-  }
+  toQuery(queryArgs?: QueryArgumentObject): QueryRequest<FQLFragment> {
+    const result: QueryRequest<FQLFragment> = {
+      query: this.#render_query(),
+    };
 
-  #render(requestHeaders: QueryOptions): QueryRequest {
-    if (this.#queryFragments.length === 1) {
-      return { query: { fql: [this.#queryFragments[0]] }, arguments: {} };
+    if (queryArgs) {
+      // Type cast safety: A QueryArgumentObject will always encode into an EncodedObject
+      result.arguments = TaggedTypeFormat.encode(queryArgs) as EncodedObject;
     }
 
-    let resultArgs: QueryValueObject = {};
-    const renderedFragments: (string | QueryInterpolation)[] =
+    return result;
+  }
+
+  #render_query(): FQLFragment {
+    if (this.#queryFragments.length === 1) {
+      return { fql: [this.#queryFragments[0]] };
+    }
+
+    let renderedFragments: (string | QueryInterpolation)[] =
       this.#queryFragments.flatMap((fragment, i) => {
         // There will always be one more fragment than there are arguments
         if (i === this.#queryFragments.length - 1) {
           return fragment === "" ? [] : [fragment];
         }
 
-        const arg = this.#queryArgs[i];
-        let subQuery: string | QueryInterpolation;
-        if (arg instanceof Query) {
-          const request = arg.toQuery(requestHeaders);
-          subQuery = request.query;
-          resultArgs = { ...resultArgs, ...request.arguments };
-        } else {
-          // arguments in the template format must always be encoded, regardless
-          // of the "x-format" request header
-          // TODO: catch and rethrow Errors, indicating bad user input
-          subQuery = { value: TaggedTypeFormat.encode(arg) };
-        }
+        // arguments in the template format must always be encoded, regardless
+        // of the "x-format" request header
+        // TODO: catch and rethrow Errors, indicating bad user input
+        const arg = this.#interpolatedArgs[i];
+        const encoded = TaggedTypeFormat.encodeInterpolation(arg);
 
-        return [fragment, subQuery].filter((x) => x !== "");
+        return [fragment, encoded];
       });
 
-    return {
-      query: { fql: renderedFragments },
-      arguments: resultArgs,
-    };
+    // We don't need to send empty-string fragments over the wire
+    renderedFragments = renderedFragments.filter((x) => x !== "");
+
+    return { fql: renderedFragments };
   }
 }

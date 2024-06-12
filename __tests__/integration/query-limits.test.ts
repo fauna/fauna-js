@@ -1,5 +1,5 @@
-import { Client, fql, Module } from "../../src";
-import { getClient, getDefaultSecretAndEndpoint } from "../client";
+import { Client, fql } from "../../src";
+import { getClient } from "../client";
 
 const rootClient = getClient();
 const clients = new Array<Client>();

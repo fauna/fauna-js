@@ -8,16 +8,17 @@ import type {
 /**
  * A QueryArgumentObject is a plain javascript object where each property is a
  * valid QueryArgument.
- * These objects can be set as values in the {@link fql} function.
  */
 export type QueryArgumentObject = {
   [key: string]: QueryArgument;
 };
 
 /**
- * A QueryArgument is a plain javascript object where each property is a
- * valid QueryArgument.
- * These objects can be set as values in the {@link fql} function.
+ * A QueryArgument represents all possible values that can be encoded and passed
+ * to Fauna as a query argument.
+ *
+ * The {@link fql} tagged template function requires all arguments to be of type
+ * QueryArgument.
  */
 export type QueryArgument =
   | QueryValue

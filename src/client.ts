@@ -26,13 +26,14 @@ import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
 import { EmbeddedSet, Page, SetIterator, StreamToken } from "./values";
 import {
+  EncodedObject,
   isQueryFailure,
   isQuerySuccess,
-  QueryInterpolation,
+  QueryOptions,
+  QueryRequest,
   StreamEvent,
   StreamEventData,
   StreamEventStatus,
-  type QueryOptions,
   type QuerySuccess,
   type QueryValue,
 } from "./wire-protocol";
@@ -253,13 +254,17 @@ export class Client {
       );
     }
 
-    // QueryInterpolation values must always be encoded.
-    // TODO: The Query implementation never set the QueryRequest arguments.
-    //   When we separate query building from query encoding we should be able
-    //   to simply do `const queryInterpolation: TaggedTypeFormat.encode(query)`
-    const queryInterpolation = query.toQuery(options).query;
+    const request: QueryRequest = {
+      query: query.encode(),
+    };
 
-    return this.#queryWithRetries(queryInterpolation, options);
+    if (options?.arguments) {
+      request.arguments = TaggedTypeFormat.encode(
+        options.arguments,
+      ) as EncodedObject;
+    }
+
+    return this.#queryWithRetries(request, options);
   }
 
   /**
@@ -348,8 +353,8 @@ export class Client {
   }
 
   async #queryWithRetries<T extends QueryValue>(
-    queryInterpolation: string | QueryInterpolation,
-    options?: QueryOptions,
+    queryRequest: QueryRequest,
+    queryOptions?: QueryOptions,
     attempt = 0,
   ): Promise<QuerySuccess<T>> {
     const maxBackoff =
@@ -363,11 +368,11 @@ export class Client {
     attempt += 1;
 
     try {
-      return await this.#query<T>(queryInterpolation, options, attempt);
+      return await this.#query<T>(queryRequest, queryOptions, attempt);
     } catch (error) {
       if (error instanceof ThrottlingError && attempt < maxAttempts) {
         await wait(backoffMs);
-        return this.#queryWithRetries<T>(queryInterpolation, options, attempt);
+        return this.#queryWithRetries<T>(queryRequest, queryOptions, attempt);
       }
       throw error;
     }
@@ -462,14 +467,14 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
   }
 
   async #query<T extends QueryValue>(
-    queryInterpolation: string | QueryInterpolation,
-    options?: QueryOptions,
+    queryRequest: QueryRequest,
+    queryOptions?: QueryOptions,
     attempt = 0,
   ): Promise<QuerySuccess<T>> {
     try {
       const requestConfig = {
         ...this.#clientConfiguration,
-        ...options,
+        ...queryOptions,
       };
 
       const headers = {
@@ -479,24 +484,13 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
       const isTaggedFormat = requestConfig.format === "tagged";
 
-      const queryArgs = requestConfig.arguments
-        ? isTaggedFormat
-          ? TaggedTypeFormat.encode(requestConfig.arguments)
-          : requestConfig.arguments
-        : undefined;
-
-      const requestData = {
-        query: queryInterpolation,
-        arguments: queryArgs,
-      };
-
       const client_timeout_ms =
         requestConfig.query_timeout_ms +
         this.#clientConfiguration.client_timeout_buffer_ms;
 
       const response = await this.#httpClient.request({
         client_timeout_ms,
-        data: requestData,
+        data: queryRequest,
         headers,
         method: "POST",
       });

@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { fql } from "./query-builder";
+import { fql, QueryArgumentObject } from "./query-builder";
 import {
   DateStub,
   Document,
@@ -17,14 +17,16 @@ import {
 /**
  * A request to make to Fauna.
  */
-export interface QueryRequest {
+export interface QueryRequest<
+  T extends string | QueryInterpolation = string | QueryInterpolation,
+> {
   /** The query */
-  query: string | QueryInterpolation;
+  query: T;
 
   /** Optional arguments. Variables in the query will be initialized to the
    * value associated with an argument key.
    */
-  arguments?: QueryValueObject;
+  arguments?: EncodedObject;
 }
 
 /**
@@ -35,7 +37,7 @@ export interface QueryOptions {
   /** Optional arguments. Variables in the query will be initialized to the
    * value associated with an argument key.
    */
-  arguments?: QueryValueObject;
+  arguments?: QueryArgumentObject;
 
   /**
    * Determines the encoded format expected for the query `arguments` field, and
@@ -147,7 +149,10 @@ export type QueryInfo = {
   stats?: QueryStats;
 };
 
-export type QuerySuccess<T> = QueryInfo & {
+/**
+ * A decoded response from a successful query to Fauna
+ */
+export type QuerySuccess<T extends QueryValue> = QueryInfo & {
   /**
    * The result of the query. The data is any valid JSON value.
    * @remarks
@@ -160,7 +165,7 @@ export type QuerySuccess<T> = QueryInfo & {
 };
 
 /**
- * A failed query response. Integrations which only want to report a human
+ * A decoded response from a failed query to Fauna. Integrations which only want to report a human
  * readable version of the failure can simply print out the "summary" field.
  */
 export type QueryFailure = QueryInfo & {
@@ -198,7 +203,9 @@ export type ConstraintFailure = {
   paths?: Array<number | string>;
 };
 
-export type QueryResponse<T> = QuerySuccess<T> | QueryFailure;
+export type QueryResponse<T extends QueryValue> =
+  | QuerySuccess<T>
+  | QueryFailure;
 
 export const isQuerySuccess = (res: any): res is QuerySuccess<any> =>
   res instanceof Object && "data" in res;
@@ -219,7 +226,11 @@ export const isQueryResponse = (res: any): res is QueryResponse<any> =>
  * @see {@link ValueFragment} and {@link FQLFragment} for additional
  * information
  */
-export type QueryInterpolation = FQLFragment | ValueFragment;
+export type QueryInterpolation =
+  | FQLFragment
+  | ValueFragment
+  | ObjectFragment
+  | ArrayFragment;
 
 /**
  * A piece of an interpolated query that represents an actual value. Arguments
@@ -236,10 +247,63 @@ export type QueryInterpolation = FQLFragment | ValueFragment;
  *  const num = 17;
  *  const query = fql`${num} + 3)`;
  *  // produces
- *  { fql: [{ value: { "@int": "17" } }, " + 3"] }
+ *  { "fql": [{ "value": { "@int": "17" } }, " + 3"] }
  * ```
  */
-export type ValueFragment = { value: QueryValue };
+export type ValueFragment = { value: TaggedType };
+
+/**
+ * A piece of an interpolated query that represents an object. Arguments
+ * are passed to fauna using ObjectFragments so that query arguments can be
+ * nested within javascript objects.
+ *
+ * ObjectFragments must always be encoded with tags, regardless of the
+ * "x-format" request header sent.
+ * @example
+ * ```typescript
+ *  const arg = { startDate: DateStub.from("2023-09-01") };
+ *  const query = fql`${arg})`;
+ *  // produces
+ *  {
+ *		"fql": [
+ *			{
+ *				"object": {
+ *          "startDate": {
+ *						"value": { "@date": "2023-09-01" } // Object field values have type QueryInterpolation
+ *					}
+ *				}
+ *			}
+ *		]
+ *	}
+ * ```
+ */
+export type ObjectFragment = { object: EncodedObject };
+
+/**
+ * A piece of an interpolated query that represents an array. Arguments
+ * are passed to fauna using ArrayFragments so that query arguments can be
+ * nested within javascript arrays.
+ *
+ * ArrayFragments must always be encoded with tags, regardless of the "x-format"
+ * request header sent.
+ * @example
+ * ```typescript
+ *  const arg = [1, 2];
+ *  const query = fql`${arg})`;
+ *  // produces
+ *  {
+ *		"fql": [
+ *			{
+ *				"array": [
+ *					{ "value": { "@int": "1" } }, // Array items have type QueryInterpolation
+ *					{ "value": { "@int": "2" } }
+ *				]
+ *			}
+ *		]
+ *	}
+ * ```
+ */
+export type ArrayFragment = { array: TaggedType[] };
 
 /**
  * A piece of an interpolated query. Interpolated Queries can be safely composed
@@ -252,7 +316,7 @@ export type ValueFragment = { value: QueryValue };
  *  const query1 = fql`${num} + 3)`;
  *  const query2 = fql`5 + ${query1})`;
  *  // produces
- *  { fql: ["5 + ", { fql: [{ value: { "@int": "17" } }, " + 3"] }] }
+ *  { "fql": ["5 + ", { "fql": [{ "value": { "@int": "17" } }, " + 3"] }] }
  * ```
  */
 export type FQLFragment = { fql: (string | QueryInterpolation)[] };
@@ -281,22 +345,16 @@ export interface Span {
 }
 
 /**
- * A QueryValueObject is a plain javascript object where
- * each value is a QueryValue.
- * i.e. these objects can be set as values
- * in the {@link fql} query creation function and can be
- * returned in {@link QuerySuccess}.
+ * A QueryValueObject is a plain javascript object where each value is a valid
+ * QueryValue.
+ * These objects can be returned in {@link QuerySuccess}.
  */
 export type QueryValueObject = {
   [key: string]: QueryValue;
 };
 
 /**
- * A QueryValue can be sent as a value in a query,
- * and received from query output.
- * i.e. these are the types you can set as values
- * in the {@link fql} query creation function and can be
- * returned in {@link QuerySuccess}.
+ * A QueryValue represents the possible return values in a {@link QuerySuccess}.
  */
 export type QueryValue =
   // plain javascript values
@@ -307,6 +365,7 @@ export type QueryValue =
   | boolean
   | QueryValueObject
   | Array<QueryValue>
+  | Uint8Array
   // client-provided classes
   | DateStub
   | TimeStub
@@ -318,8 +377,7 @@ export type QueryValue =
   | NullDocument
   | Page<QueryValue>
   | EmbeddedSet
-  | StreamToken
-  | Uint8Array;
+  | StreamToken;
 
 export type StreamRequest = {
   token: string;
@@ -343,3 +401,35 @@ export type StreamEvent<T extends QueryValue> =
   | StreamEventStatus
   | StreamEventData<T>
   | StreamEventError;
+
+export type TaggedBytes = { "@bytes": string };
+export type TaggedDate = { "@date": string };
+export type TaggedDouble = { "@double": string };
+export type TaggedInt = { "@int": string };
+export type TaggedLong = { "@long": string };
+export type TaggedMod = { "@mod": string };
+export type TaggedObject = { "@object": QueryValueObject };
+export type TaggedRef = {
+  "@ref": { id: string; coll: TaggedMod } | { name: string; coll: TaggedMod };
+};
+// WIP: core does not accept `@set` tagged values
+// type TaggedSet = { "@set": { data: QueryValue[]; after?: string } };
+export type TaggedTime = { "@time": string };
+
+export type EncodedObject = { [key: string]: TaggedType };
+
+export type TaggedType =
+  | string
+  | boolean
+  | null
+  | EncodedObject
+  | TaggedBytes
+  | TaggedDate
+  | TaggedDouble
+  | TaggedInt
+  | TaggedLong
+  | TaggedMod
+  | TaggedObject
+  | TaggedRef
+  | TaggedTime
+  | TaggedType[];

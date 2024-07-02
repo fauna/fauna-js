@@ -46,7 +46,7 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
 
 **Server-side**
 
-Node.js - [Active LTS versions](https://nodejs.org/en/about/releases/):
+Node.js - [Active LTS version](https://nodejs.org/en/about/releases/):
 
 - LTS - v20
 

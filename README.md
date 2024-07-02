@@ -48,8 +48,8 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
 
 Node.js - [Current and active LTS versions](https://nodejs.org/en/about/releases/):
 
-- Current - v20
-- LTS - v18
+- Current - v22
+- LTS - v20
 
 **Cloud providers**
 

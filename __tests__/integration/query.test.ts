@@ -229,7 +229,7 @@ describe("query", () => {
   });
 
   it("Includes constraint failures when present", async () => {
-    expect.assertions(6);
+    expect.assertions(4);
     try {
       await client.query(
         fql`Function.create({"name": "my_double", "body": "x => x * 2"})`,
@@ -241,14 +241,15 @@ describe("query", () => {
       if (e instanceof ServiceError) {
         expect(e.httpStatus).toBe(400);
         expect(e.code).toBe("constraint_failure");
-        expect(e.queryInfo?.summary).toBeDefined();
-        if (e.constraint_failures !== undefined) {
-          expect(e.constraint_failures.length).toBe(1);
-          for (let constraintFailure of e.constraint_failures) {
-            expect(constraintFailure.message).toBeDefined();
-            expect(constraintFailure.paths).toBeDefined();
-          }
-        }
+        expect(e.queryInfo).toMatchObject({
+          summary: expect.any(String),
+        });
+        expect(e.constraint_failures).toEqual([
+          {
+            message: expect.any(String),
+            paths: expect.arrayContaining([expect.any(Array)]),
+          },
+        ]);
       }
     }
   });

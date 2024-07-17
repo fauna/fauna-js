@@ -200,7 +200,7 @@ export type ConstraintFailure = {
   /** Name of the failed constraint */
   name?: string;
   /** Path into the write input data to which the failure applies */
-  paths?: Array<number | string>;
+  paths?: Array<Array<number | string>>;
 };
 
 export type QueryResponse<T extends QueryValue> =

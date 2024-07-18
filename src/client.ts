@@ -211,7 +211,7 @@ export class Client {
    * ```
    */
   paginate<T extends QueryValue>(
-    iterable: Page<T> | EmbeddedSet | Query,
+    iterable: Page<T> | EmbeddedSet | Query<T>,
     options?: QueryOptions,
   ): SetIterator<T> {
     if (iterable instanceof Query) {
@@ -245,7 +245,7 @@ export class Client {
    * due to an internal error.
    */
   async query<T extends QueryValue>(
-    query: Query,
+    query: Query<T>,
     options?: QueryOptions,
   ): Promise<QuerySuccess<T>> {
     if (this.#isClosed) {
@@ -323,7 +323,7 @@ export class Client {
    * ```
    */
   stream<T extends QueryValue>(
-    tokenOrQuery: StreamToken | Query,
+    tokenOrQuery: StreamToken | Query<T>,
     options?: Partial<StreamClientConfiguration>,
   ): StreamClient<T> {
     if (this.#isClosed) {

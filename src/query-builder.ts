@@ -45,11 +45,11 @@ export type QueryArgument =
  *  const queryRequestBuilder = fql`${str}.length == ${innerQuery}`;
  * ```
  */
-export function fql(
+export function fql<T extends QueryValue = QueryValue>(
   queryFragments: ReadonlyArray<string>,
   ...queryArgs: QueryArgument[]
-): Query {
-  return new Query(queryFragments, ...queryArgs);
+): Query<T> {
+  return new Query<T>(queryFragments, ...queryArgs);
 }
 
 /**
@@ -57,7 +57,8 @@ export function fql(
  * A builder for composing queries using the {@link fql} tagged template
  * function
  */
-export class Query {
+export class Query<T extends QueryValue = QueryValue> {
+  // eslint-disable-line @typescript-eslint/no-unused-vars
   readonly #queryFragments: ReadonlyArray<string>;
   readonly #interpolatedArgs: QueryArgument[];
 

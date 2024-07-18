@@ -57,8 +57,8 @@ export function fql<T extends QueryValue = QueryValue>(
  * A builder for composing queries using the {@link fql} tagged template
  * function
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class Query<T extends QueryValue = QueryValue> {
-  // eslint-disable-line @typescript-eslint/no-unused-vars
   readonly #queryFragments: ReadonlyArray<string>;
   readonly #interpolatedArgs: QueryArgument[];
 

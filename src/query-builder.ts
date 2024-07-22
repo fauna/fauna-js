@@ -31,6 +31,7 @@ export type QueryArgument =
 
 /**
  * Creates a new Query. Accepts template literal inputs.
+ * @typeParam T - The expected type of the response from Fauna when evaluated.
  * @param queryFragments - a {@link TemplateStringsArray} that constitute
  *   the strings that are the basis of the query.
  * @param queryArgs - an Array\<QueryValue | Query\> that
@@ -56,7 +57,13 @@ export function fql<T extends QueryValue = QueryValue>(
  * Internal class.
  * A builder for composing queries using the {@link fql} tagged template
  * function
+ * @typeParam T - The expected type of the response from Fauna when evaluated.
+ *   T can be used to infer the type of the response type from {@link Client}
+ *   methods.
  */
+// HACK: We need to disable the next line because the type param is never
+// explicitly used in the class. It is inferred by the constructor and
+// used as the return type. You cannot annotate the constructor return type.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export class Query<T extends QueryValue = QueryValue> {
   readonly #queryFragments: ReadonlyArray<string>;

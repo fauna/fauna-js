@@ -29,12 +29,13 @@ describe.each`
     }
   });
 
-  it("allows customers to use their own types in fql statements", async () => {
+  it("allows customers to infer their own types in queries from fql statements", async () => {
     // This is a noop function that is only used to validate the inferred type of the query
     // It will fail at build time if types are not inferred correctly.
     const noopToValidateInferredType = (value: MyType) => {};
 
     const query = fql<MyType>`{ "x": 123 }`;
+    const q2 = fql`{ "x": ${query} }`;
 
     expect.assertions(1);
     if ("query" === method) {
@@ -49,5 +50,6 @@ describe.each`
         }
       }
     }
+    Promise.resolve();
   });
 });

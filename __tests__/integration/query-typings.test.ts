@@ -1,4 +1,4 @@
-import { fql, QueryCheckError } from "../../src";
+import { fql, Page, QueryCheckError } from "../../src";
 import { getClient } from "../client";
 
 // added in a junk property that is not part of QueryValue
@@ -16,12 +16,25 @@ describe.each`
   ${"paginate"}
 `("$method typings", ({ method }: { method: string }) => {
   it("allows customers to use their own types in queries", async () => {
-    expect.assertions(1);
+    const query = fql`{ "x": 123 }`;
+    const paginatedQuery = fql`[{ "x": 123}].toSet()`;
+
     if ("query" === method) {
-      const result = (await client.query<MyType>(fql`{ "x": 123}`)).data;
+      expect.assertions(1);
+      const result = (await client.query<MyType>(query)).data;
       expect(result).toEqual({ x: 123 });
     } else {
-      for await (const page of client.paginate<MyType>(fql`{ "x": 123}`)) {
+      expect.assertions(2);
+      for await (const page of client.paginate<MyType>(paginatedQuery)) {
+        for (const result of page) {
+          expect(result).toEqual({ x: 123 });
+        }
+      }
+
+      // It is also allowed to provide a query that does not return a page.
+      // When this happenes, the driver treats the result as if a page with
+      // exactly one item is returned.
+      for await (const page of client.paginate<MyType>(query)) {
         for (const result of page) {
           expect(result).toEqual({ x: 123 });
         }
@@ -35,15 +48,26 @@ describe.each`
     const noopToValidateInferredType = (value: MyType) => {};
 
     const query = fql<MyType>`{ "x": 123 }`;
-    const q2 = fql`{ "x": ${query} }`;
+    const paginatedQuery = fql<Page<MyType>>`[{ "x": 123}].toSet()`;
 
-    expect.assertions(1);
     if ("query" === method) {
+      expect.assertions(1);
       const result = (await client.query(query)).data;
       noopToValidateInferredType(result);
       expect(result).toEqual({ x: 123 });
     } else {
-      for await (const page of client.paginate<MyType>(fql`{ "x": 123}`)) {
+      expect.assertions(2);
+      for await (const page of client.paginate(paginatedQuery)) {
+        for (const result of page) {
+          noopToValidateInferredType(result);
+          expect(result).toEqual({ x: 123 });
+        }
+      }
+
+      // It is also allowed to provide a query that does not return a page.
+      // When this happenes, the driver treats the result as if a page with
+      // exactly one item is returned.
+      for await (const page of client.paginate(query)) {
         for (const result of page) {
           noopToValidateInferredType(result);
           expect(result).toEqual({ x: 123 });

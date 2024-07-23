@@ -211,7 +211,7 @@ export class Client {
    * ```
    */
   paginate<T extends QueryValue>(
-    iterable: Page<T> | EmbeddedSet | Query<T>,
+    iterable: Page<T> | EmbeddedSet | Query<Page<T>> | Query<T>,
     options?: QueryOptions,
   ): SetIterator<T> {
     if (iterable instanceof Query) {

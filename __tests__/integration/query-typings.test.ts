@@ -72,5 +72,10 @@ describe.each`
 
     const result = (await client.query<string | number>(query)).data;
     expect(result).toEqual("hello");
+
+    // And make sure that the opposite is not possible
+    const query2 = fql<string | number>`"hello"`;
+    // @ts-expect-error Argument of type 'Query<string | number>' is not assignable to parameter of type 'Query<string>'.
+    await client.query<string>(query2);
   });
 });

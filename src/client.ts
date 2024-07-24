@@ -326,7 +326,7 @@ export class Client {
    * ```
    */
   stream<T extends QueryValue>(
-    tokenOrQuery: StreamToken | Query<T>,
+    tokenOrQuery: StreamToken | Query<StreamToken>,
     options?: Partial<StreamClientConfiguration>,
   ): StreamClient<T> {
     if (this.#isClosed) {

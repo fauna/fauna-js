@@ -211,7 +211,12 @@ export class Client {
    * ```
    */
   paginate<T extends QueryValue>(
-    iterable: Page<T> | EmbeddedSet | Query<Page<T>> | Query<T>,
+    iterable:
+      | Page<T>
+      | EmbeddedSet
+      | Query<Page<T>>
+      | Query<T>
+      | Query<T | Page<T>>, // needed for inference when using the `fql` function within `.paginate()`, e.g. client.paginate<MyType>(fql`...`)
     options?: QueryOptions,
   ): SetIterator<T> {
     if (iterable instanceof Query) {

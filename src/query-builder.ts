@@ -22,7 +22,7 @@ export type QueryArgumentObject = {
  */
 export type QueryArgument =
   | QueryValue
-  | Query
+  | Query<any>
   | Date
   | ArrayBuffer
   | Uint8Array
@@ -46,7 +46,7 @@ export type QueryArgument =
  *  const queryRequestBuilder = fql`${str}.length == ${innerQuery}`;
  * ```
  */
-export function fql<T extends QueryValue = QueryValue>(
+export function fql<T extends QueryValue = any>(
   queryFragments: ReadonlyArray<string>,
   ...queryArgs: QueryArgument[]
 ): Query<T> {
@@ -61,13 +61,22 @@ export function fql<T extends QueryValue = QueryValue>(
  *   T can be used to infer the type of the response type from {@link Client}
  *   methods.
  */
-// HACK: We need to disable the next line because the type param is never
-// explicitly used in the class. It is inferred by the constructor and
-// used as the return type. You cannot annotate the constructor return type.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export class Query<T extends QueryValue = QueryValue> {
+export class Query<T extends QueryValue = any> {
   readonly #queryFragments: ReadonlyArray<string>;
   readonly #interpolatedArgs: QueryArgument[];
+  /**
+   * A phantom field to enforce the type of the Query.
+   * @internal
+   *
+   * We need to provide an actual property of type `T` for Typescript to
+   * actually enforce it.
+   *
+   * "Because TypeScript is a structural type system, type parameters only
+   * affect the resulting type when consumed as part of the type of a member."
+   *
+   * @see {@link https://www.typescriptlang.org/docs/handbook/type-compatibility.html#generics}
+   */
+  readonly #__phantom: T;
 
   constructor(
     queryFragments: ReadonlyArray<string>,
@@ -81,6 +90,9 @@ export class Query<T extends QueryValue = QueryValue> {
     }
     this.#queryFragments = queryFragments;
     this.#interpolatedArgs = queryArgs;
+
+    // HACK: We have to construct the phantom field, but we don't have any value for it.
+    this.#__phantom = undefined as unknown as T;
   }
 
   /**

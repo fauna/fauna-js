@@ -41,7 +41,6 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
 
 </details>
 
-
 ## Supported runtimes
 
 **Server-side**
@@ -67,10 +66,9 @@ Stable versions of:
 - Safari 12.1+
 - Edge 79+
 
-
 ## Install
 
-The  driver is available on [npm](https://www.npmjs.com/package/fauna). You
+The driver is available on [npm](https://www.npmjs.com/package/fauna). You
 can install it using your preferred package manager. For example:
 
 ```shell
@@ -84,7 +82,6 @@ Browsers can import the driver using a CDN link:
   import * as fauna from "https://cdn.jsdelivr.net/npm/fauna@latest/dist/browser/index.js";
 </script>
 ```
-
 
 ## Usage
 
@@ -134,7 +131,6 @@ try {
 }
 ```
 
-
 ### Write FQL queries
 
 The `fql` function is your gateway to building safe, reuseable Fauna queries.
@@ -175,8 +171,7 @@ This has several advantages:
 
 - You can use `fql` to build a library of subqueries applicable to your domain - and combinable in whatever way you need
 - Injection attacks are not possible if you pass input variables into the interpolated (`` `${interpoloated_argument}` ``) parts of the query.
-- The driver speaks "pure" FQL - you can try out some FQL queries on the dashboard's terminal and paste it directly into your app like `` fql`copied from terminal...`  `` and the query will work as is.
-
+- The driver speaks "pure" FQL - you can try out some FQL queries on the dashboard's terminal and paste it directly into your app like ``fql`copied from terminal...` `` and the query will work as is.
 
 ### Typescript support
 
@@ -198,14 +193,37 @@ const query = fql`{
 }`;
 
 const response: QuerySuccess<User> = await client.query<User>(query);
-const user_doc: User = response.data;
+const userDoc: User = response.data;
 
-console.assert(user_doc.name === "Alice");
-console.assert(user_doc.email === "alice@site.example");
+console.assert(userDoc.name === "Alice");
+console.assert(userDoc.email === "alice@site.example");
 
 client.close();
 ```
 
+Alternatively, you can apply a type parameter directly to your
+fql statements and `Client` methods will infer your return types.
+Due to backwards compatibility, if a type parameter is provided to
+`Client` methods, it will override the inferred type from your
+query.
+
+```typescript
+const query = fql<User>`{
+  name: "Alice",
+  email: "alice@site.example",
+}`;
+
+// response will be typed as QuerySuccess<User>
+const response = await client.query(query);
+
+// userDoc will be automatically inferred as User
+const userDoc = response.data;
+
+console.assert(userDoc.name === "Alice");
+console.assert(userDoc.email === "alice@site.example");
+
+client.close();
+```
 
 ### Query options
 
@@ -230,11 +248,10 @@ const options: QueryOptions = {
 };
 
 const response = await client.query(fql`"Hello, #{name}!"`, options);
-console.log(response.data)
+console.log(response.data);
 
 client.close();
 ```
-
 
 ### Query statistics
 
@@ -255,7 +272,7 @@ const client = new Client();
 
 try {
   const response: QuerySuccess<string> = await client.query<string>(
-    fql`"Hello world"`
+    fql`"Hello world"`,
   );
   const stats: QueryStats | undefined = response.stats;
   console.log(stats);
@@ -307,7 +324,7 @@ const pages: SetIterator<QueryValue> = client.paginate(query, options);
 
 for await (const products of pages) {
   for (const product of products) {
-    console.log(product)
+    console.log(product);
   }
 }
 
@@ -320,7 +337,7 @@ Use `flatten()` to get paginated results as a single, flat array:
 const pages: SetIterator<QueryValue> = client.paginate(query, options);
 
 for await (const product of pages.flatten()) {
-  console.log(product)
+  console.log(product);
 }
 ```
 
@@ -360,7 +377,6 @@ const config: ClientConfiguration = {
 const client = new Client(config);
 ```
 
-
 ### Environment variables
 
 The driver will default to configuring your client with the values of the `FAUNA_SECRET` and `FAUNA_ENDPOINT` environment variable.
@@ -378,9 +394,7 @@ You can initalize the client with a default configuration:
 const client = new Client();
 ```
 
-
 ### Retry
-
 
 #### Max attempts
 
@@ -388,16 +402,13 @@ The maximum number of times a query will be attempted if a retryable exception i
 
 To disable retries, pass max_attempts less than or equal to 1.
 
-
 #### Max backoff
 
 The maximum backoff in seconds to be observed between each retry. Default 20 seconds.
 
-
 ### Timeouts
 
 There are a few different timeout settings that can be configured; each comes with a default setting. We recommend that most applications simply stick to the defaults.
-
 
 #### Query timeout
 
@@ -417,7 +428,6 @@ when performing this query.
 const response = await client.query(myQuery, { query_timeout_ms: 20_000 });
 ```
 
-
 #### Client timeout
 
 The client timeout is the time, in milliseconds, that the client will wait for a network response before canceling the request. If a client timeout occurs, the driver will throw an instance of `NetworkError`.
@@ -427,7 +437,6 @@ The client timeout is always the query timeout plus an additional buffer. This e
 ```javascript
 const client = new Client({ client_timeout_buffer_ms: 6000 });
 ```
-
 
 #### HTTP/2 session idle timeout
 
@@ -473,15 +482,15 @@ const response = await client.query(fql`
 `);
 const { initialPage, streamToken } = response.data;
 
-client.stream(streamToken)
+client.stream(streamToken);
 ```
 
 You can also pass a query that produces a stream token directly to `stream()`:
 
 ```javascript
-const query = fql`Product.all().changesOn(.price, .quantity)`
+const query = fql`Product.all().changesOn(.price, .quantity)`;
 
-client.stream(query)
+client.stream(query);
 ```
 
 ### Iterate on a stream
@@ -504,7 +513,6 @@ try {
   // An error will be handled here if Fauna returns a terminal, "error" event, or
   // if Fauna returns a non-200 response when trying to connect, or
   // if the max number of retries on network errors is reached.
-
   // ... handle fatal error
 }
 ```
@@ -527,9 +535,8 @@ stream.start(
     // An error will be handled here if Fauna returns a terminal, "error" event, or
     // if Fauna returns a non-200 response when trying to connect, or
     // if the max number of retries on network errors is reached.
-
     // ... handle fatal error
-  }
+  },
 );
 ```
 
@@ -538,7 +545,7 @@ stream.start(
 Use `close()` to close a stream:
 
 ```javascript
-const stream = await client.stream(fql`Product.all().toStream()`)
+const stream = await client.stream(fql`Product.all().toStream()`);
 
 let count = 0;
 for await (const event of stream) {
@@ -548,7 +555,7 @@ for await (const event of stream) {
 
   // Close the stream after 2 events
   if (count === 2) {
-    stream.close()
+    stream.close();
     break;
   }
 }
@@ -570,13 +577,12 @@ const options = {
   status_events: true,
 };
 
-client.stream(fql`Product.all().toStream()`, options)
+client.stream(fql`Product.all().toStream()`, options);
 ```
 
 For supported properties, see [Stream
 options](https://docs.fauna.com/fauna/current/drivers/js-client#stream-options)
 in the Fauna docs.
-
 
 ## Contributing
 
@@ -586,25 +592,21 @@ If you have a suggestion that would make this better, please fork the repo and c
 
 Don't forget to give the project a star! Thanks again!
 
-
 ### Set up the repo
 
 1. Clone the repository; e.g. `gh repo clone fauna/fauna-js` if you use the GitHub CLI
 2. Install dependencies via `yarn install`
-
 
 ### Run tests
 
 1. Start a docker desktop or other docker platform.
 2. Run `yarn test`. This will start local fauna containers, verify they're up and run all tests.
 
-
 ### Lint your code
 
 Linting runs automatically on each commit.
 
 If you wish to run on-demand run `yarn lint`.
-
 
 ## License
 

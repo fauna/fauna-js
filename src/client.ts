@@ -175,7 +175,7 @@ export class Client {
    * max_attempts, inclusive of the initial call.
    *
    * @typeParam T - The expected type of the items returned from Fauna on each
-   * iteration
+   * iteration. T can be inferred if the provided query used a type parameter.
    * @param iterable - a {@link Query} or an existing fauna Set ({@link Page} or
    * {@link EmbeddedSet})
    * @param options - a {@link QueryOptions} to apply to the queries. Optional.
@@ -211,7 +211,7 @@ export class Client {
    * ```
    */
   paginate<T extends QueryValue>(
-    iterable: Page<T> | EmbeddedSet | Query,
+    iterable: Page<T> | EmbeddedSet | Query<T | Page<T>>,
     options?: QueryOptions,
   ): SetIterator<T> {
     if (iterable instanceof Query) {
@@ -224,10 +224,11 @@ export class Client {
    * Queries Fauna. Queries will be retried in the event of a ThrottlingError up to the client's configured
    * max_attempts, inclusive of the initial call.
    *
-   * @typeParam T - The expected type of the response from Fauna
+   * @typeParam T - The expected type of the response from Fauna. T can be inferred if the
+   *   provided query used a type parameter.
    * @param query - a {@link Query} to execute in Fauna.
-   *  Note, you can embed header fields in this object; if you do that there's no need to
-   *  pass the headers parameter.
+   *   Note, you can embed header fields in this object; if you do that there's no need to
+   *   pass the headers parameter.
    * @param options - optional {@link QueryOptions} to apply on top of the request input.
    *   Values in this headers parameter take precedence over the same values in the {@link ClientConfiguration}.
    * @returns Promise&lt;{@link QuerySuccess}&gt;.
@@ -245,7 +246,7 @@ export class Client {
    * due to an internal error.
    */
   async query<T extends QueryValue>(
-    query: Query,
+    query: Query<T>,
     options?: QueryOptions,
   ): Promise<QuerySuccess<T>> {
     if (this.#isClosed) {
@@ -269,9 +270,11 @@ export class Client {
 
   /**
    * Initialize a streaming request to Fauna
+   * @typeParam T - The expected type of the response from Fauna. T can be inferred
+   *   if theprovided query used a type parameter.
    * @param query - A string-encoded streaming token, or a {@link Query}
    * @returns A {@link StreamClient} that which can be used to listen to a stream
-   * of events
+   *   of events
    *
    * @example
    * ```javascript
@@ -323,7 +326,7 @@ export class Client {
    * ```
    */
   stream<T extends QueryValue>(
-    tokenOrQuery: StreamToken | Query,
+    tokenOrQuery: StreamToken | Query<StreamToken>,
     options?: Partial<StreamClientConfiguration>,
   ): StreamClient<T> {
     if (this.#isClosed) {

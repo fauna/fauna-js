@@ -22,7 +22,7 @@ export type QueryArgumentObject = {
  */
 export type QueryArgument =
   | QueryValue
-  | Query
+  | Query<any>
   | Date
   | ArrayBuffer
   | Uint8Array
@@ -31,6 +31,7 @@ export type QueryArgument =
 
 /**
  * Creates a new Query. Accepts template literal inputs.
+ * @typeParam T - The expected type of the response from Fauna when evaluated.
  * @param queryFragments - a {@link TemplateStringsArray} that constitute
  *   the strings that are the basis of the query.
  * @param queryArgs - an Array\<QueryValue | Query\> that
@@ -45,21 +46,37 @@ export type QueryArgument =
  *  const queryRequestBuilder = fql`${str}.length == ${innerQuery}`;
  * ```
  */
-export function fql(
+export function fql<T extends QueryValue = any>(
   queryFragments: ReadonlyArray<string>,
   ...queryArgs: QueryArgument[]
-): Query {
-  return new Query(queryFragments, ...queryArgs);
+): Query<T> {
+  return new Query<T>(queryFragments, ...queryArgs);
 }
 
 /**
  * Internal class.
  * A builder for composing queries using the {@link fql} tagged template
  * function
+ * @typeParam T - The expected type of the response from Fauna when evaluated.
+ *   T can be used to infer the type of the response type from {@link Client}
+ *   methods.
  */
-export class Query {
+export class Query<T extends QueryValue = any> {
   readonly #queryFragments: ReadonlyArray<string>;
   readonly #interpolatedArgs: QueryArgument[];
+  /**
+   * A phantom field to enforce the type of the Query.
+   * @internal
+   *
+   * We need to provide an actual property of type `T` for Typescript to
+   * actually enforce it.
+   *
+   * "Because TypeScript is a structural type system, type parameters only
+   * affect the resulting type when consumed as part of the type of a member."
+   *
+   * @see {@link https://www.typescriptlang.org/docs/handbook/type-compatibility.html#generics}
+   */
+  readonly #__phantom: T;
 
   constructor(
     queryFragments: ReadonlyArray<string>,
@@ -73,6 +90,9 @@ export class Query {
     }
     this.#queryFragments = queryFragments;
     this.#interpolatedArgs = queryArgs;
+
+    // HACK: We have to construct the phantom field, but we don't have any value for it.
+    this.#__phantom = undefined as unknown as T;
   }
 
   /**

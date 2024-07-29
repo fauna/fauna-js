@@ -368,7 +368,7 @@ const config: ClientConfiguration = {
   max_attempts: 3,
   max_backoff: 20,
   max_contention_retries: 5,
-  query_tags: { name: "readme query" },
+  query_tags: { name: "readme_query" },
   query_timeout_ms: 60_000,
   traceparent: "00-750efa5fb6a131eb2cf4db39f28366cb-000000000000000b-00",
   typecheck: true,

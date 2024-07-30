@@ -36,6 +36,7 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
   - [Contributing](#contributing)
     - [Set up the repo](#set-up-the-repo)
     - [Run tests](#run-tests)
+    - [Asserting types](#asserting-types)
     - [Lint your code](#lint-your-code)
   - [License](#license)
 
@@ -601,6 +602,12 @@ Don't forget to give the project a star! Thanks again!
 
 1. Start a docker desktop or other docker platform.
 2. Run `yarn test`. This will start local fauna containers, verify they're up and run all tests.
+
+### Asserting types
+
+In cases where you are modifying types and need to test type enforcement, you can use `@ts-expect-error`. Using `@ts-expect-error` will supress any type errors on the following line. Conversely, if there's no error, TypeScript will report its usage as not being neccessary.
+
+To learn more about `@ts-expect-error`, you can read more about it in the TypeScript [release notes](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-9.html#-ts-expect-error-comments).
 
 ### Lint your code
 

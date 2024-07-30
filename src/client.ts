@@ -271,7 +271,7 @@ export class Client {
   /**
    * Initialize a streaming request to Fauna
    * @typeParam T - The expected type of the response from Fauna. T can be inferred
-   *   if theprovided query used a type parameter.
+   *   if the provided query used a type parameter.
    * @param query - A string-encoded streaming token, or a {@link Query}
    * @returns A {@link StreamClient} that which can be used to listen to a stream
    *   of events

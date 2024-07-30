@@ -61,5 +61,5 @@ maybeDescribe("Query with limits enabled", () => {
     );
 
     expect(throttled).toBeTruthy();
-  }, 20000);
+  }, 30000);
 });

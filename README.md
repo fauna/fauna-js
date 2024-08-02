@@ -5,7 +5,7 @@
 
 This driver can only be used with FQL v10, and is not compatible with earlier versions of FQL. To query your databases with earlier API versions, see the [faunadb](https://www.npmjs.com/package/faunadb) package.
 
-See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additional information how to configure and query your databases.
+See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additional information on how to configure and query your databases.
 
 <details>
 <summary>Table of Contents</summary>

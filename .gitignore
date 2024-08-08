@@ -1,0 +1,7 @@
+.idea/
+target/
+dist/
+node_modules/
+
+#macOS
+.DS_STORE

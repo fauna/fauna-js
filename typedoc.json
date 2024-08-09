@@ -1,0 +1,8 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["./src/index.ts"],
+  "name": "Fauna v10 JavaScript driver",
+  "includeVersion": true,
+  "out": "docs",
+  "readme": "overview.md"
+}

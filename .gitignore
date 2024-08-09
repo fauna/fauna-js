@@ -6,6 +6,9 @@ yarn-error.log*
 # Build
 dist/
 
+# Docs
+docs/
+
 # Dependency directories
 node_modules/
 
@@ -17,3 +20,6 @@ node_modules/
 *#
 /reports
 /.vscode
+
+# macOs
+.DS_STORE

@@ -67,6 +67,14 @@ Stable versions of:
 - Safari 12.1+
 - Edge 79+
 
+
+## API reference
+
+API reference documentation for the driver is available at
+https://fauna.github.io/fauna-js/. The docs are generated using
+[TypeDoc](https://typedoc.org/).
+
+
 ## Install
 
 The driver is available on [npm](https://www.npmjs.com/package/fauna). You

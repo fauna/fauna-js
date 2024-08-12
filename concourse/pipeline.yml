@@ -39,6 +39,14 @@ resources:
       aws_secret_access_key: ((prod-images-aws-secret-key))
       aws_region: us-east-2
 
+  - name: fauna-js-repository-docs
+    type: git
+    icon: github
+    source:
+      uri: git@github.com:fauna/fauna-js.git
+      branch: gh-pages
+      private_key: ((github-ssh-key))
+
 groups:
   - name: pipeline
     jobs:
@@ -152,3 +160,11 @@ jobs:
           put: notify
           params:
             text_file: slack-message/publish
+
+      - task: publish-docs
+        file: main.git/concourse/tasks/publish-docs.yml
+        input_mapping: { fauna-js-repository: main.git }
+
+      - put: fauna-js-repository-docs
+        params:
+          repository: fauna-js-repository-updated-docs

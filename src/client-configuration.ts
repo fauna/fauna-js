@@ -192,10 +192,16 @@ export type StreamClientConfiguration = {
   /**
    * Indicates if stream should include "status" events, periodic events that
    * update the client with the latest valid timestamp (in the event of a
-   * dropped connection) as well as metrics about about the cost of maintaining
+   * dropped connection) as well as metrics about the cost of maintaining
    * the stream other than the cost of the received events.
    */
   status_events?: boolean;
+
+  /**
+   * The last seen event cursor to resume the stream from. When provided, the
+   * stream will start from the given cursor position (exclusively).
+   */
+  cursor?: string;
 };
 
 /**

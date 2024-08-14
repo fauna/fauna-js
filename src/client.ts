@@ -344,6 +344,15 @@ export class Client {
         ...options,
       };
 
+      if (
+        streamClientConfig.cursor !== undefined &&
+        tokenOrQuery instanceof Query
+      ) {
+        throw new ClientError(
+          "The `cursor` configuration can only be used with a stream token.",
+        );
+      }
+
       const tokenOrGetToken =
         tokenOrQuery instanceof Query
           ? () => this.query<StreamToken>(tokenOrQuery).then((res) => res.data)
@@ -636,6 +645,8 @@ export class StreamClient<T extends QueryValue = any> {
   #query: () => Promise<StreamToken>;
   /** The last `txn_ts` value received from events */
   #last_ts?: number;
+  /** The last `cursor` value received from events */
+  #last_cursor?: string;
   /** A common interface to operate a stream from any HTTPStreamClient */
   #streamAdapter?: StreamAdapter;
   /** A saved copy of the StreamToken once received */
@@ -730,7 +741,7 @@ export class StreamClient<T extends QueryValue = any> {
         ) * 1_000;
 
       try {
-        for await (const event of this.#startStream(this.#last_ts)) {
+        for await (const event of this.#startStream()) {
           yield event;
         }
       } catch (error: any) {
@@ -761,9 +772,9 @@ export class StreamClient<T extends QueryValue = any> {
     return this.#last_ts;
   }
 
-  async *#startStream(
-    start_ts?: number,
-  ): AsyncGenerator<StreamEventData<T> | StreamEventStatus> {
+  async *#startStream(): AsyncGenerator<
+    StreamEventData<T> | StreamEventStatus
+  > {
     // Safety: This method must only be called after a stream token has been acquired
     const streamToken = this.#streamToken as StreamToken;
 
@@ -772,7 +783,10 @@ export class StreamClient<T extends QueryValue = any> {
     };
 
     const streamAdapter = this.#clientConfiguration.httpStreamClient.stream({
-      data: { token: streamToken.token, start_ts },
+      data: {
+        token: streamToken.token,
+        cursor: this.#last_cursor || this.#clientConfiguration.cursor,
+      },
       headers,
       method: "POST",
     });
@@ -792,6 +806,7 @@ export class StreamClient<T extends QueryValue = any> {
       }
 
       this.#last_ts = deserializedEvent.txn_ts;
+      this.#last_cursor = deserializedEvent.cursor;
 
       // TODO: remove this once all environments have updated the events to use "status" instead of "start"
       if ((deserializedEvent.type as any) === "start") {

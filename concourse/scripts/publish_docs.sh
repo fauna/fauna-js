@@ -12,7 +12,7 @@ PACKAGE_VERSION=$(node -p -e "require('./package.json').version")
 
 # Generate docs
 npm install
-npm run docs
+npm run doc
 
 echo "Current docs version: $PACKAGE_VERSION"
 
@@ -25,7 +25,15 @@ if [ -d "$PACKAGE_VERSION" ]; then
     echo "Existing $PACKAGE_VERSION directory removed."
 fi
 
-cp -R "../fauna-js-repository/build/docs" "$PACKAGE_VERSION"
+cp -R "../fauna-js-repository/docs" "$PACKAGE_VERSION"
+
+HEAD_GTM=$(cat ./fauna-js-repository/concourse/scripts/head_gtm.dat)
+sed -i.bak "0,/<\/title>/{s/<\/title>/<\/title>${HEAD_GTM}/}" ./$PACKAGE_VERSION/index.html
+
+BODY_GTM=$(cat ./fauna-js-repository/concourse/scripts/body_gtm.dat)
+sed -i.bak "0,/<body>/{s/<body>/<body>${BODY_GTM}/}" ./$PACKAGE_VERSION/index.html
+
+rm ./$PACKAGE_VERSION/index.html.bak
 
 echo "Updating 'latest' symlink to point to $PACKAGE_VERSION"
 ln -sfn "$PACKAGE_VERSION" latest

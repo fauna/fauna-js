@@ -584,6 +584,7 @@ const options = {
   max_backoff: 1000,
   secret: "YOUR_FAUNA_SECRET",
   status_events: true,
+  cursor: null,
 };
 
 client.stream(fql`Product.all().toStream()`, options);

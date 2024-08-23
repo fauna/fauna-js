@@ -382,17 +382,20 @@ export type QueryValue =
 export type StreamRequest = {
   token: string;
   start_ts?: number;
+  cursor?: string;
 };
 
 export type StreamEventType = "status" | "add" | "remove" | "update" | "error";
 export type StreamEventStatus = {
   type: "status";
   txn_ts: number;
+  cursor: string;
   stats: QueryStats;
 };
 export type StreamEventData<T extends QueryValue> = {
   type: "add" | "remove" | "update";
   txn_ts: number;
+  cursor: string;
   stats: QueryStats;
   data: T;
 };

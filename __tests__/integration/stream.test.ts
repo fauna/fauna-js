@@ -1,3 +1,4 @@
+import assert = require("assert");
 import {
   AbortError,
   Client,
@@ -103,6 +104,54 @@ describe("Client", () => {
     } finally {
       stream?.close();
     }
+  });
+
+  it("can resume a stream from an event cursor", async () => {
+    expect.assertions(2);
+
+    let stream: StreamClient | null = null;
+    try {
+      const response = await client.query<StreamToken>(
+        fql`StreamTest.all().toStream()`,
+      );
+      const token = response.data;
+
+      stream = client.stream(token);
+
+      // create some events that will be played back
+      await client.query(fql`StreamTest.create({ value: 0 })`);
+      await client.query(fql`StreamTest.create({ value: 1 })`);
+
+      let cursor: string | undefined;
+
+      for await (const event of stream) {
+        assert(event.type == "add", "expected an add event");
+        expect(event.data.value).toEqual(0);
+        cursor = event.cursor;
+        break;
+      }
+
+      stream.close();
+      stream = client.stream(token, { cursor: cursor });
+
+      for await (const event of stream) {
+        assert(event.type == "add", "expected an add event");
+        expect(event.data.value).toEqual(1);
+        break;
+      }
+    } finally {
+      stream?.close();
+    }
+  });
+
+  it("rejects cursor when not using a stream token", () => {
+    expect(() => {
+      client.stream(fql`StreamTest.all().toStream()`, {
+        cursor: "abc1234==",
+      });
+    }).toThrow(
+      "The `cursor` configuration can only be used with a stream token.",
+    );
   });
 });
 

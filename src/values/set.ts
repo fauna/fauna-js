@@ -132,6 +132,20 @@ export class SetIterator<T extends QueryValue>
     return new FlattenedSetIterator(this);
   }
 
+  /**
+   * Collects all pages of data from the Set into an array of paged results.
+   *
+   * @returns A Promise that resolves to an array of arrays, where each inner
+   * array represents a page of data from the Set.
+   */
+  async collect(): Promise<T[][]> {
+    const results: T[][] = [];
+    for await (const data of this) {
+      results.push(data);
+    }
+    return results;
+  }
+
   /** Implement {@link AsyncGenerator.next} */
   async next(): Promise<IteratorResult<T[], void>> {
     return this.#generator.next();
@@ -176,6 +190,19 @@ export class FlattenedSetIterator<T extends QueryValue>
    */
   constructor(setIterator: SetIterator<T>) {
     this.#generator = generateItems(setIterator);
+  }
+
+  /**
+   * Collects all items of the Set into an array.
+   *
+   * @returns A Promise that resolves to an array of all items in the Set.
+   */
+  async collect(): Promise<T[]> {
+    const results: T[] = [];
+    for await (const data of this) {
+      results.push(data);
+    }
+    return results;
   }
 
   /** Implement {@link AsyncGenerator.next} */

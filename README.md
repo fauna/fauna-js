@@ -353,7 +353,7 @@ for await (const product of pages.flatten()) {
 ## Client configuration
 
 The driver's `Client` instance comes with reasonable defaults that should be
-used in most cases. Yu can override these defaults if needed.
+used in most cases. You can override these defaults if needed.
 
 In addition to configuring the client, you can also set default [query
 options](#query-options).
@@ -465,9 +465,9 @@ const client = new Client({ http2_session_idle_ms: 6000 });
 > **Warning**
 > Setting `http2_session_idle_ms` to small values can lead to a race condition where requests cannot be transmitted before the session is closed, yielding `ERR_HTTP2_GOAWAY_SESSION` errors.
 
-## Event Streaming
+## Event streaming
 
-The driver supports [Event Streaming](https://docs.fauna.com/fauna/current/learn/streaming).
+The driver supports [event streaming](https://docs.fauna.com/fauna/current/learn/streaming).
 
 ### Start a stream
 

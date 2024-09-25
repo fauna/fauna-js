@@ -12,6 +12,7 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
 
 - [The Official JavaScript Driver for Fauna.](#the-official-javascript-driver-for-fauna)
   - [Supported runtimes](#supported-runtimes)
+  - [API reference](#api-reference)
   - [Install](#install)
   - [Usage](#usage)
     - [Write FQL queries](#write-fql-queries)
@@ -465,9 +466,9 @@ const client = new Client({ http2_session_idle_ms: 6000 });
 > **Warning**
 > Setting `http2_session_idle_ms` to small values can lead to a race condition where requests cannot be transmitted before the session is closed, yielding `ERR_HTTP2_GOAWAY_SESSION` errors.
 
-## Event streaming
+## Event Streaming
 
-The driver supports [event streaming](https://docs.fauna.com/fauna/current/learn/streaming).
+The driver supports [Event Streaming](https://docs.fauna.com/fauna/current/learn/streaming).
 
 ### Start a stream
 
@@ -575,10 +576,10 @@ for await (const event of stream) {
 The [client configuration](#client-configuration) sets default options for the
 `stream()` method.
 
-You can pass an `options` object to override these defaults:
+You can pass an `StreamClientConfiguration` object to override these defaults:
 
 ```javascript
-const options = {
+const options: StreamClientConfiguration = {
   long_type: "number",
   max_attempts: 5,
   max_backoff: 1000,
@@ -590,9 +591,9 @@ const options = {
 client.stream(fql`Product.all().toStream()`, options);
 ```
 
-For supported properties, see [Stream
-options](https://docs.fauna.com/fauna/current/drivers/js-client#stream-options)
-in the Fauna docs.
+For supported properties, see
+[StreamClientConfiguration](https://fauna.github.io/fauna-js/latest/types/StreamClientConfiguration.html)
+in the API reference.
 
 ## Contributing
 

@@ -498,7 +498,7 @@ client.stream(streamToken);
 You can also pass a query that produces a stream token directly to `stream()`:
 
 ```javascript
-const query = fql`Product.all().changesOn(.price, .quantity)`;
+const query = fql`Product.all().changesOn(.price, .stock)`;
 
 client.stream(query);
 ```

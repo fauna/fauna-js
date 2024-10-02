@@ -2,6 +2,7 @@ import http2 from "node:http2";
 import { getDefaultHTTPClient, NodeHTTP2Client } from "../../src";
 import { HTTPRequest } from "../../src";
 import { getDefaultHTTPClientOptions } from "../client";
+import { SupportedFaunaAPIs } from "../../src/http-client";
 
 const mockRequest = jest.fn();
 const mockClient = {
@@ -44,7 +45,7 @@ describe("node http2 client", () => {
       data: { query: "some-query" },
       headers: {},
       method: "POST",
-      path: "/some-path",
+      path: "/some-path" as SupportedFaunaAPIs,
     };
 
     // We don't actually care about the status of this request for this specific test.

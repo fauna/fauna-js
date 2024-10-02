@@ -11,6 +11,7 @@ import {
   QuerySuccess,
 } from "../../src";
 import { getDefaultHTTPClientOptions } from "../client";
+import { SupportedFaunaAPIs } from "../../src/http-client";
 
 let fetchClient: FetchClient;
 
@@ -151,7 +152,7 @@ describe("fetch client", () => {
     });
     await fetchClient.request({
       ...dummyRequest,
-      path: "/non-the-default-api",
+      path: "/non-the-default-api" as SupportedFaunaAPIs,
     });
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/non-the-default-api"),

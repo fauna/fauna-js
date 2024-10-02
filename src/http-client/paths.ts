@@ -6,3 +6,5 @@ export const FaunaAPI = {
   QUERY: "/query/1",
   STREAM: "/stream/1",
 } as const;
+
+export type SupportedFaunaAPIs = (typeof FaunaAPI)[keyof typeof FaunaAPI];

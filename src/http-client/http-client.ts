@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Client } from "../client";
 import { QueryRequest, StreamRequest } from "../wire-protocol";
+import { SupportedFaunaAPIs } from "./paths";
 
 /**
  * An object representing an http request.
@@ -22,7 +23,7 @@ export type HTTPRequest = {
   method: "POST";
 
   /** The path of the endpoint to call if not using the default */
-  path?: string;
+  path?: SupportedFaunaAPIs;
 };
 
 /**

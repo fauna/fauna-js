@@ -20,6 +20,9 @@ export type HTTPRequest = {
 
   /** HTTP method to use */
   method: "POST";
+
+  /** The path of the endpoint to call if not using the default */
+  path?: string;
 };
 
 /**
@@ -80,6 +83,9 @@ export type HTTPStreamRequest = {
 
   /** HTTP method to use */
   method: "POST";
+
+  /** The path of the endpoint to call if not using the default */
+  path?: string;
 };
 
 /**
@@ -91,7 +97,7 @@ export interface StreamAdapter {
 }
 
 /**
- * An interface to provide implementation-specific, asyncronous http calls.
+ * An interface to provide implementation-specific, asynchronous http calls.
  * This driver provides default implementations for common environments. Users
  * can configure the {@link Client} to use custom implementations if desired.
  */

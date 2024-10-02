@@ -117,7 +117,7 @@ describe("fetch client", () => {
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(
-          "The network connection encountered a problem."
+          "The network connection encountered a problem.",
         );
         expect(e.cause).toBeDefined();
       }
@@ -128,7 +128,7 @@ describe("fetch client", () => {
     expect.assertions(2);
     fetchMock.mockResponseOnce(
       () =>
-        new Promise((resolve) => setTimeout(() => resolve({ body: "" }), 100))
+        new Promise((resolve) => setTimeout(() => resolve({ body: "" }), 100)),
     );
     try {
       const badClient = new FetchClient(getDefaultHTTPClientOptions());
@@ -137,10 +137,25 @@ describe("fetch client", () => {
     } catch (e) {
       if (e instanceof NetworkError) {
         expect(e.message).toEqual(
-          "The network connection encountered a problem."
+          "The network connection encountered a problem.",
         );
         expect(e.cause).toBeDefined();
       }
     }
+  });
+
+  it("uses the path provided in the HttpRequest if provided", async () => {
+    expect.assertions(1);
+    fetchMock.mockResponseOnce(JSON.stringify({}), {
+      headers: { "content-type": "application/json" },
+    });
+    await fetchClient.request({
+      ...dummyRequest,
+      path: "/non-the-default-api",
+    });
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/non-the-default-api"),
+      expect.any(Object),
+    );
   });
 });

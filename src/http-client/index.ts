@@ -7,6 +7,7 @@ import {
 } from "./http-client";
 import { NodeHTTP2Client } from "./node-http2-client";
 
+export * from "./paths";
 export * from "./fetch-client";
 export * from "./http-client";
 export * from "./node-http2-client";

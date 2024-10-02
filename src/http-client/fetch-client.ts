@@ -3,7 +3,7 @@
 
 import { getServiceError, NetworkError } from "../errors";
 import { QueryFailure } from "../wire-protocol";
-import { FaunaAPI } from "./paths";
+import { FaunaAPIPaths } from "./paths";
 import {
   HTTPClient,
   HTTPClientOptions,
@@ -19,8 +19,8 @@ import {
  */
 export class FetchClient implements HTTPClient, HTTPStreamClient {
   #baseUrl: string;
-  #defaultRequestPath = FaunaAPI.QUERY;
-  #defaultStreamPath = FaunaAPI.STREAM;
+  #defaultRequestPath = FaunaAPIPaths.QUERY;
+  #defaultStreamPath = FaunaAPIPaths.STREAM;
   #keepalive: boolean;
 
   constructor({ url, fetch_keepalive }: HTTPClientOptions) {

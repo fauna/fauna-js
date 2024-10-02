@@ -11,7 +11,7 @@ import {
   QuerySuccess,
 } from "../../src";
 import { getDefaultHTTPClientOptions } from "../client";
-import { SupportedFaunaAPIs } from "../../src/http-client";
+import { SupportedFaunaAPIPaths } from "../../src/http-client";
 
 let fetchClient: FetchClient;
 
@@ -145,6 +145,21 @@ describe("fetch client", () => {
     }
   });
 
+  it("uses the default path if one is not provided in HttpRequest", async () => {
+    expect.assertions(1);
+    fetchMock.mockResponseOnce(JSON.stringify({}), {
+      headers: { "content-type": "application/json" },
+    });
+    await fetchClient.request({
+      ...dummyRequest,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining("/query/1"),
+      expect.any(Object),
+    );
+  });
+
   it("uses the path provided in the HttpRequest if provided", async () => {
     expect.assertions(1);
     fetchMock.mockResponseOnce(JSON.stringify({}), {
@@ -152,8 +167,9 @@ describe("fetch client", () => {
     });
     await fetchClient.request({
       ...dummyRequest,
-      path: "/non-the-default-api" as SupportedFaunaAPIs,
+      path: "/non-the-default-api" as SupportedFaunaAPIPaths,
     });
+
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/non-the-default-api"),
       expect.any(Object),

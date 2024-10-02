@@ -15,7 +15,7 @@ import {
 } from "./http-client";
 import { NetworkError, getServiceError } from "../errors";
 import { QueryFailure } from "../wire-protocol";
-import { FaunaAPI } from "./paths";
+import { FaunaAPIPaths } from "./paths";
 
 // alias http2 types
 type ClientHttp2Session = any;
@@ -36,8 +36,8 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
   #numberOfUsers = 0;
   #session: ClientHttp2Session | null;
 
-  #defaultRequestPath = FaunaAPI.QUERY;
-  #defaultStreamPath = FaunaAPI.STREAM;
+  #defaultRequestPath = FaunaAPIPaths.QUERY;
+  #defaultStreamPath = FaunaAPIPaths.STREAM;
 
   private constructor({
     http2_session_idle_ms,

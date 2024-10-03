@@ -15,6 +15,7 @@ import {
 } from "./http-client";
 import { NetworkError, getServiceError } from "../errors";
 import { QueryFailure } from "../wire-protocol";
+import { FaunaAPIPaths } from "./paths";
 
 // alias http2 types
 type ClientHttp2Session = any;
@@ -34,6 +35,9 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
   #url: string;
   #numberOfUsers = 0;
   #session: ClientHttp2Session | null;
+
+  #defaultRequestPath = FaunaAPIPaths.QUERY;
+  #defaultStreamPath = FaunaAPIPaths.STREAM;
 
   private constructor({
     http2_session_idle_ms,
@@ -144,18 +148,18 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
   #connect() {
     // create the session if it does not exist or is closed
     if (!this.#session || this.#session.closed || this.#session.destroyed) {
-      const new_session: ClientHttp2Session = http2
+      const newSession: ClientHttp2Session = http2
         .connect(this.#url, {
           peerMaxConcurrentStreams: this.#http2_max_streams,
         })
         .once("error", () => this.#closeForAll())
         .once("goaway", () => this.#closeForAll());
 
-      new_session.setTimeout(this.#http2_session_idle_ms, () => {
+      newSession.setTimeout(this.#http2_session_idle_ms, () => {
         this.#closeForAll();
       });
 
-      this.#session = new_session;
+      this.#session = newSession;
     }
     return this.#session;
   }
@@ -165,6 +169,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
     data: requestData,
     headers: requestHeaders,
     method,
+    path = this.#defaultRequestPath,
   }: HTTPRequest): Promise<HTTPResponse> {
     return new Promise<HTTPResponse>((resolvePromise, rejectPromise) => {
       let req: ClientHttp2Stream;
@@ -195,7 +200,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
       try {
         const httpRequestHeaders: OutgoingHttpHeaders = {
           ...requestHeaders,
-          [http2.constants.HTTP2_HEADER_PATH]: "/query/1",
+          [http2.constants.HTTP2_HEADER_PATH]: path,
           [http2.constants.HTTP2_HEADER_METHOD]: method,
         };
 
@@ -227,6 +232,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
     data: requestData,
     headers: requestHeaders,
     method,
+    path = this.#defaultStreamPath,
   }: HTTPStreamRequest): StreamAdapter {
     let resolveChunk: (chunk: string[]) => void;
     let rejectChunk: (reason: any) => void;
@@ -298,7 +304,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
     async function* reader(): AsyncGenerator<string> {
       const httpRequestHeaders: OutgoingHttpHeaders = {
         ...requestHeaders,
-        [http2.constants.HTTP2_HEADER_PATH]: "/stream/1",
+        [http2.constants.HTTP2_HEADER_PATH]: path,
         [http2.constants.HTTP2_HEADER_METHOD]: method,
       };
 

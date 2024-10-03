@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Client } from "../client";
 import { QueryRequest, StreamRequest } from "../wire-protocol";
+import { SupportedFaunaAPIPaths } from "./paths";
 
 /**
  * An object representing an http request.
@@ -20,6 +21,9 @@ export type HTTPRequest = {
 
   /** HTTP method to use */
   method: "POST";
+
+  /** The path of the endpoint to call if not using the default */
+  path?: SupportedFaunaAPIPaths;
 };
 
 /**
@@ -80,6 +84,9 @@ export type HTTPStreamRequest = {
 
   /** HTTP method to use */
   method: "POST";
+
+  /** The path of the endpoint to call if not using the default */
+  path?: string;
 };
 
 /**
@@ -91,7 +98,7 @@ export interface StreamAdapter {
 }
 
 /**
- * An interface to provide implementation-specific, asyncronous http calls.
+ * An interface to provide implementation-specific, asynchronous http calls.
  * This driver provides default implementations for common environments. Users
  * can configure the {@link Client} to use custom implementations if desired.
  */

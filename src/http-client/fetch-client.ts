@@ -3,6 +3,7 @@
 
 import { getServiceError, NetworkError } from "../errors";
 import { QueryFailure } from "../wire-protocol";
+import { FaunaAPIPaths } from "./paths";
 import {
   HTTPClient,
   HTTPClientOptions,
@@ -17,14 +18,18 @@ import {
  * An implementation for {@link HTTPClient} that uses the native fetch API
  */
 export class FetchClient implements HTTPClient, HTTPStreamClient {
-  #queryURL: string;
-  #streamURL: string;
+  #baseUrl: string;
+  #defaultRequestPath = FaunaAPIPaths.QUERY;
+  #defaultStreamPath = FaunaAPIPaths.STREAM;
   #keepalive: boolean;
 
   constructor({ url, fetch_keepalive }: HTTPClientOptions) {
-    this.#queryURL = new URL("/query/1", url).toString();
-    this.#streamURL = new URL("/stream/1", url).toString();
+    this.#baseUrl = url;
     this.#keepalive = fetch_keepalive;
+  }
+
+  #resolveURL(path: string): string {
+    return new URL(path, this.#baseUrl).toString();
   }
 
   /** {@inheritDoc HTTPClient.request} */
@@ -33,6 +38,7 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
     headers: requestHeaders,
     method,
     client_timeout_ms,
+    path = this.#defaultRequestPath,
   }: HTTPRequest): Promise<HTTPResponse> {
     const signal =
       AbortSignal.timeout === undefined
@@ -44,7 +50,7 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
           })()
         : AbortSignal.timeout(client_timeout_ms);
 
-    const response = await fetch(this.#queryURL, {
+    const response = await fetch(this.#resolveURL(path), {
       method,
       headers: { ...requestHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -75,8 +81,9 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
     data,
     headers: requestHeaders,
     method,
+    path = this.#defaultStreamPath,
   }: HTTPStreamRequest): StreamAdapter {
-    const request = new Request(this.#streamURL, {
+    const request = new Request(this.#resolveURL(path), {
       method,
       headers: { ...requestHeaders, "Content-Type": "application/json" },
       body: JSON.stringify(data),

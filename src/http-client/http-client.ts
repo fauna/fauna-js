@@ -6,15 +6,17 @@ import { SupportedFaunaAPIPaths } from "./paths";
 /**
  * An object representing an http request.
  * The {@link Client} provides this to the {@link HTTPClient} implementation.
+ *
+ * @typeParam T - The expected type of the request sent to fauna.
  */
-export type HTTPRequest = {
+export type HTTPRequest<T = QueryRequest> = {
   /**
    * The timeout of each http request, in milliseconds.
    */
   client_timeout_ms: number;
 
-  /** The encoded Fauna query to send */
-  data: QueryRequest;
+  /** The encoded request to send */
+  data: T;
 
   /** Headers in object format */
   headers: Record<string, string | undefined>;
@@ -73,11 +75,13 @@ export interface HTTPClient {
 /**
  * An object representing an http request.
  * The {@link Client} provides this to the {@link HTTPStreamClient} implementation.
+ *
+ * @typeParam T - The expected type of the request sent to fauna.
  */
-export type HTTPStreamRequest = {
-  /** The encoded Fauna query to send */
+export type HTTPStreamRequest<T = StreamRequest> = {
+  /** The encoded Fauna request to send */
   // TODO: Allow type to be a QueryRequest once implemented by the db
-  data: StreamRequest;
+  data: T;
 
   /** Headers in object format */
   headers: Record<string, string | undefined>;

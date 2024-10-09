@@ -1,4 +1,3 @@
-import { QueryFailure } from "fauna";
 import {
   ChangeFeedClientConfiguration,
   ClientConfiguration,
@@ -37,6 +36,7 @@ import {
   StreamToken,
 } from "./values";
 import {
+  QueryFailure,
   ChangeFeedRequest,
   ChangeFeedSuccess,
   EncodedObject,

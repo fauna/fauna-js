@@ -50,17 +50,6 @@ describe("ChangeFeedClient", () => {
     jest.clearAllMocks();
   });
 
-  it("can be instantiated directly with a token", () => {
-    new ChangeFeedClient(dummyStreamToken, defaultConfig);
-  });
-
-  it("can be instantiated directly with a lambda", async () => {
-    new ChangeFeedClient(
-      () => Promise.resolve(dummyStreamToken),
-      defaultConfig,
-    );
-  });
-
   it("returns a valid page of events", async () => {
     mockHttpClient.request.mockImplementationOnce(() =>
       Promise.resolve({
@@ -179,25 +168,6 @@ describe("ChangeFeedClient", () => {
         data: {
           token: "dummy",
           start_ts: startTs,
-        },
-      }),
-    );
-  });
-
-  it("does not use start_ts if cursor is set", async () => {
-    const startTs = Date.now();
-    const changeFeed = new ChangeFeedClient(dummyStreamToken, {
-      ...defaultConfig,
-      cursor: "cursor=",
-      start_ts: startTs,
-    });
-    await fromAsync(changeFeed.flatten());
-
-    expect(mockHttpClient.request).toHaveBeenCalledWith(
-      expect.objectContaining({
-        data: {
-          token: "dummy",
-          cursor: "cursor=",
         },
       }),
     );

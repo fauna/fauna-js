@@ -77,4 +77,11 @@ describe("ChangeFeedClientConfiguration", () => {
       expect(e).toBeInstanceOf(RangeError);
     }
   });
+
+  it("throws a TypeError is start_ts and cursor are both provided", async () => {
+    const config = { ...defaultConfig, start_ts: 1, cursor: "cursor" };
+    expect(() => {
+      new ChangeFeedClient(dummyStreamToken, config);
+    }).toThrow(TypeError);
+  });
 });

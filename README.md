@@ -637,8 +637,7 @@ const changeFeed = client.changeFeed(query);
 
 ### Iterate on a Change Feed
 
-`changeFeed()` returns a `ChangeFeedClient` instance that can act as an `AsyncIterator`. You can
-use a `for await...of` to iterate through all the pages:
+`changeFeed()` returns a `ChangeFeedClient` instance that can act as an `AsyncIterator`. You can use `for await...of` to iterate through all the pages:
 
 ```ts
 const query = fql`Product.all().changesOn(.price, .stock)`;
@@ -706,14 +705,14 @@ try {
 
 ### Change Feed options
 
-The client configuration sets the default options for `changeFeed()`. You can pass a ``ChangeFeedClientConfiguration` object to override these defaults:
+The client configuration sets the default options for `changeFeed()`. You can pass a `ChangeFeedClientConfiguration` object to override these defaults:
 
 ```ts
 const options: ChangeFeedClientConfiguration = {
   long_type: "number",
   max_attempts: 5,
   max_backoff: 1000,
-  secret: "YOUR_FAUNA_SECRET",
+  secret: "FAUNA_SECRET",
   cursor: undefined,
   start_ts: undefined,
 };

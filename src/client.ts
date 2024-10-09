@@ -36,7 +36,6 @@ import {
   StreamToken,
 } from "./values";
 import {
-  QueryFailure,
   ChangeFeedRequest,
   ChangeFeedSuccess,
   EncodedObject,
@@ -49,6 +48,7 @@ import {
   StreamEventStatus,
   type QuerySuccess,
   type QueryValue,
+  ChangeFeedError,
 } from "./wire-protocol";
 
 type RequiredClientConfig = ClientConfiguration &
@@ -1013,6 +1013,7 @@ export class ChangeFeedClient<T extends QueryValue = any> {
     }
 
     // If we have a cursor, use that. Otherwise, use the start_ts if available.
+    // When the config is validated, if both are set, an error is thrown.
     if (this.#lastCursor) {
       req.data.cursor = this.#lastCursor;
     } else if (this.#clientConfiguration.start_ts) {
@@ -1046,7 +1047,7 @@ export class ChangeFeedClient<T extends QueryValue = any> {
       shouldRetry: (error) => error instanceof ThrottlingError,
     });
 
-    let body: ChangeFeedSuccess<T> | QueryFailure;
+    let body: ChangeFeedSuccess<T> | ChangeFeedError;
 
     try {
       body = TaggedTypeFormat.decode(response.body, {
@@ -1130,6 +1131,12 @@ export class ChangeFeedClient<T extends QueryValue = any> {
 
     if (config.max_attempts <= 0) {
       throw new RangeError(`'max_attempts' must be greater than zero.`);
+    }
+
+    if (config.start_ts !== undefined && config.cursor !== undefined) {
+      throw new TypeError(
+        "Only one of 'start_ts' or 'cursor' can be defined in the client configuration.",
+      );
     }
   }
 }

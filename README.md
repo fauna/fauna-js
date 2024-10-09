@@ -37,6 +37,7 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
   - [Change Feeds](#change-feeds-beta)
     - [Request a Change Feed](#request-a-change-feed)
     - [Iterate on a Change Feed](#iterate-on-a-change-feed)
+    - [Error handling](#error-handling)
     - [Change Feed options](#change-feed-options)
   - [Contributing](#contributing)
     - [Set up the repo](#set-up-the-repo)
@@ -72,13 +73,11 @@ Stable versions of:
 - Safari 12.1+
 - Edge 79+
 
-
 ## API reference
 
 API reference documentation for the driver is available at
 https://fauna.github.io/fauna-js/. The docs are generated using
 [TypeDoc](https://typedoc.org/).
-
 
 ## Install
 
@@ -606,13 +605,13 @@ The driver supports [Change Feeds](https://docs.fauna.com/fauna/current/learn/tr
 ### Request a Change Feed
 
 A Change Feed asynchronously polls an [event stream](https://docs.fauna.com/fauna/current/learn/streaming),
-represented by a stream token, for events. 
+represented by a stream token, for events.
 
-To get a stream token, append ``toStream()`` or ``changesOn()`` to a set from a
+To get a stream token, append `toStream()` or `changesOn()` to a set from a
 [supported source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources).
 
 To get paginated events for the stream, pass the stream token to
-``changeFeed()``:
+`changeFeed()`:
 
 ```javascript
 const response = await client.query(fql`
@@ -638,15 +637,15 @@ const changeFeed = client.changeFeed(query);
 
 ### Iterate on a Change Feed
 
-``changeFeed()`` returns a ``ChangeFeedClient`` instance that can act as an ``AsyncIterator``. You can
-use a ``for await...of`` to iterate through all the pages:
+`changeFeed()` returns a `ChangeFeedClient` instance that can act as an `AsyncIterator`. You can
+use a `for await...of` to iterate through all the pages:
 
 ```ts
 const query = fql`Product.all().changesOn(.price, .stock)`;
 const changeFeed = client.changeFeed(query);
 
 for await (const page of changeFeed) {
-  console.log('Page stats', page.stats);
+  console.log("Page stats", page.stats);
 
   for (event in page.events) {
     switch (event.type) {
@@ -661,14 +660,47 @@ for await (const page of changeFeed) {
 }
 ```
 
-Alternatively, use ``flatten()`` to get paginated results as a single, flat array:
+Alternatively, use `flatten()` to get paginated results as a single, flat array:
 
 ```ts
 const query = fql`Product.all().changesOn(.price, .stock)`;
 const changeFeed = client.changeFeed(query);
 
 for await (const event of changeFeed.flatten()) {
-  console.log('Stream event", event');
+  console.log("Stream event:", event);
+}
+```
+
+### Error handling
+
+Exceptions can be raised at two different places:
+
+1. While fetching a page
+1. While iterating a page's events
+
+This distinction allows for you to ignore errors originating from event processing.
+For example:
+
+```ts
+const changeFeed = client.changeFeed(fql`
+  Product.all().map(.details.toUpperCase()).toStream()
+`);
+
+try {
+  for await (const page of changeFeed) {
+    // Pages will stop at the first error encountered.
+    // Therefore, its safe to handle an event failures
+    // and then pull more pages.
+    try {
+      for (const event of page.events) {
+        console.log("Stream event:", event);
+      }
+    } catch (error: unknown) {
+      console.log("Stream event error:", error);
+    }
+  }
+} catch (error: unknown) {
+  console.log("Non-retryable error:", error);
 }
 ```
 

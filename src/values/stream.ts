@@ -54,7 +54,7 @@ export class ChangeFeedPage<T extends QueryValue> {
   ): IterableIterator<StreamEventData<T>> {
     // A page of events may contain an error event. These won't be reported
     // at a response level, so we need to check for them here. They are
-    // considered fatal.
+    // considered fatal. Pages end at the first error event.
     for (const event of events) {
       if (event.type === "error") {
         throw getServiceError(event);

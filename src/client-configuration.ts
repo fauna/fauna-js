@@ -1,4 +1,4 @@
-import { HTTPStreamClient } from "./http-client";
+import { HTTPClient, HTTPStreamClient } from "./http-client";
 import type { ValueFormat } from "./wire-protocol";
 
 /**
@@ -202,6 +202,63 @@ export type StreamClientConfiguration = {
    * stream will start from the given cursor position (exclusively).
    */
   cursor?: string;
+};
+
+/**
+ * Configuration for a change feed client. This typically comes from the `Client`
+ * instance configuration.
+ */
+export type ChangeFeedClientConfiguration = {
+  /**
+   * The underlying {@link HTTPClient} that will execute the actual HTTP calls
+   */
+  httpClient: HTTPClient;
+
+  /**
+   * Controls what Javascript type to deserialize {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#long | Fauna longs} to.
+   *
+   * @see {@link ClientConfiguration.long_type}
+   */
+  long_type: "number" | "bigint";
+
+  /**
+   * The maximum number of times to attempt a change feed query when a
+   * retryable exception is thrown.
+   */
+  max_attempts: number;
+
+  /**
+   * The maximum backoff in seconds for an individual retry.
+   */
+  max_backoff: number;
+
+  /**
+   * Controls the maximum amount of time Fauna will execute a query before
+   * returning a page of events.
+   */
+  query_timeout_ms: number;
+
+  /**
+   * A secret for your Fauna DB, used to authorize your queries.
+   * @see https://docs.fauna.com/fauna/current/security/keys
+   */
+  secret: string;
+
+  /**
+   * The starting timestamp of the change feed, exclusive. If set, Fauna will return events starting after
+    the timestamp.
+   */
+  start_ts?: number;
+
+  /**
+   * The starting event cursor, exclusive. If set, Fauna will return events starting after the cursor.
+   */
+  cursor?: string;
+
+  /**
+   * The desired number of events per page.
+   */
+  page_size?: number;
 };
 
 /**

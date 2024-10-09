@@ -1,5 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { fql, QueryArgumentObject } from "./query-builder";
+import { Query, fql, QueryArgumentObject } from "./query-builder";
 import {
   DateStub,
   Document,
@@ -404,6 +404,19 @@ export type StreamEvent<T extends QueryValue> =
   | StreamEventStatus
   | StreamEventData<T>
   | StreamEventError;
+
+export type ChangeFeedRequest = StreamRequest & {
+  page_size?: number;
+};
+
+export type ChangeFeedSuccess<T extends QueryValue> = {
+  events: (StreamEventData<T> | StreamEventError)[];
+  cursor: string;
+  has_next: boolean;
+  stats?: QueryStats;
+};
+
+export type ChangeFeedError = QueryFailure;
 
 export type TaggedBytes = { "@bytes": string };
 export type TaggedDate = { "@date": string };

@@ -2,7 +2,7 @@
 /// <reference lib="dom" />
 
 import { getServiceError, NetworkError } from "../errors";
-import { QueryFailure } from "../wire-protocol";
+import { QueryFailure, QueryRequest } from "../wire-protocol";
 import { FaunaAPIPaths } from "./paths";
 import {
   HTTPClient,
@@ -33,13 +33,13 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
   }
 
   /** {@inheritDoc HTTPClient.request} */
-  async request({
+  async request<T = QueryRequest>({
     data,
     headers: requestHeaders,
     method,
     client_timeout_ms,
     path = this.#defaultRequestPath,
-  }: HTTPRequest): Promise<HTTPResponse> {
+  }: HTTPRequest<T>): Promise<HTTPResponse> {
     const signal =
       AbortSignal.timeout === undefined
         ? (() => {

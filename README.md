@@ -1,4 +1,4 @@
-# The Official JavaScript Driver for [Fauna](https://fauna.com).
+# Official JavaScript Driver for [Fauna v10](https://fauna.com) (current)
 
 [![npm Version](https://img.shields.io/npm/v/fauna.svg?maxAge=21600)](https://www.npmjs.com/package/fauna)
 [![License](https://img.shields.io/badge/license-MPL_2.0-blue.svg?maxAge=2592000)](https://raw.githubusercontent.com/fauna/fauna-js/main/LICENSE)

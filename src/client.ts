@@ -1,4 +1,6 @@
+import { QueryFailure } from "fauna";
 import {
+  ChangeFeedClientConfiguration,
   ClientConfiguration,
   StreamClientConfiguration,
   endpoints,
@@ -20,12 +22,23 @@ import {
   isStreamClient,
   isHTTPResponse,
   type HTTPClient,
+  HTTPRequest,
+  FaunaAPIPaths,
 } from "./http-client";
 import { Query } from "./query-builder";
 import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
-import { EmbeddedSet, Page, SetIterator, StreamToken } from "./values";
+import { withRetries } from "./util/retryable";
 import {
+  ChangeFeedPage,
+  EmbeddedSet,
+  Page,
+  SetIterator,
+  StreamToken,
+} from "./values";
+import {
+  ChangeFeedRequest,
+  ChangeFeedSuccess,
   EncodedObject,
   isQueryFailure,
   isQuerySuccess,
@@ -155,7 +168,7 @@ export class Client {
   }
 
   /**
-   * Closes the underlying HTTP client. Subsquent query or close calls
+   * Closes the underlying HTTP client. Subsequent query or close calls
    * will fail.
    */
   close() {
@@ -362,6 +375,79 @@ export class Client {
     } else {
       throw new ClientError("Streaming is not supported by this client.");
     }
+  }
+
+  /**
+   * Initialize a change feed in Fauna and returns an asynchronous iterator of change
+   * feed events.
+   * @typeParam T - The expected type of the response from Fauna. T can be inferred
+   *   if the provided query used a type parameter.
+   * @param query - A string-encoded streaming token, or a {@link Query}
+   * @returns A {@link ChangeFeedClient} that which can be used to listen to a feed
+   *   of events
+   *
+   * @example
+   * ```javascript
+   *  const changeFeed = client.changeFeed(fql`MyCollection.all().toStream()`)
+   *
+   *  try {
+   *    for await (const page of changeFeed) {
+   *      for (const event of page.events) {
+   *        // ... handle event
+   *      }
+   *    }
+   *  } catch (error) {
+   *    // An error will be handled here if Fauna returns a terminal, "error" event, or
+   *    // if Fauna returns a non-200 response when trying to connect, or
+   *    // if the max number of retries on network errors is reached.
+   *
+   *    // ... handle fatal error
+   *  };
+   * ```
+   * @example
+   * The {@link ChangeFeedClient.flatten} method can be used so the iterator yields
+   * events directly. Each event is fetched asynchronously and hides when
+   * additional pages are fetched.
+   *
+   * ```javascript
+   *  const changeFeed = client.changeFeed(fql`MyCollection.all().toStream()`)
+   *
+   *  for await (const user of changeFeed.flatten()) {
+   *    // do something with each event
+   *  }
+   * ```
+   */
+  changeFeed<T extends QueryValue>(
+    tokenOrQuery: StreamToken | Query<StreamToken>,
+    options?: Partial<ChangeFeedClientConfiguration>,
+  ): ChangeFeedClient<T> {
+    if (this.#isClosed) {
+      throw new ClientClosedError(
+        "Your client is closed. No further requests can be issued.",
+      );
+    }
+
+    const clientConfiguration: ChangeFeedClientConfiguration = {
+      ...this.#clientConfiguration,
+      httpClient: this.#httpClient,
+      ...options,
+    };
+
+    if (
+      clientConfiguration.cursor !== undefined &&
+      tokenOrQuery instanceof Query
+    ) {
+      throw new ClientError(
+        "The `cursor` configuration can only be used with a stream token.",
+      );
+    }
+
+    const tokenOrGetToken =
+      tokenOrQuery instanceof Query
+        ? () => this.query<StreamToken>(tokenOrQuery).then((res) => res.data)
+        : tokenOrQuery;
+
+    return new ChangeFeedClient(tokenOrGetToken, clientConfiguration);
   }
 
   async #queryWithRetries<T extends QueryValue>(
@@ -832,6 +918,202 @@ export class StreamClient<T extends QueryValue = any> {
       "httpStreamClient",
       "max_backoff",
       "max_attempts",
+      "secret",
+    ];
+    required_options.forEach((option) => {
+      if (config[option] === undefined) {
+        throw new TypeError(
+          `ClientConfiguration option '${option}' must be defined.`,
+        );
+      }
+    });
+
+    if (config.max_backoff <= 0) {
+      throw new RangeError(`'max_backoff' must be greater than zero.`);
+    }
+
+    if (config.max_attempts <= 0) {
+      throw new RangeError(`'max_attempts' must be greater than zero.`);
+    }
+  }
+}
+
+/**
+ * A class to iterate through to a Fauna change feed.
+ */
+export class ChangeFeedClient<T extends QueryValue = any> {
+  /** A static copy of the driver env header to send with each request */
+  static readonly #driverEnvHeader = getDriverEnv();
+  /** A lambda that returns a promise for a {@link StreamToken} */
+  #query: () => Promise<StreamToken>;
+  /** The change feed's client options */
+  #clientConfiguration: ChangeFeedClientConfiguration;
+  /** The last `cursor` value received for the current page */
+  #lastCursor?: string;
+  /** A saved copy of the StreamToken once received */
+  #streamToken?: StreamToken;
+  /** Whether or not another page can be fetched by the client */
+  #isDone?: boolean;
+
+  /**
+   *
+   * @param query - A lambda that returns a promise for a {@link StreamToken}
+   * @param clientConfiguration - The {@link ChangeFeedClientConfiguration} to apply
+   * @example
+   * ```typescript
+   *  const changeFeed = client.changeFeed(streamToken);
+   * ```
+   */
+  constructor(
+    token: StreamToken | (() => Promise<StreamToken>),
+    clientConfiguration: ChangeFeedClientConfiguration,
+  ) {
+    if (token instanceof StreamToken) {
+      this.#query = () => Promise.resolve(token);
+    } else {
+      this.#query = token;
+    }
+
+    this.#clientConfiguration = clientConfiguration;
+    this.#lastCursor = clientConfiguration.cursor;
+
+    this.#validateConfiguration();
+  }
+
+  #getHeaders(): Record<string, string> {
+    return {
+      Authorization: `Bearer ${this.#clientConfiguration.secret}`,
+      "x-format": "tagged",
+      "x-driver-env": ChangeFeedClient.#driverEnvHeader,
+    };
+  }
+
+  async #nextPageHttpRequest() {
+    // If we never resolved the stream token, do it now since we need it here when
+    // building the payload
+    if (!this.#streamToken) {
+      this.#streamToken = await this.#resolveStreamToken(this.#query);
+    }
+
+    const headers = this.#getHeaders();
+
+    const req: HTTPRequest<ChangeFeedRequest> = {
+      headers,
+      client_timeout_ms: this.#clientConfiguration.query_timeout_ms,
+      data: {
+        token: this.#streamToken.token,
+      },
+      method: "POST",
+      path: FaunaAPIPaths.CHANGE_FEED,
+    };
+
+    // Set the page size if it is available
+    if (this.#clientConfiguration.page_size) {
+      req.data.page_size = this.#clientConfiguration.page_size;
+    }
+
+    // If we have a cursor, use that. Otherwise, use the start_ts if available.
+    if (this.#lastCursor) {
+      req.data.cursor = this.#lastCursor;
+    } else if (this.#clientConfiguration.start_ts) {
+      req.data.start_ts = this.#clientConfiguration.start_ts;
+    }
+
+    return req;
+  }
+
+  async *[Symbol.asyncIterator](): AsyncGenerator<ChangeFeedPage<T>> {
+    while (!this.#isDone) {
+      yield await this.nextPage();
+    }
+  }
+
+  /**
+   * Fetches the next page of the change feed. If there are no more pages to
+   * fetch, this method will throw a {@link ClientError}.
+   */
+  async nextPage(): Promise<ChangeFeedPage<T>> {
+    if (this.#isDone) {
+      throw new ClientError("The change feed has no more pages to fetch.");
+    }
+
+    const { httpClient } = this.#clientConfiguration;
+
+    const request = await this.#nextPageHttpRequest();
+    const response = await withRetries(() => httpClient.request(request), {
+      maxAttempts: this.#clientConfiguration.max_attempts,
+      maxBackoff: this.#clientConfiguration.max_backoff,
+      shouldRetry: (error) => error instanceof ThrottlingError,
+    });
+
+    let body: ChangeFeedSuccess<T> | QueryFailure;
+
+    try {
+      body = TaggedTypeFormat.decode(response.body, {
+        long_type: this.#clientConfiguration.long_type,
+      });
+    } catch (error: unknown) {
+      throw new ProtocolError({
+        message: `Error parsing response as JSON: ${error}`,
+        httpStatus: response.status,
+      });
+    }
+
+    if (isQueryFailure(body)) {
+      throw getServiceError(body, response.status);
+    }
+
+    const page = new ChangeFeedPage<T>(body);
+    this.#lastCursor = page.cursor;
+    this.#isDone = !page.hasNext;
+
+    return page;
+  }
+
+  /**
+   * Returns an async generator that yields the events of the change feed
+   * directly.
+   *
+   * @example
+   * ```javascript
+   *  const changeFeed = client.changeFeed(fql`MyCollection.all().toStream()`)
+   *
+   *  for await (const user of changeFeed.flatten()) {
+   *    // do something with each event
+   *  }
+   * ```
+   */
+  async *flatten(): AsyncGenerator<StreamEventData<T>> {
+    for await (const page of this) {
+      for (const event of page.events) {
+        yield event;
+      }
+    }
+  }
+
+  async #resolveStreamToken(
+    fn: () => Promise<StreamToken>,
+  ): Promise<StreamToken> {
+    return await fn().then((maybeStreamToken) => {
+      if (!(maybeStreamToken instanceof StreamToken)) {
+        throw new ClientError(
+          `Error requesting a stream token. Expected a StreamToken as the query result, but received ${typeof maybeStreamToken}. Your query must return the result of '<Set>.toStream' or '<Set>.changesOn')\n` +
+            `Query result: ${JSON.stringify(maybeStreamToken, null)}`,
+        );
+      }
+      return maybeStreamToken;
+    });
+  }
+
+  #validateConfiguration() {
+    const config = this.#clientConfiguration;
+
+    const required_options: (keyof ChangeFeedClientConfiguration)[] = [
+      "long_type",
+      "httpClient",
+      "max_backoff",
+      "max_attempts",
+      "query_timeout_ms",
       "secret",
     ];
     required_options.forEach((option) => {

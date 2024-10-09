@@ -1,5 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Query } from "fauna";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import type { Client } from "../client";
 import { QueryRequest, StreamRequest } from "../wire-protocol";
 import { SupportedFaunaAPIPaths } from "./paths";

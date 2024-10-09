@@ -11,10 +11,14 @@ jobs:
         image: fauna/faunadb:latest
         ports:
           - 8443:8443
+        env:
+          FLAG_ACCOUNT_CHANGE_FEEDS: "true"
       alt_core:
         image: fauna/faunadb:latest
         ports:
           - 7443:8443
+        env:
+          FLAG_ACCOUNT_CHANGE_FEEDS: "true"
     strategy:
       matrix:
         node: ["18", "20"]

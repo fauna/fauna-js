@@ -13,6 +13,7 @@ import {
   HTTPStreamClient,
   StreamAdapter,
 } from "./http-client";
+import { QueryRequest } from "fauna";
 
 /**
  * An implementation for {@link HTTPClient} that uses the native fetch API
@@ -33,13 +34,13 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
   }
 
   /** {@inheritDoc HTTPClient.request} */
-  async request({
+  async request<T = QueryRequest>({
     data,
     headers: requestHeaders,
     method,
     client_timeout_ms,
     path = this.#defaultRequestPath,
-  }: HTTPRequest): Promise<HTTPResponse> {
+  }: HTTPRequest<T>): Promise<HTTPResponse> {
     const signal =
       AbortSignal.timeout === undefined
         ? (() => {

@@ -1,7 +1,5 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Query } from "fauna";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { fql, QueryArgumentObject } from "./query-builder";
+import { Query, fql, QueryArgumentObject } from "./query-builder";
 import {
   DateStub,
   Document,

@@ -1,8 +1,8 @@
-import { QueryStats } from "fauna";
 import {
   ChangeFeedSuccess,
   QueryValue,
   StreamEventData,
+  QueryStats,
 } from "../wire-protocol";
 import { getServiceError } from "../errors";
 

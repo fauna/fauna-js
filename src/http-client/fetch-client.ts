@@ -2,7 +2,7 @@
 /// <reference lib="dom" />
 
 import { getServiceError, NetworkError } from "../errors";
-import { QueryFailure } from "../wire-protocol";
+import { QueryFailure, QueryRequest } from "../wire-protocol";
 import { FaunaAPIPaths } from "./paths";
 import {
   HTTPClient,
@@ -13,7 +13,6 @@ import {
   HTTPStreamClient,
   StreamAdapter,
 } from "./http-client";
-import { QueryRequest } from "fauna";
 
 /**
  * An implementation for {@link HTTPClient} that uses the native fetch API

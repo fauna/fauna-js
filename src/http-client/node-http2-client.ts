@@ -14,9 +14,8 @@ import {
   StreamAdapter,
 } from "./http-client";
 import { NetworkError, getServiceError } from "../errors";
-import { QueryFailure } from "../wire-protocol";
+import { QueryFailure, QueryRequest } from "../wire-protocol";
 import { FaunaAPIPaths } from "./paths";
-import { QueryRequest } from "fauna";
 
 // alias http2 types
 type ClientHttp2Session = any;

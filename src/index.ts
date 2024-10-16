@@ -1,9 +1,10 @@
-export { Client, StreamClient } from "./client";
+export { Client, StreamClient, ChangeFeedClient } from "./client";
 export {
   endpoints,
   type ClientConfiguration,
   type Endpoints,
   type StreamClientConfiguration,
+  type ChangeFeedClientConfiguration,
 } from "./client-configuration";
 export {
   AbortError,
@@ -38,6 +39,9 @@ export {
   type QuerySuccess,
   type Span,
   type ValueFragment,
+  type ChangeFeedRequest,
+  type ChangeFeedSuccess,
+  type ChangeFeedError,
 } from "./wire-protocol";
 export {
   DateStub,
@@ -52,6 +56,7 @@ export {
   SetIterator,
   StreamToken,
   TimeStub,
+  ChangeFeedPage,
   type DocumentT,
 } from "./values";
 export {

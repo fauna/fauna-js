@@ -14,7 +14,7 @@ import {
   StreamAdapter,
 } from "./http-client";
 import { NetworkError, getServiceError } from "../errors";
-import { QueryFailure } from "../wire-protocol";
+import { QueryFailure, QueryRequest } from "../wire-protocol";
 import { FaunaAPIPaths } from "./paths";
 
 // alias http2 types
@@ -78,7 +78,7 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
   }
 
   /** {@inheritDoc HTTPClient.request} */
-  async request(req: HTTPRequest): Promise<HTTPResponse> {
+  async request<T = QueryRequest>(req: HTTPRequest<T>): Promise<HTTPResponse> {
     let retryCount = 0;
     let memoizedError: any;
     do {
@@ -164,13 +164,13 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
     return this.#session;
   }
 
-  #doRequest({
+  #doRequest<T = QueryRequest>({
     client_timeout_ms,
     data: requestData,
     headers: requestHeaders,
     method,
     path = this.#defaultRequestPath,
-  }: HTTPRequest): Promise<HTTPResponse> {
+  }: HTTPRequest<T>): Promise<HTTPResponse> {
     return new Promise<HTTPResponse>((resolvePromise, rejectPromise) => {
       let req: ClientHttp2Stream;
       const onResponse = (

@@ -7,14 +7,14 @@ import { SupportedFaunaAPIPaths } from "./paths";
  * An object representing an http request.
  * The {@link Client} provides this to the {@link HTTPClient} implementation.
  */
-export type HTTPRequest = {
+export type HTTPRequest<T = QueryRequest> = {
   /**
    * The timeout of each http request, in milliseconds.
    */
   client_timeout_ms: number;
 
   /** The encoded Fauna query to send */
-  data: QueryRequest;
+  data: T;
 
   /** Headers in object format */
   headers: Record<string, string | undefined>;
@@ -44,7 +44,7 @@ export type HTTPClientOptions = {
 };
 
 /**
- * An interface to provide implementation-specific, asyncronous http calls.
+ * An interface to provide implementation-specific, asynchronous http calls.
  * This driver provides default implementations for common environments. Users
  * can configure the {@link Client} to use custom implementations if desired.
  */
@@ -55,7 +55,7 @@ export interface HTTPClient {
    * @returns A Promise&lt;{@link HTTPResponse}&gt;
    * @throws {@link NetworkError} on request timeout or other network issue.
    */
-  request(req: HTTPRequest): Promise<HTTPResponse>;
+  request<T>(req: HTTPRequest<T>): Promise<HTTPResponse>;
 
   /**
    * Flags the calling {@link Client} as no longer

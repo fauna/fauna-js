@@ -369,8 +369,8 @@ describe("query", () => {
 
     const httpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
     const badHTTPClient = {
-      async request(req: HTTPRequest) {
-        const badRequest: HTTPRequest = {
+      async request<T>(req: HTTPRequest<T>) {
+        const badRequest: HTTPRequest<T> = {
           ...req,
           client_timeout_ms: 1,
         };

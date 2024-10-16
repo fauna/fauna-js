@@ -722,7 +722,7 @@ client.changeFeed(fql`Product.all().toStream()`, options);
 
 ## Contributing
 
-Any contributions are from the community are greatly appreciated!
+Any contributions from the community are greatly appreciated!
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You may also simply open an issue. We provide templates, so please complete those to the best of your ability.
 

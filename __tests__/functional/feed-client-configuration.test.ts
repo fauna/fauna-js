@@ -1,13 +1,13 @@
 import {
   StreamToken,
   getDefaultHTTPClient,
-  ChangeFeedClientConfiguration,
-  ChangeFeedClient,
+  FeedClientConfiguration,
+  FeedClient,
 } from "../../src";
 import { getDefaultHTTPClientOptions } from "../client";
 
 const defaultHttpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
-const defaultConfig: ChangeFeedClientConfiguration = {
+const defaultConfig: FeedClientConfiguration = {
   secret: "secret",
   long_type: "number",
   max_attempts: 3,
@@ -18,16 +18,13 @@ const defaultConfig: ChangeFeedClientConfiguration = {
 };
 const dummyStreamToken = new StreamToken("dummy");
 
-describe("ChangeFeedClientConfiguration", () => {
+describe("FeedClientConfiguration", () => {
   it("can be instantiated directly with a token", () => {
-    new ChangeFeedClient(dummyStreamToken, defaultConfig);
+    new FeedClient(dummyStreamToken, defaultConfig);
   });
 
   it("can be instantiated directly with a lambda", async () => {
-    new ChangeFeedClient(
-      () => Promise.resolve(dummyStreamToken),
-      defaultConfig,
-    );
+    new FeedClient(() => Promise.resolve(dummyStreamToken), defaultConfig);
   });
 
   it("throws a RangeError if 'max_backoff' is less than or equal to zero", async () => {
@@ -35,7 +32,7 @@ describe("ChangeFeedClientConfiguration", () => {
 
     const config = { ...defaultConfig, max_backoff: 0 };
     try {
-      new ChangeFeedClient(dummyStreamToken, config);
+      new FeedClient(dummyStreamToken, config);
     } catch (e: any) {
       expect(e).toBeInstanceOf(RangeError);
     }
@@ -52,17 +49,13 @@ describe("ChangeFeedClientConfiguration", () => {
     ${"secret"}
   `(
     "throws a TypeError if $fieldName provided is undefined",
-    async ({
-      fieldName,
-    }: {
-      fieldName: keyof ChangeFeedClientConfiguration;
-    }) => {
+    async ({ fieldName }: { fieldName: keyof FeedClientConfiguration }) => {
       expect.assertions(1);
 
       const config = { ...defaultConfig };
       delete config[fieldName];
       try {
-        new ChangeFeedClient(dummyStreamToken, config);
+        new FeedClient(dummyStreamToken, config);
       } catch (e: any) {
         expect(e).toBeInstanceOf(TypeError);
       }
@@ -74,7 +67,7 @@ describe("ChangeFeedClientConfiguration", () => {
 
     const config = { ...defaultConfig, max_attempts: 0 };
     try {
-      new ChangeFeedClient(dummyStreamToken, config);
+      new FeedClient(dummyStreamToken, config);
     } catch (e: any) {
       expect(e).toBeInstanceOf(RangeError);
     }
@@ -83,14 +76,14 @@ describe("ChangeFeedClientConfiguration", () => {
   it("throws a TypeError is start_ts and cursor are both provided", async () => {
     const config = { ...defaultConfig, start_ts: 1, cursor: "cursor" };
     expect(() => {
-      new ChangeFeedClient(dummyStreamToken, config);
+      new FeedClient(dummyStreamToken, config);
     }).toThrow(TypeError);
   });
 
   it("throws a RangeError if 'query_timeout_ms' is less than or equal to zero", async () => {
     const config = { ...defaultConfig, query_timeout_ms: 0 };
     try {
-      new ChangeFeedClient(dummyStreamToken, config);
+      new FeedClient(dummyStreamToken, config);
     } catch (e: any) {
       expect(e).toBeInstanceOf(RangeError);
     }
@@ -99,7 +92,7 @@ describe("ChangeFeedClientConfiguration", () => {
   it("throws a RangeError if 'client_timeout_buffer_ms' is less than or equal to zero", async () => {
     const config = { ...defaultConfig, client_timeout_buffer_ms: 0 };
     try {
-      new ChangeFeedClient(dummyStreamToken, config);
+      new FeedClient(dummyStreamToken, config);
     } catch (e: any) {
       expect(e).toBeInstanceOf(RangeError);
     }

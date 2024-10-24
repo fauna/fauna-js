@@ -1,7 +1,8 @@
 import {
-  ChangeFeedClient,
-  ChangeFeedClientConfiguration,
+  FeedClient,
+  FeedClientConfiguration,
   QueryRuntimeError,
+  EventSource,
   StreamToken,
   ThrottlingError,
 } from "../../src";
@@ -27,7 +28,7 @@ const mockHttpClient = {
     .mockImplementation(() => Promise.resolve({ ...mockHttpResponse })),
   close: jest.fn(),
 };
-const defaultConfig: ChangeFeedClientConfiguration = {
+const defaultConfig: FeedClientConfiguration = {
   secret: "secret",
   long_type: "number",
   max_attempts: 3,
@@ -36,7 +37,7 @@ const defaultConfig: ChangeFeedClientConfiguration = {
   client_timeout_buffer_ms: 5000,
   httpClient: mockHttpClient,
 };
-const dummyStreamToken = new StreamToken("dummy");
+const testEventSource: EventSource = new StreamToken("dummy");
 
 const fromAsync = async <T>(iterator: AsyncIterable<T>): Promise<T[]> => {
   const res: T[] = [];
@@ -46,7 +47,7 @@ const fromAsync = async <T>(iterator: AsyncIterable<T>): Promise<T[]> => {
   return res;
 };
 
-describe("ChangeFeedClient", () => {
+describe("FeedClient", () => {
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -64,7 +65,7 @@ describe("ChangeFeedClient", () => {
               data: {
                 "@doc": {
                   id: "411279302456246784",
-                  coll: { "@mod": "ChangeFeedTest" },
+                  coll: { "@mod": "FeedTest" },
                   ts: { "@time": "2024-10-09T14:49:17.620Z" },
                   value: { "@int": "1" },
                 },
@@ -84,8 +85,8 @@ describe("ChangeFeedClient", () => {
       }),
     );
 
-    const changeFeed = new ChangeFeedClient(dummyStreamToken, defaultConfig);
-    const firstPage = await changeFeed.nextPage();
+    const feed = new FeedClient(testEventSource, defaultConfig);
+    const firstPage = await feed.nextPage();
 
     expect(firstPage.cursor).toBe("gsGCGmcGl+0aJPRzAAA=");
     expect(firstPage.hasNext).toBe(true);
@@ -95,7 +96,7 @@ describe("ChangeFeedClient", () => {
     expect(events[0].type).toBe("add");
     expect(events[0].data).toEqual(expect.any(Object));
 
-    const secondPage = await changeFeed.nextPage();
+    const secondPage = await feed.nextPage();
 
     expect(secondPage.cursor).toBe("cursor=");
     expect(secondPage.hasNext).toBe(false);
@@ -103,8 +104,8 @@ describe("ChangeFeedClient", () => {
   });
 
   it("uses a valid HTTPRequest", async () => {
-    const changeFeed = new ChangeFeedClient(dummyStreamToken, defaultConfig);
-    await fromAsync(changeFeed);
+    const feed = new FeedClient(testEventSource, defaultConfig);
+    await fromAsync(feed);
 
     expect(mockHttpClient.request).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -122,11 +123,11 @@ describe("ChangeFeedClient", () => {
   });
 
   it("uses page_size when set", async () => {
-    const changeFeed = new ChangeFeedClient(dummyStreamToken, {
+    const feed = new FeedClient(testEventSource, {
       ...defaultConfig,
       page_size: 10,
     });
-    await fromAsync(changeFeed.flatten());
+    await fromAsync(feed.flatten());
 
     expect(mockHttpClient.request).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -139,11 +140,11 @@ describe("ChangeFeedClient", () => {
   });
 
   it("uses cursor when set", async () => {
-    const changeFeed = new ChangeFeedClient(dummyStreamToken, {
+    const feed = new FeedClient(testEventSource, {
       ...defaultConfig,
       cursor: "some-cursor=",
     });
-    await fromAsync(changeFeed.flatten());
+    await fromAsync(feed.flatten());
 
     expect(mockHttpClient.request).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -157,12 +158,12 @@ describe("ChangeFeedClient", () => {
 
   it("uses start_ts when set", async () => {
     const startTs = Date.now();
-    const changeFeed = new ChangeFeedClient(dummyStreamToken, {
+    const feed = new FeedClient(testEventSource, {
       ...defaultConfig,
       start_ts: startTs,
     });
 
-    await fromAsync(changeFeed.flatten());
+    await fromAsync(feed.flatten());
 
     expect(mockHttpClient.request).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -186,8 +187,8 @@ describe("ChangeFeedClient", () => {
       ),
     );
 
-    const changeFeed = new ChangeFeedClient(dummyStreamToken, defaultConfig);
-    await fromAsync(changeFeed.flatten());
+    const feed = new FeedClient(testEventSource, defaultConfig);
+    await fromAsync(feed.flatten());
 
     expect(mockHttpClient.request).toHaveBeenCalledTimes(2);
   });
@@ -203,7 +204,7 @@ describe("ChangeFeedClient", () => {
       }),
     );
 
-    const changeFeed = new ChangeFeedClient(dummyStreamToken, defaultConfig);
-    expect(fromAsync(changeFeed.flatten())).rejects.toThrow(QueryRuntimeError);
+    const feed = new FeedClient(testEventSource, defaultConfig);
+    expect(fromAsync(feed.flatten())).rejects.toThrow(QueryRuntimeError);
   });
 });

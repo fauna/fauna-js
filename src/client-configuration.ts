@@ -207,7 +207,7 @@ export type StreamClientConfiguration = {
 /**
  * Configuration for a event feed client.
  */
-export type ChangeFeedClientConfiguration = Required<
+export type FeedClientConfiguration = Required<
   Pick<
     ClientConfiguration,
     | "long_type"

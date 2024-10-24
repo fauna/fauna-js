@@ -34,6 +34,11 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
     - [Iterate on a stream](#iterate-on-a-stream)
     - [Close a stream](#close-a-stream)
     - [Stream options](#stream-options)
+  - [Event Feeds](#event-feeds)
+    - [Request an Event Feed](#request-a-event-feed)
+    - [Iterate on an Event Feed](#iterate-on-a-event-feed)
+    - [Error handling](#error-handling)
+    - [Event Feed options](#event-feed-options)
   - [Contributing](#contributing)
     - [Set up the repo](#set-up-the-repo)
     - [Run tests](#run-tests)
@@ -68,13 +73,11 @@ Stable versions of:
 - Safari 12.1+
 - Edge 79+
 
-
 ## API reference
 
 API reference documentation for the driver is available at
 https://fauna.github.io/fauna-js/. The docs are generated using
 [TypeDoc](https://typedoc.org/).
-
 
 ## Install
 
@@ -473,11 +476,11 @@ The driver supports [Event Streaming](https://docs.fauna.com/fauna/current/learn
 ### Start a stream
 
 To get a stream token, append
-[`toStream()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/tostream)
+[`eventSource()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/eventsource)
 or
-[`changesOn()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/changeson)
+[`eventsOn()`](https://docs.fauna.com/fauna/current/reference/reference/schema_entities/set/eventson)
 to a set from a [supported
-source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources).
+source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#sets).
 
 To start and subscribe to the stream, pass the stream token to `stream()`:
 
@@ -487,7 +490,7 @@ const response = await client.query(fql`
 
   {
     initialPage: set.pageSize(10),
-    streamToken: set.toStream()
+    streamToken: set.eventSource()
   }
 `);
 const { initialPage, streamToken } = response.data;
@@ -498,7 +501,7 @@ client.stream(streamToken);
 You can also pass a query that produces a stream token directly to `stream()`:
 
 ```javascript
-const query = fql`Product.all().changesOn(.price, .stock)`;
+const query = fql`Product.all().eventsOn(.price, .stock)`;
 
 client.stream(query);
 ```
@@ -555,7 +558,7 @@ stream.start(
 Use `close()` to close a stream:
 
 ```javascript
-const stream = await client.stream(fql`Product.all().toStream()`);
+const stream = await client.stream(fql`Product.all().eventSource()`);
 
 let count = 0;
 for await (const event of stream) {
@@ -588,16 +591,140 @@ const options: StreamClientConfiguration = {
   cursor: null,
 };
 
-client.stream(fql`Product.all().toStream()`, options);
+client.stream(fql`Product.all().eventSource()`, options);
 ```
 
 For supported properties, see
 [StreamClientConfiguration](https://fauna.github.io/fauna-js/latest/types/StreamClientConfiguration.html)
 in the API reference.
 
+## Event Feeds
+
+The driver supports [Event Feeds](https://docs.fauna.com/fauna/current/learn/cdc/#event-feeds).
+
+### Request a Event Feed
+
+An Event Feed asynchronously polls an [event stream](https://docs.fauna.com/fauna/current/learn/cdc/#event-feeds),
+represented by a stream token, for events.
+
+To get a stream token, append `eventSource()` or `eventsOn()` to a set from a
+[supported source](https://docs.fauna.com/fauna/current/reference/streaming_reference/#supported-sources).
+
+To get paginated events for the stream, pass the stream token to
+`feed()`:
+
+```javascript
+const response = await client.query(fql`
+  let set = Product.all()
+
+  {
+    initialPage: set.pageSize(10),
+    streamToken: set.eventSource()
+  }
+`);
+const { initialPage, streamToken } = response.data;
+
+const feed = client.feed(streamToken);
+```
+
+You can also pass a query that produces a stream token directly to `feed()`:
+
+```javascript
+const query = fql`Product.all().eventsOn(.price, .stock)`;
+
+const feed = client.feed(query);
+```
+
+### Iterate on a Event Feed
+
+`feed()` returns a `FeedClient` instance that can act as an `AsyncIterator`. You can use `for await...of` to iterate through all the pages:
+
+```ts
+const query = fql`Product.all().eventsOn(.price, .stock)`;
+const feed = client.feed(query);
+
+for await (const page of feed) {
+  console.log("Page stats", page.stats);
+
+  for (event in page.events) {
+    switch (event.type) {
+      case "update":
+      case "add":
+      case "remove":
+        console.log("Stream event:", event);
+        // ...
+        break;
+    }
+  }
+}
+```
+
+Alternatively, use `flatten()` to get paginated results as a single, flat array:
+
+```ts
+const query = fql`Product.all().eventsOn(.price, .stock)`;
+const feed = client.feed(query);
+
+for await (const event of feed.flatten()) {
+  console.log("Stream event:", event);
+}
+```
+
+### Error handling
+
+Exceptions can be raised at two different places:
+
+1. While fetching a page
+1. While iterating a page's events
+
+This distinction allows for you to ignore errors originating from event processing.
+For example:
+
+```ts
+const feed = client.feed(fql`
+  Product.all().map(.details.toUpperCase()).eventSource()
+`);
+
+try {
+  for await (const page of feed) {
+    // Pages will stop at the first error encountered.
+    // Therefore, its safe to handle an event failures
+    // and then pull more pages.
+    try {
+      for (const event of page.events) {
+        console.log("Stream event:", event);
+      }
+    } catch (error: unknown) {
+      console.log("Stream event error:", error);
+    }
+  }
+} catch (error: unknown) {
+  console.log("Non-retryable error:", error);
+}
+```
+
+### Event Feed options
+
+The client configuration sets the default options for `feed()`. You can pass a `FeedClientConfiguration` object to override these defaults:
+
+```ts
+const options: FeedClientConfiguration = {
+  long_type: "number",
+  max_attempts: 5,
+  max_backoff: 1000,
+  query_timeout_ms: 5000,
+  client_timeout_buffer_ms: 5000,
+  secret: "FAUNA_SECRET",
+  cursor: undefined,
+  start_ts: undefined,
+};
+
+client.feed(fql`Product.all().eventSource()`, options);
+```
+
 ## Contributing
 
-Any contributions are from the community are greatly appreciated!
+Any contributions from the community are greatly appreciated!
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You may also simply open an issue. We provide templates, so please complete those to the best of your ability.
 

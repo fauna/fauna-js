@@ -24,7 +24,7 @@ describe("ClientConfiguration", () => {
     process.env["FAUNA_SECRET"] = "foo";
     const client = new Client();
     expect(Buffer.from(JSON.stringify(client)).toString()).not.toContain(
-      "secret"
+      "secret",
     );
   });
 
@@ -33,11 +33,11 @@ describe("ClientConfiguration", () => {
 
     const client = new Client({ secret: "secret" });
     expect(client.clientConfiguration.endpoint?.toString()).toEqual(
-      "https://localhost:9999/"
+      "https://localhost:9999/",
     );
   });
 
-  it("Client respectes passed in client configuration over defaults", () => {
+  it("Client respects passed in client configuration over defaults", () => {
     // TODO: when the Client accepts an http client add a mock that validates
     //   the configuration changes were applied.
   });
@@ -51,7 +51,7 @@ describe("ClientConfiguration", () => {
       if ("message" in e) {
         expect(e.message).toEqual(
           "You must provide a secret to the driver. Set it in \
-an environmental variable named FAUNA_SECRET or pass it to the Client constructor."
+an environmental variable named FAUNA_SECRET or pass it to the Client constructor.",
         );
       }
     }
@@ -117,10 +117,10 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
           expect(req.headers["x-query-timeout-ms"]).toEqual("5000");
           const _expectedHeader = expectedHeader;
           expect(req.headers[_expectedHeader.key]).toEqual(
-            _expectedHeader.value
+            _expectedHeader.value,
           );
           return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(
-            req
+            req,
           );
         },
 
@@ -132,11 +132,11 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
           query_timeout_ms: 5000,
           [fieldName]: fieldValue,
         },
-        httpClient
+        httpClient,
       );
       await client.query<number>(fql`"taco".length`);
       client.close();
-    }
+    },
   );
 
   it("can accept endpoints with or without a trailing slash.", async () => {
@@ -173,7 +173,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       } finally {
         client?.close();
       }
-    }
+    },
   );
 
   it("throws a RangeError if 'client_timeout_buffer_ms' is less than or equal to zero", async () => {

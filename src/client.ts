@@ -1,4 +1,5 @@
 import {
+  FeedClientConfiguration,
   ClientConfiguration,
   StreamClientConfiguration,
   endpoints,
@@ -20,12 +21,24 @@ import {
   isStreamClient,
   isHTTPResponse,
   type HTTPClient,
+  HTTPRequest,
+  FaunaAPIPaths,
 } from "./http-client";
 import { Query } from "./query-builder";
 import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
-import { EmbeddedSet, Page, SetIterator, StreamToken } from "./values";
+import { withRetries } from "./util/retryable";
 import {
+  FeedPage,
+  EmbeddedSet,
+  Page,
+  SetIterator,
+  EventSource,
+  isEventSource,
+} from "./values";
+import {
+  FeedRequest,
+  FeedSuccess,
   EncodedObject,
   isQueryFailure,
   isQuerySuccess,
@@ -36,6 +49,7 @@ import {
   StreamEventStatus,
   type QuerySuccess,
   type QueryValue,
+  FeedError,
 } from "./wire-protocol";
 
 type RequiredClientConfig = ClientConfiguration &
@@ -155,7 +169,7 @@ export class Client {
   }
 
   /**
-   * Closes the underlying HTTP client. Subsquent query or close calls
+   * Closes the underlying HTTP client. Subsequent query or close calls
    * will fail.
    */
   close() {
@@ -278,7 +292,7 @@ export class Client {
    *
    * @example
    * ```javascript
-   *  const stream = client.stream(fql`MyCollection.all().toStream()`)
+   *  const stream = client.stream(fql`MyCollection.all().eventSource()`)
    *
    *  try {
    *    for await (const event of stream) {
@@ -302,7 +316,7 @@ export class Client {
    *
    * @example
    * ```javascript
-   *  const stream = client.stream(fql`MyCollection.all().toStream()`)
+   *  const stream = client.stream(fql`MyCollection.all().eventSource()`)
    *
    *  stream.start(
    *    function onEvent(event) {
@@ -326,7 +340,7 @@ export class Client {
    * ```
    */
   stream<T extends QueryValue>(
-    tokenOrQuery: StreamToken | Query<StreamToken>,
+    tokenOrQuery: EventSource | Query<EventSource>,
     options?: Partial<StreamClientConfiguration>,
   ): StreamClient<T> {
     if (this.#isClosed) {
@@ -355,13 +369,86 @@ export class Client {
 
       const tokenOrGetToken =
         tokenOrQuery instanceof Query
-          ? () => this.query<StreamToken>(tokenOrQuery).then((res) => res.data)
+          ? () => this.query<EventSource>(tokenOrQuery).then((res) => res.data)
           : tokenOrQuery;
 
       return new StreamClient(tokenOrGetToken, streamClientConfig);
     } else {
       throw new ClientError("Streaming is not supported by this client.");
     }
+  }
+
+  /**
+   * Initialize a event feed in Fauna and returns an asynchronous iterator of
+   * feed events.
+   * @typeParam T - The expected type of the response from Fauna. T can be inferred
+   *   if the provided query used a type parameter.
+   * @param query - A string-encoded streaming token, or a {@link Query}
+   * @returns A {@link FeedClient} that which can be used to listen to a feed
+   *   of events
+   *
+   * @example
+   * ```javascript
+   *  const feed = client.feed(fql`MyCollection.all().eventSource()`)
+   *
+   *  try {
+   *    for await (const page of feed) {
+   *      for (const event of page.events) {
+   *        // ... handle event
+   *      }
+   *    }
+   *  } catch (error) {
+   *    // An error will be handled here if Fauna returns a terminal, "error" event, or
+   *    // if Fauna returns a non-200 response when trying to connect, or
+   *    // if the max number of retries on network errors is reached.
+   *
+   *    // ... handle fatal error
+   *  };
+   * ```
+   * @example
+   * The {@link FeedClient.flatten} method can be used so the iterator yields
+   * events directly. Each event is fetched asynchronously and hides when
+   * additional pages are fetched.
+   *
+   * ```javascript
+   *  const feed = client.feed(fql`MyCollection.all().eventSource()`)
+   *
+   *  for await (const user of feed.flatten()) {
+   *    // do something with each event
+   *  }
+   * ```
+   */
+  feed<T extends QueryValue>(
+    tokenOrQuery: EventSource | Query<EventSource>,
+    options?: Partial<FeedClientConfiguration>,
+  ): FeedClient<T> {
+    if (this.#isClosed) {
+      throw new ClientClosedError(
+        "Your client is closed. No further requests can be issued.",
+      );
+    }
+
+    const clientConfiguration: FeedClientConfiguration = {
+      ...this.#clientConfiguration,
+      httpClient: this.#httpClient,
+      ...options,
+    };
+
+    if (
+      clientConfiguration.cursor !== undefined &&
+      tokenOrQuery instanceof Query
+    ) {
+      throw new ClientError(
+        "The `cursor` configuration can only be used with a stream token.",
+      );
+    }
+
+    const tokenOrGetToken =
+      tokenOrQuery instanceof Query
+        ? () => this.query<EventSource>(tokenOrQuery).then((res) => res.data)
+        : tokenOrQuery;
+
+    return new FeedClient(tokenOrGetToken, clientConfiguration);
   }
 
   async #queryWithRetries<T extends QueryValue>(
@@ -641,33 +728,33 @@ export class StreamClient<T extends QueryValue = any> {
   #clientConfiguration: StreamClientConfiguration;
   /** A tracker for the number of connection attempts */
   #connectionAttempts = 0;
-  /** A lambda that returns a promise for a {@link StreamToken} */
-  #query: () => Promise<StreamToken>;
+  /** A lambda that returns a promise for a {@link EventSource} */
+  #query: () => Promise<EventSource>;
   /** The last `txn_ts` value received from events */
   #last_ts?: number;
   /** The last `cursor` value received from events */
   #last_cursor?: string;
   /** A common interface to operate a stream from any HTTPStreamClient */
   #streamAdapter?: StreamAdapter;
-  /** A saved copy of the StreamToken once received */
-  #streamToken?: StreamToken;
+  /** A saved copy of the EventSource once received */
+  #eventSource?: EventSource;
 
   /**
    *
-   * @param query - A lambda that returns a promise for a {@link StreamToken}
+   * @param query - A lambda that returns a promise for a {@link EventSource}
    * @param clientConfiguration - The {@link ClientConfiguration} to apply
    * @param httpStreamClient - The underlying {@link HTTPStreamClient} that will
    * execute the actual HTTP calls
    * @example
    * ```typescript
-   *  const streamClient = client.stream(streamToken);
+   *  const streamClient = client.stream(eventSource);
    * ```
    */
   constructor(
-    token: StreamToken | (() => Promise<StreamToken>),
+    token: EventSource | (() => Promise<EventSource>),
     clientConfiguration: StreamClientConfiguration,
   ) {
-    if (token instanceof StreamToken) {
+    if (isEventSource(token)) {
       this.#query = () => Promise.resolve(token);
     } else {
       this.#query = token;
@@ -720,11 +807,11 @@ export class StreamClient<T extends QueryValue = any> {
       throw new ClientError("The stream has been closed and cannot be reused.");
     }
 
-    if (!this.#streamToken) {
-      this.#streamToken = await this.#query().then((maybeStreamToken) => {
-        if (!(maybeStreamToken instanceof StreamToken)) {
+    if (!this.#eventSource) {
+      this.#eventSource = await this.#query().then((maybeStreamToken) => {
+        if (!isEventSource(maybeStreamToken)) {
           throw new ClientError(
-            `Error requesting a stream token. Expected a StreamToken as the query result, but received ${typeof maybeStreamToken}. Your query must return the result of '<Set>.toStream' or '<Set>.changesOn')\n` +
+            `Error requesting a stream token. Expected a EventSource as the query result, but received ${typeof maybeStreamToken}. Your query must return the result of '<Set>.eventSource' or '<Set>.eventsOn')\n` +
               `Query result: ${JSON.stringify(maybeStreamToken, null)}`,
           );
         }
@@ -776,7 +863,7 @@ export class StreamClient<T extends QueryValue = any> {
     StreamEventData<T> | StreamEventStatus
   > {
     // Safety: This method must only be called after a stream token has been acquired
-    const streamToken = this.#streamToken as StreamToken;
+    const eventSource = this.#eventSource as EventSource;
 
     const headers = {
       Authorization: `Bearer ${this.#clientConfiguration.secret}`,
@@ -784,7 +871,7 @@ export class StreamClient<T extends QueryValue = any> {
 
     const streamAdapter = this.#clientConfiguration.httpStreamClient.stream({
       data: {
-        token: streamToken.token,
+        token: eventSource.token,
         cursor: this.#last_cursor || this.#clientConfiguration.cursor,
       },
       headers,
@@ -848,6 +935,224 @@ export class StreamClient<T extends QueryValue = any> {
 
     if (config.max_attempts <= 0) {
       throw new RangeError(`'max_attempts' must be greater than zero.`);
+    }
+  }
+}
+
+/**
+ * A class to iterate through to a Fauna event feed.
+ */
+export class FeedClient<T extends QueryValue = any> {
+  /** A static copy of the driver env header to send with each request */
+  static readonly #driverEnvHeader = getDriverEnv();
+  /** A lambda that returns a promise for a {@link EventSource} */
+  #query: () => Promise<EventSource>;
+  /** The event feed's client options */
+  #clientConfiguration: FeedClientConfiguration;
+  /** The last `cursor` value received for the current page */
+  #lastCursor?: string;
+  /** A saved copy of the EventSource once received */
+  #eventSource?: EventSource;
+  /** Whether or not another page can be fetched by the client */
+  #isDone?: boolean;
+
+  /**
+   *
+   * @param query - A lambda that returns a promise for a {@link EventSource}
+   * @param clientConfiguration - The {@link FeedClientConfiguration} to apply
+   * @example
+   * ```typescript
+   *  const feed = client.feed(eventSource);
+   * ```
+   */
+  constructor(
+    token: EventSource | (() => Promise<EventSource>),
+    clientConfiguration: FeedClientConfiguration,
+  ) {
+    if (isEventSource(token)) {
+      this.#query = () => Promise.resolve(token);
+    } else {
+      this.#query = token;
+    }
+
+    this.#clientConfiguration = clientConfiguration;
+    this.#lastCursor = clientConfiguration.cursor;
+
+    this.#validateConfiguration();
+  }
+
+  #getHeaders(): Record<string, string> {
+    return {
+      Authorization: `Bearer ${this.#clientConfiguration.secret}`,
+      "x-format": "tagged",
+      "x-driver-env": FeedClient.#driverEnvHeader,
+      "x-query-timeout-ms":
+        this.#clientConfiguration.query_timeout_ms.toString(),
+    };
+  }
+
+  async #nextPageHttpRequest() {
+    // If we never resolved the stream token, do it now since we need it here when
+    // building the payload
+    if (!this.#eventSource) {
+      this.#eventSource = await this.#resolveEventSource(this.#query);
+    }
+
+    const headers = this.#getHeaders();
+
+    const req: HTTPRequest<FeedRequest> = {
+      headers,
+      client_timeout_ms:
+        this.#clientConfiguration.client_timeout_buffer_ms +
+        this.#clientConfiguration.query_timeout_ms,
+      data: {
+        token: this.#eventSource.token,
+      },
+      method: "POST",
+      path: FaunaAPIPaths.EVENT_FEED,
+    };
+
+    // Set the page size if it is available
+    if (this.#clientConfiguration.page_size) {
+      req.data.page_size = this.#clientConfiguration.page_size;
+    }
+
+    // If we have a cursor, use that. Otherwise, use the start_ts if available.
+    // When the config is validated, if both are set, an error is thrown.
+    if (this.#lastCursor) {
+      req.data.cursor = this.#lastCursor;
+    } else if (this.#clientConfiguration.start_ts) {
+      req.data.start_ts = this.#clientConfiguration.start_ts;
+    }
+
+    return req;
+  }
+
+  async *[Symbol.asyncIterator](): AsyncGenerator<FeedPage<T>> {
+    while (!this.#isDone) {
+      yield await this.nextPage();
+    }
+  }
+
+  /**
+   * Fetches the next page of the event feed. If there are no more pages to
+   * fetch, this method will throw a {@link ClientError}.
+   */
+  async nextPage(): Promise<FeedPage<T>> {
+    if (this.#isDone) {
+      throw new ClientError("The event feed has no more pages to fetch.");
+    }
+
+    const { httpClient } = this.#clientConfiguration;
+
+    const request = await this.#nextPageHttpRequest();
+    const response = await withRetries(() => httpClient.request(request), {
+      maxAttempts: this.#clientConfiguration.max_attempts,
+      maxBackoff: this.#clientConfiguration.max_backoff,
+      shouldRetry: (error) => error instanceof ThrottlingError,
+    });
+
+    let body: FeedSuccess<T> | FeedError;
+
+    try {
+      body = TaggedTypeFormat.decode(response.body, {
+        long_type: this.#clientConfiguration.long_type,
+      });
+    } catch (error: unknown) {
+      throw new ProtocolError({
+        message: `Error parsing response as JSON: ${error}`,
+        httpStatus: response.status,
+      });
+    }
+
+    if (isQueryFailure(body)) {
+      throw getServiceError(body, response.status);
+    }
+
+    const page = new FeedPage<T>(body);
+    this.#lastCursor = page.cursor;
+    this.#isDone = !page.hasNext;
+
+    return page;
+  }
+
+  /**
+   * Returns an async generator that yields the events of the event feed
+   * directly.
+   *
+   * @example
+   * ```javascript
+   *  const feed = client.feed(fql`MyCollection.all().eventSource()`)
+   *
+   *  for await (const user of feed.flatten()) {
+   *    // do something with each event
+   *  }
+   * ```
+   */
+  async *flatten(): AsyncGenerator<StreamEventData<T>> {
+    for await (const page of this) {
+      for (const event of page.events) {
+        yield event;
+      }
+    }
+  }
+
+  async #resolveEventSource(
+    fn: () => Promise<EventSource>,
+  ): Promise<EventSource> {
+    return await fn().then((maybeEventSource) => {
+      if (!isEventSource(maybeEventSource)) {
+        throw new ClientError(
+          `Error requesting a stream token. Expected a EventSource as the query result, but received ${typeof maybeEventSource}. Your query must return the result of '<Set>.eventSource' or '<Set>.eventsOn')\n` +
+            `Query result: ${JSON.stringify(maybeEventSource, null)}`,
+        );
+      }
+      return maybeEventSource;
+    });
+  }
+
+  #validateConfiguration() {
+    const config = this.#clientConfiguration;
+
+    const required_options: (keyof FeedClientConfiguration)[] = [
+      "long_type",
+      "httpClient",
+      "max_backoff",
+      "max_attempts",
+      "client_timeout_buffer_ms",
+      "query_timeout_ms",
+      "secret",
+    ];
+    required_options.forEach((option) => {
+      if (config[option] === undefined) {
+        throw new TypeError(
+          `ClientConfiguration option '${option}' must be defined.`,
+        );
+      }
+    });
+
+    if (config.max_backoff <= 0) {
+      throw new RangeError(`'max_backoff' must be greater than zero.`);
+    }
+
+    if (config.max_attempts <= 0) {
+      throw new RangeError(`'max_attempts' must be greater than zero.`);
+    }
+
+    if (config.query_timeout_ms <= 0) {
+      throw new RangeError(`'query_timeout_ms' must be greater than zero.`);
+    }
+
+    if (config.client_timeout_buffer_ms < 0) {
+      throw new RangeError(
+        `'client_timeout_buffer_ms' must be greater than or equal to zero.`,
+      );
+    }
+
+    if (config.start_ts !== undefined && config.cursor !== undefined) {
+      throw new TypeError(
+        "Only one of 'start_ts' or 'cursor' can be defined in the client configuration.",
+      );
     }
   }
 }

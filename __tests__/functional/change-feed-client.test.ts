@@ -33,6 +33,7 @@ const defaultConfig: ChangeFeedClientConfiguration = {
   max_attempts: 3,
   max_backoff: 20,
   query_timeout_ms: 5000,
+  client_timeout_buffer_ms: 5000,
   httpClient: mockHttpClient,
 };
 const dummyStreamToken = new StreamToken("dummy");
@@ -107,7 +108,7 @@ describe("ChangeFeedClient", () => {
 
     expect(mockHttpClient.request).toHaveBeenCalledWith(
       expect.objectContaining({
-        client_timeout_ms: defaultConfig.query_timeout_ms,
+        client_timeout_ms: 10000,
         headers: expect.objectContaining({
           Authorization: "Bearer secret",
           "x-format": "tagged",

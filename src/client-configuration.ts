@@ -205,47 +205,26 @@ export type StreamClientConfiguration = {
 };
 
 /**
- * Configuration for a change feed client. This typically comes from the `Client`
- * instance configuration.
+ * Configuration for a event feed client.
  */
-export type ChangeFeedClientConfiguration = {
+export type ChangeFeedClientConfiguration = Required<
+  Pick<
+    ClientConfiguration,
+    | "long_type"
+    | "max_attempts"
+    | "max_backoff"
+    | "client_timeout_buffer_ms"
+    | "query_timeout_ms"
+    | "secret"
+  >
+> & {
   /**
    * The underlying {@link HTTPClient} that will execute the actual HTTP calls
    */
   httpClient: HTTPClient;
 
   /**
-   * Controls what Javascript type to deserialize {@link https://docs.fauna.com/fauna/current/reference/fql_reference/types#long | Fauna longs} to.
-   *
-   * @see {@link ClientConfiguration.long_type}
-   */
-  long_type: "number" | "bigint";
-
-  /**
-   * The maximum number of times to attempt a change feed query when a
-   * retryable exception is thrown.
-   */
-  max_attempts: number;
-
-  /**
-   * The maximum backoff in seconds for an individual retry.
-   */
-  max_backoff: number;
-
-  /**
-   * Controls the maximum amount of time Fauna will execute a query before
-   * returning a page of events.
-   */
-  query_timeout_ms: number;
-
-  /**
-   * A secret for your Fauna DB, used to authorize your queries.
-   * @see https://docs.fauna.com/fauna/current/security/keys
-   */
-  secret: string;
-
-  /**
-   * The starting timestamp of the change feed, exclusive. If set, Fauna will return events starting after
+   * The starting timestamp of the event feed, exclusive. If set, Fauna will return events starting after
     the timestamp.
    */
   start_ts?: number;

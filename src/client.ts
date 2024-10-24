@@ -999,7 +999,9 @@ export class ChangeFeedClient<T extends QueryValue = any> {
 
     const req: HTTPRequest<ChangeFeedRequest> = {
       headers,
-      client_timeout_ms: this.#clientConfiguration.query_timeout_ms,
+      client_timeout_ms:
+        this.#clientConfiguration.client_timeout_buffer_ms +
+        this.#clientConfiguration.query_timeout_ms,
       data: {
         token: this.#streamToken.token,
       },
@@ -1114,6 +1116,7 @@ export class ChangeFeedClient<T extends QueryValue = any> {
       "httpClient",
       "max_backoff",
       "max_attempts",
+      "client_timeout_buffer_ms",
       "query_timeout_ms",
       "secret",
     ];
@@ -1131,6 +1134,16 @@ export class ChangeFeedClient<T extends QueryValue = any> {
 
     if (config.max_attempts <= 0) {
       throw new RangeError(`'max_attempts' must be greater than zero.`);
+    }
+
+    if (config.query_timeout_ms <= 0) {
+      throw new RangeError(`'query_timeout_ms' must be greater than zero.`);
+    }
+
+    if (config.client_timeout_buffer_ms <= 0) {
+      throw new RangeError(
+        `'client_timeout_buffer_ms' must be greater than or equal to zero.`,
+      );
     }
 
     if (config.start_ts !== undefined && config.cursor !== undefined) {

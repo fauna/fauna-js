@@ -13,6 +13,7 @@ const defaultConfig: ChangeFeedClientConfiguration = {
   max_attempts: 3,
   max_backoff: 20,
   query_timeout_ms: 5000,
+  client_timeout_buffer_ms: 5000,
   httpClient: defaultHttpClient,
 };
 const dummyStreamToken = new StreamToken("dummy");
@@ -46,6 +47,7 @@ describe("ChangeFeedClientConfiguration", () => {
     ${"httpClient"}
     ${"max_backoff"}
     ${"max_attempts"}
+    ${"client_timeout_buffer_ms"}
     ${"query_timeout_ms"}
     ${"secret"}
   `(
@@ -83,5 +85,23 @@ describe("ChangeFeedClientConfiguration", () => {
     expect(() => {
       new ChangeFeedClient(dummyStreamToken, config);
     }).toThrow(TypeError);
+  });
+
+  it("throws a RangeError if 'query_timeout_ms' is less than or equal to zero", async () => {
+    const config = { ...defaultConfig, query_timeout_ms: 0 };
+    try {
+      new ChangeFeedClient(dummyStreamToken, config);
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(RangeError);
+    }
+  });
+
+  it("throws a RangeError if 'client_timeout_buffer_ms' is less than or equal to zero", async () => {
+    const config = { ...defaultConfig, client_timeout_buffer_ms: 0 };
+    try {
+      new ChangeFeedClient(dummyStreamToken, config);
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(RangeError);
+    }
   });
 });

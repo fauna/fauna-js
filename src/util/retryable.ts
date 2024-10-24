@@ -3,6 +3,7 @@ export type RetryOptions = {
   maxBackoff: number;
   shouldRetry?: (error: any) => boolean;
   attempt?: number;
+  sleepFn?: (callback: (args: void) => void, ms?: number) => void;
 };
 
 export const withRetries = async <T>(
@@ -12,9 +13,13 @@ export const withRetries = async <T>(
     maxBackoff,
     shouldRetry = () => true,
     attempt = 0,
+    sleepFn = setTimeout,
   }: RetryOptions,
 ): Promise<T> => {
-  const backoffMs = Math.min(Math.random() * 2 ** attempt, maxBackoff) * 1_000;
+  const backoffMs =
+    attempt > 0
+      ? Math.min(Math.random() * 2 ** attempt, maxBackoff) * 1_000
+      : 0;
   attempt += 1;
 
   try {
@@ -24,7 +29,13 @@ export const withRetries = async <T>(
       throw error;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, backoffMs));
-    return withRetries(fn, { maxAttempts, maxBackoff, shouldRetry, attempt });
+    await new Promise((resolve) => sleepFn(resolve, backoffMs));
+    return withRetries(fn, {
+      maxAttempts,
+      maxBackoff,
+      shouldRetry,
+      attempt,
+      sleepFn,
+    });
   }
 };

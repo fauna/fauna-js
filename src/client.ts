@@ -986,6 +986,8 @@ export class FeedClient<T extends QueryValue = any> {
       Authorization: `Bearer ${this.#clientConfiguration.secret}`,
       "x-format": "tagged",
       "x-driver-env": FeedClient.#driverEnvHeader,
+      "x-query-timeout-ms":
+        this.#clientConfiguration.query_timeout_ms.toString(),
     };
   }
 
@@ -1141,7 +1143,7 @@ export class FeedClient<T extends QueryValue = any> {
       throw new RangeError(`'query_timeout_ms' must be greater than zero.`);
     }
 
-    if (config.client_timeout_buffer_ms <= 0) {
+    if (config.client_timeout_buffer_ms < 0) {
       throw new RangeError(
         `'client_timeout_buffer_ms' must be greater than or equal to zero.`,
       );

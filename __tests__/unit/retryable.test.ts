@@ -42,4 +42,28 @@ describe("retryable", () => {
     expect(fn).toHaveBeenCalledTimes(2);
     expect(shouldRetry).toHaveBeenCalledTimes(2);
   });
+
+  it("should backoff", async () => {
+    const fn = jest.fn().mockImplementation(() => {
+      throw new Error("max attempts reached");
+    });
+
+    const mockSleep = jest.fn().mockImplementation((fn) => {
+      fn();
+    });
+
+    await expect(
+      withRetries(fn, { maxAttempts: 3, maxBackoff: 2, sleepFn: mockSleep }),
+    ).rejects.toThrow("max attempts reached");
+
+    expect(mockSleep).toHaveBeenCalledTimes(2);
+    expect(mockSleep).toHaveBeenNthCalledWith(1, expect.any(Function), 0); // first attempt
+    expect(mockSleep).toHaveBeenNthCalledWith(
+      2,
+      expect.any(Function),
+      expect.any(Number),
+    ); // second attempt
+    expect(mockSleep.mock.calls[1][1]).toBeGreaterThan(0); // second attempt is greater than 0
+    expect(fn).toHaveBeenCalledTimes(3);
+  });
 });

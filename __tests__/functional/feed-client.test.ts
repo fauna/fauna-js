@@ -114,6 +114,7 @@ describe("FeedClient", () => {
           Authorization: "Bearer secret",
           "x-format": "tagged",
           "x-driver-env": expect.any(String),
+          "x-query-timeout-ms": "5000",
         }),
         data: {
           token: "dummy",

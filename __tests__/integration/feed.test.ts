@@ -8,6 +8,8 @@ import {
   ClientError,
   AbortError,
   FeedPage,
+  QueryTimeoutError,
+  NetworkError,
 } from "../../src";
 import {
   getClient,
@@ -210,5 +212,26 @@ describe("FeedClient", () => {
     const events = await fromAsync(Feed.flatten());
 
     expect(events).toHaveLength(3);
+  });
+
+  it("throws a QueryTimeoutError if the query times out", async () => {
+    const token = await client.query(fql`FeedTest.all().eventSource()`);
+    const feed = new FeedClient(token.data, {
+      ...defaultFeedConfig,
+      query_timeout_ms: 1,
+    });
+
+    await expect(fromAsync(feed.flatten())).rejects.toThrow(QueryTimeoutError);
+  });
+
+  it("throws a NetworkError if the client times out", async () => {
+    const token = await client.query(fql`FeedTest.all().eventSource()`);
+    const feed = new FeedClient(token.data, {
+      ...defaultFeedConfig,
+      query_timeout_ms: 1,
+      client_timeout_buffer_ms: 0,
+    });
+
+    await expect(fromAsync(feed.flatten())).rejects.toThrow(NetworkError);
   });
 });

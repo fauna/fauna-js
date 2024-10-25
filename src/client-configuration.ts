@@ -205,7 +205,7 @@ export type StreamClientConfiguration = {
 };
 
 /**
- * Configuration for a event feed client.
+ * Configuration for an event feed client.
  */
 export type FeedClientConfiguration = Required<
   Pick<

@@ -37,7 +37,7 @@ export function isEventSource(value: any): value is EventSource {
   return false;
 }
 
-export class StreamToken {
+export class StreamToken implements EventSource {
   readonly token: string;
 
   constructor(token: string) {

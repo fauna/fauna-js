@@ -4,7 +4,7 @@ image_resource:
   type: registry-image
   source:
     repository: node
-    tag: 15.14.0-alpine3.10
+    tag: 22.10-alpine3.20
 
 inputs:
   - name: fauna-js-repository

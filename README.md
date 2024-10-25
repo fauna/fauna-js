@@ -520,7 +520,7 @@ for await (const page of feed) {
       case "update":
       case "add":
       case "remove":
-        console.log("Event:", event);
+        console.log("Event: ", event);
         // ...
         break;
     }
@@ -535,7 +535,7 @@ const query = fql`Product.all().eventsOn(.price, .stock)`;
 const feed = client.feed(query);
 
 for await (const event of feed.flatten()) {
-  console.log("Event:", event);
+  console.log("Event: ", event);
 }
 ```
 
@@ -639,7 +639,7 @@ try {
       case "update":
       case "add":
       case "remove":
-        console.log("Event:", event);
+        console.log("Event: ", event);
         // ...
         break;
     }
@@ -661,7 +661,7 @@ stream.start(
       case "update":
       case "add":
       case "remove":
-        console.log("Event:", event);
+        console.log("Event: ", event);
         // ...
         break;
     }
@@ -684,7 +684,7 @@ const stream = await client.stream(fql`Product.all().eventSource()`);
 
 let count = 0;
 for await (const event of stream) {
-  console.log("Event:", event);
+  console.log("Event: ", event);
   // ...
   count++;
 

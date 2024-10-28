@@ -1,4 +1,4 @@
-import { HTTPStreamClient } from "./http-client";
+import { HTTPClient, HTTPStreamClient } from "./http-client";
 import type { ValueFormat } from "./wire-protocol";
 
 /**
@@ -202,6 +202,42 @@ export type StreamClientConfiguration = {
    * stream will start from the given cursor position (exclusively).
    */
   cursor?: string;
+};
+
+/**
+ * Configuration for an event feed client.
+ */
+export type FeedClientConfiguration = Required<
+  Pick<
+    ClientConfiguration,
+    | "long_type"
+    | "max_attempts"
+    | "max_backoff"
+    | "client_timeout_buffer_ms"
+    | "query_timeout_ms"
+    | "secret"
+  >
+> & {
+  /**
+   * The underlying {@link HTTPClient} that will execute the actual HTTP calls
+   */
+  httpClient: HTTPClient;
+
+  /**
+   * The starting timestamp of the event feed, exclusive. If set, Fauna will return events starting after
+    the timestamp.
+   */
+  start_ts?: number;
+
+  /**
+   * The starting event cursor, exclusive. If set, Fauna will return events starting after the cursor.
+   */
+  cursor?: string;
+
+  /**
+   * The desired number of events per page.
+   */
+  page_size?: number;
 };
 
 /**

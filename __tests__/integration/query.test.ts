@@ -37,6 +37,7 @@ const dummyResponse: HTTPResponse = {
       storage_bytes_read: 0,
       storage_bytes_write: 0,
       contention_retries: 0,
+      rate_limits_hit: ["read", "write", "compute"],
     },
   }),
   headers: {},
@@ -62,6 +63,7 @@ describe("query", () => {
     expect(result.stats?.compute_ops).toBeDefined();
     expect(result.stats?.contention_retries).toBeDefined();
     expect(result.stats?.query_time_ms).toBeDefined();
+    expect(result.stats?.rate_limits_hit).toBeDefined();
     expect(result.stats?.read_ops).toBeDefined();
     expect(result.stats?.storage_bytes_read).toBeDefined();
     expect(result.stats?.storage_bytes_write).toBeDefined();

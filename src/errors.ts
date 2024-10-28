@@ -2,6 +2,7 @@ import type {
   ConstraintFailure,
   QueryFailure,
   QueryInfo,
+  QueryStats,
   QueryValue,
 } from "./wire-protocol";
 
@@ -226,8 +227,11 @@ export class ThrottlingError extends ServiceError {
 export class QueryTimeoutError extends ServiceError {
   /**
    * Statistics regarding the query.
+   *
+   * TODO: Deprecate this `stats` field. All `ServiceError`s already provide
+   * access to stats through `queryInfo.stats`
    */
-  readonly stats?: { [key: string]: number };
+  readonly stats?: QueryStats;
 
   constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);

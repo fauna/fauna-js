@@ -133,6 +133,11 @@ export type QueryStats = {
   contention_retries: number;
   /** The number query attempts made due to retryable errors. */
   attempts: number;
+  /**
+   * A list of rate limits hit.
+   * Included with QueryFailure responses when the query is rate limited.
+   */
+  rate_limits_hit?: ("read" | "write" | "compute")[];
 };
 
 export type QueryInfo = {

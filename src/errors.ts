@@ -227,6 +227,9 @@ export class ThrottlingError extends ServiceError {
 export class QueryTimeoutError extends ServiceError {
   /**
    * Statistics regarding the query.
+   *
+   * TODO: Deprecate this `stats` field. All `ServiceError`s already provide
+   * access to stats through `queryInfo.stats`
    */
   readonly stats?: QueryStats;
 

@@ -2,6 +2,7 @@ import type {
   ConstraintFailure,
   QueryFailure,
   QueryInfo,
+  QueryStats,
   QueryValue,
 } from "./wire-protocol";
 
@@ -227,7 +228,7 @@ export class QueryTimeoutError extends ServiceError {
   /**
    * Statistics regarding the query.
    */
-  readonly stats?: { [key: string]: number };
+  readonly stats?: QueryStats;
 
   constructor(failure: QueryFailure, httpStatus?: number) {
     super(failure, httpStatus);

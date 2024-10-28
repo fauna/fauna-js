@@ -7,7 +7,7 @@ networks:
 
 services:
   query-limits-tests:
-    image: node:20.2-alpine3.16
+    image: node:22.10-alpine3.20
     container_name: node-current-limits-test
     networks:
       - limit-net

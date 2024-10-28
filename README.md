@@ -10,7 +10,7 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
 <details>
 <summary>Table of Contents</summary>
 
-- [The Official JavaScript Driver for Fauna.](#the-official-javascript-driver-for-fauna)
+- [Official JavaScript Driver for Fauna v10 (current)](#official-javascript-driver-for-fauna-v10-current)
   - [Supported runtimes](#supported-runtimes)
   - [API reference](#api-reference)
   - [Install](#install)
@@ -54,8 +54,9 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
 
 Node.js - [Current and active LTS versions](https://nodejs.org/en/about/releases/):
 
-- Current - v20
-- LTS - v18
+- Current - v22
+- LTS - v20
+- LTS (Maintenance) - v18
 
 **Cloud providers**
 

@@ -286,7 +286,7 @@ export class Client {
    * Initialize a streaming request to Fauna
    * @typeParam T - The expected type of the response from Fauna. T can be inferred
    *   if the provided query used a type parameter.
-   * @param query - A string-encoded streaming token, or a {@link Query}
+   * @param tokenOrQuery - A string-encoded token for an {@link EventSource}, or a {@link Query}
    * @returns A {@link StreamClient} that which can be used to listen to a stream
    *   of events
    *
@@ -383,7 +383,7 @@ export class Client {
    * feed events.
    * @typeParam T - The expected type of the response from Fauna. T can be inferred
    *   if the provided query used a type parameter.
-   * @param query - A string-encoded streaming token, or a {@link Query}
+   * @param tokenOrQuery - A string-encoded token for an {@link EventSource}, or a {@link Query}
    * @returns A {@link FeedClient} that which can be used to listen to a feed
    *   of events
    *
@@ -741,10 +741,8 @@ export class StreamClient<T extends QueryValue = any> {
 
   /**
    *
-   * @param query - A lambda that returns a promise for a {@link EventSource}
+   * @param token - A lambda that returns a promise for a {@link EventSource}
    * @param clientConfiguration - The {@link ClientConfiguration} to apply
-   * @param httpStreamClient - The underlying {@link HTTPStreamClient} that will
-   * execute the actual HTTP calls
    * @example
    * ```typescript
    *  const streamClient = client.stream(eventSource);
@@ -958,7 +956,7 @@ export class FeedClient<T extends QueryValue = any> {
 
   /**
    *
-   * @param query - A lambda that returns a promise for a {@link EventSource}
+   * @param token - A lambda that returns a promise for a {@link EventSource}
    * @param clientConfiguration - The {@link FeedClientConfiguration} to apply
    * @example
    * ```typescript

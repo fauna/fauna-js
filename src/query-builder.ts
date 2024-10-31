@@ -32,7 +32,7 @@ export type QueryArgument =
 /**
  * Creates a new Query. Accepts template literal inputs.
  * @typeParam T - The expected type of the response from Fauna when evaluated.
- * @param queryFragments - a {@link TemplateStringsArray} that constitute
+ * @param queryFragments - An array that constitutes
  *   the strings that are the basis of the query.
  * @param queryArgs - an Array\<QueryValue | Query\> that
  *   constitute the arguments to inject between the queryFragments.

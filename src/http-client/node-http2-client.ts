@@ -55,9 +55,9 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
   }
 
   /**
-   * Gets a {@link NodeHTTP2Client} matching the {@link HTTTPClientOptions}
-   * @param httpClientOptions - the {@link HTTTPClientOptions}
-   * @returns a {@link NodeHTTP2Client} matching the {@link HTTTPClientOptions}
+   * Gets a {@link NodeHTTP2Client} matching the {@link HTTPClientOptions}
+   * @param httpClientOptions - the {@link HTTPClientOptions}
+   * @returns a {@link NodeHTTP2Client} matching the {@link HTTPClientOptions}
    */
   static getClient(httpClientOptions: HTTPClientOptions): NodeHTTP2Client {
     const clientKey = NodeHTTP2Client.#getClientKey(httpClientOptions);

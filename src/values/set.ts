@@ -68,7 +68,7 @@ export class SetIterator<T extends QueryValue>
   constructor(
     client: Client,
     initial: Page<T> | EmbeddedSet | (() => Promise<T | Page<T> | EmbeddedSet>),
-    options?: QueryOptions
+    options?: QueryOptions,
   ) {
     options = options ?? {};
     if (initial instanceof Function) {
@@ -78,8 +78,8 @@ export class SetIterator<T extends QueryValue>
     } else {
       throw new TypeError(
         `Expected 'Page<T> | EmbeddedSet | (() => Promise<T | Page<T> | EmbeddedSet>)', but received ${JSON.stringify(
-          initial
-        )}`
+          initial,
+        )}`,
       );
     }
   }
@@ -93,18 +93,18 @@ export class SetIterator<T extends QueryValue>
   static fromQuery<T extends QueryValue>(
     client: Client,
     query: Query,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): SetIterator<T> {
     return new SetIterator<T>(
       client,
       async () => {
         const response = await client.query<T | Page<T> | EmbeddedSet>(
           query,
-          options
+          options,
         );
         return response.data;
       },
-      options
+      options,
     );
   }
 
@@ -118,7 +118,7 @@ export class SetIterator<T extends QueryValue>
   static fromPageable<T extends QueryValue>(
     client: Client,
     pageable: Page<T> | EmbeddedSet,
-    options?: QueryOptions
+    options?: QueryOptions,
   ): SetIterator<T> {
     return new SetIterator<T>(client, pageable, options);
   }
@@ -132,22 +132,30 @@ export class SetIterator<T extends QueryValue>
     return new FlattenedSetIterator(this);
   }
 
-  /** Implement {@link AsyncGenerator.next} */
+  /** Implement
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator/next| AsyncGenerator.next}
+   * */
   async next(): Promise<IteratorResult<T[], void>> {
     return this.#generator.next();
   }
 
-  /** Implement {@link AsyncGenerator.return} */
+  /** Implement
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator/return| AsyncGenerator.return}
+   * */
   async return(): Promise<IteratorResult<T[], void>> {
     return this.#generator.return();
   }
 
-  /** Implement {@link AsyncGenerator.throw} */
+  /** Implement
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator/throw| AsyncGenerator.throw}
+   * */
   async throw(e: any): Promise<IteratorResult<T[], void>> {
     return this.#generator.throw(e);
   }
 
-  /** Implement {@link AsyncGenerator} */
+  /** Implement
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator| AsyncGenerator}
+   * */
   [Symbol.asyncIterator]() {
     return this;
   }
@@ -178,22 +186,30 @@ export class FlattenedSetIterator<T extends QueryValue>
     this.#generator = generateItems(setIterator);
   }
 
-  /** Implement {@link AsyncGenerator.next} */
+  /** Implement
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator/next| AsyncGenerator.next}
+   * */
   async next(): Promise<IteratorResult<T, void>> {
     return this.#generator.next();
   }
 
-  /** Implement {@link AsyncGenerator.return} */
+  /** Implement
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator/return| AsyncGenerator.return}
+   * */
   async return(): Promise<IteratorResult<T, void>> {
     return this.#generator.return();
   }
 
-  /** Implement {@link AsyncGenerator.throw} */
+  /** Implement
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator/throw| AsyncGenerator.throw}
+   * */
   async throw(e: any): Promise<IteratorResult<T, void>> {
     return this.#generator.throw(e);
   }
 
-  /** Implement {@link AsyncGenerator} */
+  /** Implement
+   * {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/AsyncGenerator| AsyncGenerator}
+   * */
   [Symbol.asyncIterator]() {
     return this;
   }
@@ -206,7 +222,7 @@ export class FlattenedSetIterator<T extends QueryValue>
 async function* generatePages<T extends QueryValue>(
   client: Client,
   initial: Page<T> | EmbeddedSet,
-  options: QueryOptions
+  options: QueryOptions,
 ): AsyncGenerator<T[], void, unknown> {
   let currentPage = initial;
 
@@ -233,7 +249,7 @@ async function* generatePages<T extends QueryValue>(
 async function* generateFromThunk<T extends QueryValue>(
   client: Client,
   thunk: () => Promise<T | Page<T> | EmbeddedSet>,
-  options: QueryOptions
+  options: QueryOptions,
 ): AsyncGenerator<T[], void, unknown> {
   const result = await thunk();
 
@@ -241,7 +257,7 @@ async function* generateFromThunk<T extends QueryValue>(
     for await (const page of generatePages(
       client,
       result as Page<T> | EmbeddedSet,
-      options
+      options,
     )) {
       yield page;
     }
@@ -255,7 +271,7 @@ async function* generateFromThunk<T extends QueryValue>(
  * Internal async generator function that flattens a {@link SetIterator}
  */
 async function* generateItems<T extends QueryValue>(
-  setIterator: SetIterator<T>
+  setIterator: SetIterator<T>,
 ) {
   for await (const page of setIterator) {
     for (const item of page) {

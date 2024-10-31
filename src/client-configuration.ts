@@ -17,7 +17,7 @@ export interface ClientConfiguration {
   client_timeout_buffer_ms?: number;
 
   /**
-   * The {@link URL} of Fauna to call. See {@link endpoints} for some default options.
+   * The {@link https://developer.mozilla.org/en-US/docs/Web/API/URL|URL} of Fauna to call. See {@link endpoints} for some default options.
    */
   endpoint?: URL;
 

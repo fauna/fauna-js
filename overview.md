@@ -9,8 +9,8 @@ docs](https://docs.fauna.com/fauna/current/build/drivers/js-client/).
 
 ## Important classes and methods
 
-- [Client](classes/Client.html): Use instances of this class to send requests to Fauna.
-- [query()](classes/Client.html#query): Use this method to run queries.
+- {@link Client}: Use instances of this class to send requests to Fauna.
+- {@link Client.query}: Use this method to run queries.
 
 ## All modules
 

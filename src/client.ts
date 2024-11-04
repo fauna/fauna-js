@@ -1143,6 +1143,10 @@ export class FeedClient<T extends QueryValue = any> {
         "Only one of 'start_ts' or 'cursor' can be defined in the client configuration.",
       );
     }
+
+    if (config.cursor !== undefined && typeof config.cursor !== "string") {
+      throw new TypeError("'cursor' must be a string.");
+    }
   }
 }
 

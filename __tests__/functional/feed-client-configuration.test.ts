@@ -97,4 +97,16 @@ describe("FeedClientConfiguration", () => {
       expect(e).toBeInstanceOf(RangeError);
     }
   });
+
+  it("throws a TypeError if 'cursor' is not a string", async () => {
+    const config = { ...defaultConfig, cursor: null };
+    try {
+      new FeedClient(
+        dummyStreamToken,
+        config as unknown as FeedClientConfiguration,
+      );
+    } catch (e: any) {
+      expect(e).toBeInstanceOf(TypeError);
+    }
+  });
 });

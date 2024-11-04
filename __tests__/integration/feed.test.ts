@@ -136,6 +136,46 @@ describe("Client", () => {
     expect(pages).toHaveLength(3);
     expect(Array.from(pages[0].events)).toHaveLength(1);
   });
+
+  it("can resume from a cursor using a query", async () => {
+    // Query fragment to reuse in the feed
+    const query = fql<EventSource>`FeedTest.all().eventSource()`;
+
+    // First document, which we don't want to include in the feed, but we'll
+    // use its transaction timestamp to resume from after we create our test
+    // documents.
+    const startAt = (await client.query(fql`FeedTest.create({ value: 1})`))
+      .txn_ts;
+
+    // Create a second batch of documents to include in the feed
+    await client.query(
+      fql`Set.sequence(0, 3).forEach(v => FeedTest.create({ value: v + 1}));`,
+    );
+
+    // Create a feed that will resume from the transaction timestamp of the
+    // first document we created above.
+    const feed = client.feed(query, {
+      ...defaultFeedConfig,
+      page_size: 1,
+      start_ts: startAt,
+    });
+
+    // Get the first page of events from the feed
+    const firstPage = await feed[Symbol.asyncIterator]().next();
+
+    // Create a second feed that will resume from the cursor of the first page
+    const feedWithCursor = client.feed(query, {
+      ...defaultFeedConfig,
+      cursor: firstPage.value.cursor,
+    });
+
+    // Get the second page of events from the feed
+    const pages = await fromAsync(feedWithCursor);
+
+    // We should get a single page with 2 events in it
+    expect(pages).toHaveLength(1);
+    expect(Array.from(pages[0].events)).toHaveLength(2);
+  });
 });
 
 describe("FeedClient", () => {

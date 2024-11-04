@@ -434,15 +434,6 @@ export class Client {
       ...options,
     };
 
-    if (
-      clientConfiguration.cursor !== undefined &&
-      tokenOrQuery instanceof Query
-    ) {
-      throw new ClientError(
-        "The `cursor` configuration can only be used with a stream token.",
-      );
-    }
-
     const tokenOrGetToken =
       tokenOrQuery instanceof Query
         ? () => this.query<EventSource>(tokenOrQuery).then((res) => res.data)

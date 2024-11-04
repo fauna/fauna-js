@@ -30,8 +30,8 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
       - [Client timeout](#client-timeout)
       - [HTTP/2 session idle timeout](#http2-session-idle-timeout)
   - [Event Feeds](#event-feeds)
-    - [Request an Event Feed](#request-a-event-feed)
-    - [Iterate on an Event Feed](#iterate-on-a-event-feed)
+    - [Request an Event Feed](#request-an-event-feed)
+    - [Iterate on an Event Feed](#iterate-on-an-event-feed)
     - [Error handling](#error-handling)
     - [Event Feed options](#event-feed-options)
   - [Event Streaming](#event-streaming)
@@ -497,6 +497,9 @@ const { initialPage, eventSource } = response.data;
 const feed = client.feed(eventSource);
 ```
 
+If changes occur between the creation of the event source and the `feed()`
+request, the feed replays and emits any related events.
+
 You can also pass a query that produces an event source directly to `feed()`:
 
 ```javascript
@@ -505,7 +508,10 @@ const query = fql`Product.all().eventsOn(.price, .stock)`;
 const feed = client.feed(query);
 ```
 
-### Iterate on a Event Feed
+If you pass an event source query to `feed()`, the driver creates the event
+source and requests the event feed at the same time.
+
+### Iterate on an Event Feed
 
 `feed()` returns a `FeedClient` instance that can act as an `AsyncIterator`. You can use `for await...of` to iterate through all the pages:
 
@@ -591,6 +597,10 @@ const options: FeedClientConfiguration = {
 
 client.feed(fql`Product.all().eventSource()`, options);
 ```
+
+You can reuse
+[cursors](https://docs.fauna.com/fauna/current/reference/cdc/#get-events-after-a-specific-cursor)
+across event sources with identical queries in the same database.
 
 ## Event Streaming
 

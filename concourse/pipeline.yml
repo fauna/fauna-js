@@ -132,6 +132,7 @@ jobs:
       - get: main.git
         passed:
           - test
+      - get: fauna-js-repository-docs
 
       - task: integration-tests
         file: main.git/concourse/tasks/integration-tests.yml

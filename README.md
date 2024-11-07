@@ -478,7 +478,7 @@ The driver supports [Event Feeds](https://docs.fauna.com/fauna/current/learn/cdc
 
 An Event Feed asynchronously polls an [event source](https://docs.fauna.com/fauna/current/learn/cdc/#create-an-event-source) for events.
 
-To get an event source, append `eventSource()` or `eventsOn()` to a set from a
+To get an event source, append `eventSource()` or `eventsOn()` to a
 [supported Set](https://docs.fauna.com/fauna/current/reference/streaming_reference/#sets).
 
 To get paginated events, pass the event source to `feed()`:

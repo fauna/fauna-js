@@ -17,6 +17,7 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
   - [Usage](#usage)
     - [Write FQL queries](#write-fql-queries)
     - [Typescript support](#typescript-support)
+      - [Interfaces as `QueryValue` responses](#interfaces-as-queryvalue-responses)
     - [Query options](#query-options)
     - [Query statistics](#query-statistics)
   - [Pagination](#pagination)
@@ -237,6 +238,25 @@ console.assert(userDoc.name === "Alice");
 console.assert(userDoc.email === "alice@site.example");
 
 client.close();
+```
+
+#### Interfaces as `QueryValue` responses
+
+To use a custom interface as a query response, extend the `QueryValueObject`
+interface.
+
+```typescript
+interface User extends QueryValueObject {
+  name: string;
+  email: string;
+}
+
+const query = fql`{
+  name: "Alice",
+  email: "alice@site.example",
+}`;
+
+const response: QuerySuccess<User> = await client.query<User>(query);
 ```
 
 ### Query options

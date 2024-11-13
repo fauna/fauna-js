@@ -1,8 +1,13 @@
-import { fql, Page, QueryCheckError } from "../../src";
+import { fql, Page, QueryCheckError, QueryValueObject } from "../../src";
 import { getClient } from "../client";
 
 // added in a junk property that is not part of QueryValue
 type MyType = { x: number; t: QueryCheckError };
+
+interface IMyTYpe extends QueryValueObject {
+  x: number;
+  t: QueryCheckError;
+}
 
 const client = getClient();
 
@@ -34,6 +39,32 @@ describe.each`
       // When this happenes, the driver treats the result as if a page with
       // exactly one item is returned.
       for await (const page of client.paginate<MyType>(query)) {
+        for (const result of page) {
+          expect(result).toEqual({ x: 123 });
+        }
+      }
+    }
+  });
+
+  it("allows customers to use their own interfaces in queries", async () => {
+    const query = fql`{ "x": 123 }`;
+    const paginatedQuery = fql`[{ "x": 123}].toSet()`;
+
+    if ("query" === method) {
+      const result = (await client.query<IMyTYpe>(query)).data;
+      expect(result).toEqual({ x: 123 });
+    } else {
+      expect.assertions(2);
+      for await (const page of client.paginate<IMyTYpe>(paginatedQuery)) {
+        for (const result of page) {
+          expect(result).toEqual({ x: 123 });
+        }
+      }
+
+      // It is also allowed to provide a query that does not return a page.
+      // When this happenes, the driver treats the result as if a page with
+      // exactly one item is returned.
+      for await (const page of client.paginate<IMyTYpe>(query)) {
         for (const result of page) {
           expect(result).toEqual({ x: 123 });
         }

@@ -353,9 +353,9 @@ export interface Span {
  * QueryValue.
  * These objects can be returned in {@link QuerySuccess}.
  */
-export type QueryValueObject = {
+export interface QueryValueObject {
   [key: string]: QueryValue;
-};
+}
 
 /**
  * A QueryValue represents the possible return values in a {@link QuerySuccess}.

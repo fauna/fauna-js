@@ -235,7 +235,9 @@ export type FeedClientConfiguration = Required<
   cursor?: string;
 
   /**
-   * The desired number of events per page.
+   * Maximum number of events returned per page.
+   * Must be in the range 1 to 16000 (inclusive).
+   * Defaults to 16.
    */
   page_size?: number;
 };

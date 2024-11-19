@@ -51,6 +51,12 @@ import {
   type QuerySuccess,
   type QueryValue,
 } from "./wire-protocol";
+import {
+  ConsoleLogHandler,
+  faunaDebugEnabled,
+  LogHandler,
+  LogLevel,
+} from "./util/logging";
 
 type RequiredClientConfig = ClientConfiguration &
   Required<
@@ -126,6 +132,7 @@ export class Client {
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
       endpoint: this.#getEndpoint(clientConfiguration),
+      logger: this.#getLogger(clientConfiguration),
     };
 
     this.#validateConfiguration();
@@ -554,6 +561,28 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     }
 
     return partialClientConfig?.endpoint ?? env_endpoint ?? endpoints.default;
+  }
+
+  #getLogger(partialClientConfig?: ClientConfiguration): LogHandler {
+    if (
+      partialClientConfig &&
+      "logger" in partialClientConfig &&
+      partialClientConfig.logger === undefined
+    ) {
+      throw new TypeError(`ClientConfiguration option logger must be defined.`);
+    }
+    if (
+      typeof process != "undefined" &&
+      process &&
+      typeof process === "object" &&
+      process.env &&
+      typeof process.env === "object"
+    ) {
+      if (faunaDebugEnabled(process.env["FAUNA_DEBUG"])) {
+        return new ConsoleLogHandler(LogLevel.DEBUG);
+      }
+    }
+    return new ConsoleLogHandler(LogLevel.ERROR);
   }
 
   async #query<T extends QueryValue>(

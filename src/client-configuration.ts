@@ -1,5 +1,6 @@
 import { HTTPClient, HTTPStreamClient } from "./http-client";
 import type { ValueFormat } from "./wire-protocol";
+import { LogHandler } from "./util/logging";
 
 /**
  * Configuration for a client. The options provided are used as the
@@ -65,6 +66,8 @@ export interface ClientConfiguration {
    * or any custom HTTP Clients you implement using the Fetch standard.
    */
   fetch_keepalive?: boolean;
+
+  logger?: LogHandler;
 
   /**
    * A secret for your Fauna DB, used to authorize your queries.

@@ -97,14 +97,19 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
     };
 
     async function* reader() {
-      const response = await fetch(request, options).catch((error) => {
-        throw new NetworkError(
-          "The network connection encountered a problem.",
-          {
-            cause: error,
-          },
-        );
-      });
+      const response = await fetch(request, options)
+        .then((resp) => {
+          console.log(resp);
+          return resp;
+        })
+        .catch((error) => {
+          throw new NetworkError(
+            "The network connection encountered a problem.",
+            {
+              cause: error,
+            },
+          );
+        });
       const status = response.status;
       if (!(status >= 200 && status < 400)) {
         const failure: QueryFailure = await response.json();

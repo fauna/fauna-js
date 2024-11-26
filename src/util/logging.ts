@@ -1,10 +1,11 @@
-export enum LogLevel {
-  TRACE = 0,
-  DEBUG = 1,
-  INFO = 2,
-  WARN = 3,
-  ERROR = 4,
-}
+export const LOG_LEVELS = {
+  TRACE: "0",
+  DEBUG: "1",
+  INFO: "2",
+  WARN: "3",
+  ERROR: "4",
+};
+export type LogLevel = (typeof LOG_LEVELS)[keyof typeof LOG_LEVELS];
 
 /**
  * Converts the FAUNA_DEBUG environment variable (string) into a LogLevel.
@@ -13,22 +14,18 @@ export enum LogLevel {
  *   This function will convert null, undefined, empty, or or any non matching
  *   string to a LogLevel of ERROR.
  *
- * @param fauna_debug - The String value of FAUNA_DEBUG.
+ * @param debug_level - The String value of FAUNA_DEBUG.
  */
-export function parseDebugLevel(fauna_debug: string | undefined): LogLevel {
-  switch (fauna_debug) {
+export function parseDebugLevel(debug_level: string | undefined): LogLevel {
+  switch (debug_level) {
     case "0":
-      return LogLevel.TRACE;
     case "1":
-      return LogLevel.DEBUG;
     case "2":
-      return LogLevel.INFO;
     case "3":
-      return LogLevel.WARN;
     case "4":
-      return LogLevel.ERROR;
+      return debug_level;
     default:
-      return LogLevel.ERROR;
+      return LOG_LEVELS.ERROR;
   }
 }
 
@@ -47,30 +44,30 @@ export class ConsoleLogHandler implements LogHandler {
   }
 
   trace(msg?: string, args?: string[]): void {
-    if (this.#level >= LogLevel.TRACE) {
+    if (this.#level >= LOG_LEVELS.TRACE) {
       console.trace(msg, args);
     }
   }
 
   debug(msg?: string, args?: string[]): void {
-    if (this.#level >= LogLevel.DEBUG) {
+    if (this.#level >= LOG_LEVELS.DEBUG) {
       console.debug(msg, args);
     }
   }
 
   info(msg?: string, args?: string[]): void {
-    if (this.#level >= LogLevel.INFO) {
+    if (this.#level >= LOG_LEVELS.INFO) {
       console.info(msg, args);
     }
   }
 
   warn(msg?: string, args?: string[]): void {
-    if (this.#level >= LogLevel.WARN) {
+    if (this.#level >= LOG_LEVELS.WARN) {
       console.warn(msg, args);
     }
   }
   error(msg?: string, args?: string[]): void {
-    if (this.#level >= LogLevel.ERROR) {
+    if (this.#level >= LOG_LEVELS.ERROR) {
       console.error(msg, args);
     }
   }

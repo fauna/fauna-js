@@ -55,7 +55,7 @@ import {
   ConsoleLogHandler,
   parseDebugLevel,
   LogHandler,
-  LogLevel,
+  LOG_LEVELS,
 } from "./util/logging";
 
 type RequiredClientConfig = ClientConfiguration &
@@ -587,7 +587,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       return new ConsoleLogHandler(env_debug);
     }
 
-    return new ConsoleLogHandler(LogLevel.ERROR);
+    return new ConsoleLogHandler(LOG_LEVELS.ERROR);
   }
 
   async #query<T extends QueryValue>(

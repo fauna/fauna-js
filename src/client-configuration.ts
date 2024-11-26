@@ -121,6 +121,11 @@ export interface ClientConfiguration {
   typecheck?: boolean;
 
   /**
+   * Enable or disable performance hints. If no value is provided, performance hints will be disabled.
+   */
+  performanceHints?: boolean;
+
+  /**
    * Max attempts for retryable exceptions. Default is 3.
    */
   max_attempts?: number;

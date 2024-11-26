@@ -97,6 +97,12 @@ export interface QueryOptions {
   typecheck?: boolean;
 
   /**
+   * Enable or disable performance hints. If no value is provided, performance hints will be disabled.
+   * Overrides the optional setting on the {@link ClientConfiguration}.
+   */
+  performanceHints?: boolean;
+
+  /**
    * Secret to use instead of the client's secret.
    */
   secret?: string;

@@ -4,7 +4,7 @@ export const LOG_LEVELS = {
   INFO: "2",
   WARN: "3",
   ERROR: "4",
-};
+} as const;
 export type LogLevel = (typeof LOG_LEVELS)[keyof typeof LOG_LEVELS];
 
 /**

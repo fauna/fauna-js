@@ -53,7 +53,7 @@ import {
 } from "./wire-protocol";
 import {
   ConsoleLogHandler,
-  faunaDebugEnabled,
+  parseDebugLevel,
   LogHandler,
   LogLevel,
 } from "./util/logging";
@@ -571,17 +571,22 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     ) {
       throw new TypeError(`ClientConfiguration option logger must be defined.`);
     }
+
+    if (partialClientConfig?.logger) {
+      return partialClientConfig.logger;
+    }
+
     if (
-      typeof process != "undefined" &&
+      typeof process !== "undefined" &&
       process &&
       typeof process === "object" &&
       process.env &&
       typeof process.env === "object"
     ) {
-      if (faunaDebugEnabled(process.env["FAUNA_DEBUG"])) {
-        return new ConsoleLogHandler(LogLevel.DEBUG);
-      }
+      const env_debug = parseDebugLevel(process.env["FAUNA_DEBUG"]);
+      return new ConsoleLogHandler(env_debug);
     }
+
     return new ConsoleLogHandler(LogLevel.ERROR);
   }
 

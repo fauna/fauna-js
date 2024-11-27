@@ -101,7 +101,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     expectedHeader: { key: string; value: string };
   };
 
-  it("defaults performanceHints to not setting the x-performance-hints header", async () => {
+  it("defaults performance_hints to not setting the x-performance-hints header", async () => {
     expect.assertions(1);
     const httpClient: HTTPClient = {
       async request(req) {
@@ -129,7 +129,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     ${"query_tags"}             | ${{ t1: "v1", t2: "v2" }}                                    | ${{ key: "x-query-tags", value: "t1=v1,t2=v2" }}
     ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${{ key: "traceparent", value: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00" }}
     ${"typecheck"}              | ${false}                                                     | ${{ key: "x-typecheck", value: "false" }}
-    ${"performanceHints"}       | ${true}                                                      | ${{ key: "x-performance-hints", value: "true" }}
+    ${"performance_hints"}      | ${true}                                                      | ${{ key: "x-performance-hints", value: "true" }}
   `(
     "Setting clientConfiguration $fieldName leads to it being sent in headers",
     async ({ fieldName, fieldValue, expectedHeader }: HeaderTestInput) => {

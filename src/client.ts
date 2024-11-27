@@ -649,7 +649,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
     setHeader("x-format", fromObject.format);
     setHeader("x-typecheck", fromObject.typecheck);
-    setHeader("x-performance-hints", fromObject.performanceHints);
+    setHeader("x-performance-hints", fromObject.performance_hints);
     setHeader("x-query-timeout-ms", fromObject.query_timeout_ms);
     setHeader("x-linearized", fromObject.linearized);
     setHeader("x-max-contention-retries", fromObject.max_contention_retries);

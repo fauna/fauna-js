@@ -97,9 +97,9 @@ export interface QueryOptions {
   typecheck?: boolean;
 
   /**
-   * Enable or disable performance hints. If no value is provided, performance hints will be disabled.
-   * Performance hints will show up in the `summary` field of the QueryInfo object. This ends up as a top
-   * level field in the response object.
+   * Enable or disable performance hints. Defaults to disabled.
+   * The QueryInfo object includes performance hints in the `summary` field, which is a
+   * top-level field in the response object.
    * Overrides the optional setting on the {@link ClientConfiguration}.
    */
   performance_hints?: boolean;

@@ -1,6 +1,6 @@
 import {
-  FeedClientConfiguration,
   ClientConfiguration,
+  FeedClientConfiguration,
   StreamClientConfiguration,
   endpoints,
 } from "./client-configuration";
@@ -15,41 +15,41 @@ import {
   getServiceError,
 } from "./errors";
 import {
+  FaunaAPIPaths,
+  HTTPRequest,
   HTTPStreamClient,
   StreamAdapter,
   getDefaultHTTPClient,
-  isStreamClient,
   isHTTPResponse,
+  isStreamClient,
   type HTTPClient,
-  HTTPRequest,
-  FaunaAPIPaths,
 } from "./http-client";
 import { Query } from "./query-builder";
 import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
 import { withRetries } from "./util/retryable";
 import {
-  FeedPage,
   EmbeddedSet,
+  EventSource,
+  FeedPage,
   Page,
   SetIterator,
-  EventSource,
   isEventSource,
 } from "./values";
 import {
+  EncodedObject,
+  FeedError,
   FeedRequest,
   FeedSuccess,
-  EncodedObject,
-  isQueryFailure,
-  isQuerySuccess,
   QueryOptions,
   QueryRequest,
   StreamEvent,
   StreamEventData,
   StreamEventStatus,
+  isQueryFailure,
+  isQuerySuccess,
   type QuerySuccess,
   type QueryValue,
-  FeedError,
 } from "./wire-protocol";
 
 type RequiredClientConfig = ClientConfiguration &
@@ -649,6 +649,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
 
     setHeader("x-format", fromObject.format);
     setHeader("x-typecheck", fromObject.typecheck);
+    setHeader("x-performance-hints", fromObject.performance_hints);
     setHeader("x-query-timeout-ms", fromObject.query_timeout_ms);
     setHeader("x-linearized", fromObject.linearized);
     setHeader("x-max-contention-retries", fromObject.max_contention_retries);

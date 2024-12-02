@@ -101,6 +101,27 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     expectedHeader: { key: string; value: string };
   };
 
+  it("defaults performance_hints to not setting the x-performance-hints header", async () => {
+    expect.assertions(1);
+    const httpClient: HTTPClient = {
+      async request(req) {
+        expect(req.headers["x-performance-hints"]).toBeUndefined();
+        return getDefaultHTTPClient(getDefaultHTTPClientOptions()).request(req);
+      },
+
+      close() {},
+    };
+
+    const client = getClient(
+      {
+        query_timeout_ms: 5000,
+      },
+      httpClient,
+    );
+    await client.query<number>(fql`"taco".length`);
+    client.close();
+  });
+
   it.each`
     fieldName                   | fieldValue                                                   | expectedHeader
     ${"linearized"}             | ${true}                                                      | ${{ key: "x-linearized", value: "true" }}
@@ -108,6 +129,7 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
     ${"query_tags"}             | ${{ t1: "v1", t2: "v2" }}                                    | ${{ key: "x-query-tags", value: "t1=v1,t2=v2" }}
     ${"traceparent"}            | ${"00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00"} | ${{ key: "traceparent", value: "00-750efa5fb6a131eb2cf4db39f28366cb-5669e71839eca76b-00" }}
     ${"typecheck"}              | ${false}                                                     | ${{ key: "x-typecheck", value: "false" }}
+    ${"performance_hints"}      | ${true}                                                      | ${{ key: "x-performance-hints", value: "true" }}
   `(
     "Setting clientConfiguration $fieldName leads to it being sent in headers",
     async ({ fieldName, fieldValue, expectedHeader }: HeaderTestInput) => {

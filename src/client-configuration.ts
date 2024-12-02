@@ -121,6 +121,13 @@ export interface ClientConfiguration {
   typecheck?: boolean;
 
   /**
+   * Enable or disable performance hints. Defaults to disabled.
+   * The QueryInfo object includes performance hints in the `summary` field, which is a
+   * top-level field in the response object.
+   */
+  performance_hints?: boolean;
+
+  /**
    * Max attempts for retryable exceptions. Default is 3.
    */
   max_attempts?: number;

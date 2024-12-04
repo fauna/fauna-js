@@ -21,7 +21,7 @@ describe("logging", () => {
       ${"unknown string"}       | ${"asdf"}           | ${"4"}
       ${"number"}               | ${42}               | ${"4"}
     `(
-      "correctly parses input '$input' to log level '$result'",
+      "correctly parses $testName to log level '$result'",
       ({ input, result }) => {
         expect(parseDebugLevel(input)).toBe(result);
       },

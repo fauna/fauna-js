@@ -587,7 +587,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       return new ConsoleLogHandler(env_debug);
     }
 
-    return new ConsoleLogHandler(LOG_LEVELS.ERROR);
+    return new ConsoleLogHandler(LOG_LEVELS.OFF);
   }
 
   async #query<T extends QueryValue>(

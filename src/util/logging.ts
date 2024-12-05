@@ -4,6 +4,8 @@ export const LOG_LEVELS = {
   INFO: "2",
   WARN: "3",
   ERROR: "4",
+  FATAL: "5",
+  OFF: "6",
 } as const;
 export type LogLevel = (typeof LOG_LEVELS)[keyof typeof LOG_LEVELS];
 
@@ -18,14 +20,15 @@ export type LogLevel = (typeof LOG_LEVELS)[keyof typeof LOG_LEVELS];
  */
 export function parseDebugLevel(debug_level: string | undefined): LogLevel {
   switch (debug_level) {
-    case "0":
-    case "1":
-    case "2":
-    case "3":
-    case "4":
+    case LOG_LEVELS.TRACE:
+    case LOG_LEVELS.DEBUG:
+    case LOG_LEVELS.INFO:
+    case LOG_LEVELS.WARN:
+    case LOG_LEVELS.ERROR:
+    case LOG_LEVELS.FATAL:
       return debug_level;
     default:
-      return LOG_LEVELS.ERROR;
+      return LOG_LEVELS.OFF;
   }
 }
 

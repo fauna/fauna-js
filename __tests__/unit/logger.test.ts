@@ -18,12 +18,12 @@ describe("logging", () => {
       ${"LOG_LEVELS.ERROR"}     | ${LOG_LEVELS.ERROR} | ${LOG_LEVELS.ERROR}
       ${"LOG_LEVELS.FATAL"}     | ${LOG_LEVELS.FATAL} | ${LOG_LEVELS.FATAL}
       ${"LOG_LEVELS.OFF"}       | ${LOG_LEVELS.OFF}   | ${LOG_LEVELS.OFF}
-      ${"empty"}                | ${""}               | ${6}
-      ${"null"}                 | ${null}             | ${6}
-      ${"undefined"}            | ${undefined}        | ${6}
-      ${"unkown number string"} | ${"42"}             | ${6}
-      ${"unknown string"}       | ${"asdf"}           | ${6}
-      ${"number"}               | ${42}               | ${6}
+      ${"empty"}                | ${""}               | ${"6"}
+      ${"null"}                 | ${null}             | ${"6"}
+      ${"undefined"}            | ${undefined}        | ${"6"}
+      ${"unkown number string"} | ${"42"}             | ${"6"}
+      ${"unknown string"}       | ${"asdf"}           | ${"6"}
+      ${"number"}               | ${42}               | ${"6"}
     `(
       "correctly parses $testName to log level '$result'",
       ({ input, result }) => {

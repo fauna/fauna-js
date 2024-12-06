@@ -38,6 +38,7 @@ export interface LogHandler {
   info(msg?: string, args?: string[]): void;
   warn(msg?: string, args?: string[]): void;
   error(msg?: string, args?: string[]): void;
+  fatal(msg?: string, args?: string[]): void;
 }
 
 export class ConsoleLogHandler implements LogHandler {
@@ -69,8 +70,15 @@ export class ConsoleLogHandler implements LogHandler {
       console.warn(msg, args);
     }
   }
+
   error(msg?: string, args?: string[]): void {
     if (this.#level >= LOG_LEVELS.ERROR) {
+      console.error(msg, args);
+    }
+  }
+
+  fatal(msg?: string, args?: string[]): void {
+    if (this.#level >= LOG_LEVELS.FATAL) {
       console.error(msg, args);
     }
   }

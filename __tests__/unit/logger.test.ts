@@ -9,17 +9,21 @@ describe("logging", () => {
       ${"'2'"}                  | ${"2"}              | ${"2"}
       ${"'3'"}                  | ${"3"}              | ${"3"}
       ${"'4'"}                  | ${"4"}              | ${"4"}
+      ${"'5'"}                  | ${"5"}              | ${"5"}
+      ${"'6'"}                  | ${"6"}              | ${"6"}
       ${"LOG_LEVELS.TRACE"}     | ${LOG_LEVELS.TRACE} | ${LOG_LEVELS.TRACE}
       ${"LOG_LEVELS.DEBUG"}     | ${LOG_LEVELS.DEBUG} | ${LOG_LEVELS.DEBUG}
       ${"LOG_LEVELS.INFO"}      | ${LOG_LEVELS.INFO}  | ${LOG_LEVELS.INFO}
       ${"LOG_LEVELS.WARN"}      | ${LOG_LEVELS.WARN}  | ${LOG_LEVELS.WARN}
       ${"LOG_LEVELS.ERROR"}     | ${LOG_LEVELS.ERROR} | ${LOG_LEVELS.ERROR}
-      ${"empty"}                | ${""}               | ${"4"}
-      ${"null"}                 | ${null}             | ${"4"}
-      ${"undefined"}            | ${undefined}        | ${"4"}
-      ${"unkown number string"} | ${"42"}             | ${"4"}
-      ${"unknown string"}       | ${"asdf"}           | ${"4"}
-      ${"number"}               | ${42}               | ${"4"}
+      ${"LOG_LEVELS.FATAL"}     | ${LOG_LEVELS.FATAL} | ${LOG_LEVELS.FATAL}
+      ${"LOG_LEVELS.OFF"}       | ${LOG_LEVELS.OFF}   | ${LOG_LEVELS.OFF}
+      ${"empty"}                | ${""}               | ${6}
+      ${"null"}                 | ${null}             | ${6}
+      ${"undefined"}            | ${undefined}        | ${6}
+      ${"unkown number string"} | ${"42"}             | ${6}
+      ${"unknown string"}       | ${"asdf"}           | ${6}
+      ${"number"}               | ${42}               | ${6}
     `(
       "correctly parses $testName to log level '$result'",
       ({ input, result }) => {

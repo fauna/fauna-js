@@ -19,6 +19,7 @@ import {
   getDefaultHTTPClientOptions,
   getDefaultSecretAndEndpoint,
 } from "../client";
+import { defaultLogHandler } from "../../src/util/logging";
 
 const defaultHttpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
 const { secret } = getDefaultSecretAndEndpoint();
@@ -31,6 +32,7 @@ const defaultStreamConfig: StreamClientConfiguration = {
   long_type: "number",
   max_attempts: 3,
   max_backoff: 20,
+  logger: defaultLogHandler(),
   httpStreamClient: defaultHttpClient,
 };
 

@@ -32,6 +32,10 @@ export class FetchClient implements HTTPClient, HTTPStreamClient {
     return new URL(path, this.#baseUrl).toString();
   }
 
+  getURL(): string {
+    return this.#resolveURL(this.#defaultRequestPath);
+  }
+
   /** {@inheritDoc HTTPClient.request} */
   async request<T = QueryRequest>({
     data,

@@ -235,7 +235,6 @@ export type FeedClientConfiguration = Required<
     | "query_timeout_ms"
     | "secret"
     | "logger"
-    | "endpoint"
   >
 > & {
   /**

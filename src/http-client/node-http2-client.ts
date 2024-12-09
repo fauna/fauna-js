@@ -54,6 +54,10 @@ export class NodeHTTP2Client implements HTTPClient, HTTPStreamClient {
     this.#session = null;
   }
 
+  getURL(): string {
+    return this.#url;
+  }
+
   /**
    * Gets a {@link NodeHTTP2Client} matching the {@link HTTPClientOptions}
    * @param httpClientOptions - the {@link HTTPClientOptions}

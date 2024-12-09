@@ -626,6 +626,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       this.#logger.debug(
         "Fauna HTTP %s Request to %s (timeout: %s), headers: %s",
         method,
+        this.#httpClient.getURL(),
         this.#clientConfiguration.endpoint.toString(),
         client_timeout_ms.toString(),
         JSON.stringify(headers),
@@ -641,7 +642,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       this.#logger.debug(
         "Fauna HTTP Response %s from %s, headers: %s",
         response.status,
-        this.#clientConfiguration.endpoint.toString(),
+        this.#httpClient.getURL(),
         JSON.stringify(response.headers),
       );
 
@@ -1107,7 +1108,7 @@ export class FeedClient<T extends QueryValue = any> {
     this.#logger.debug(
       "Fauna HTTP %s Request to %s (timeout: %s), headers: %s",
       request.method,
-      this.#clientConfiguration.endpoint.toString(),
+      httpClient.getURL(),
       request.client_timeout_ms,
       JSON.stringify(request.headers),
     );
@@ -1119,7 +1120,7 @@ export class FeedClient<T extends QueryValue = any> {
     this.#logger.debug(
       "Fauna HTTP Response %s from %s, headers: %s",
       response.status,
-      this.#clientConfiguration.endpoint.toString(),
+      httpClient.getURL(),
       JSON.stringify(response.headers),
     );
 

@@ -84,3 +84,7 @@ export class ConsoleLogHandler implements LogHandler {
     }
   }
 }
+
+export function defaultLogHandler(): LogHandler {
+  return new ConsoleLogHandler(LOG_LEVELS.FATAL);
+}

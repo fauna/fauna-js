@@ -68,6 +68,11 @@ export interface HTTPClient {
    * is a no-op as there is no shared resource to close.
    */
   close(): void;
+
+  /**
+   * Return the full URL (path and endpoint) for the query endpoint for this client.
+   */
+  getURL(): string;
 }
 
 /**

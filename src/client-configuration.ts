@@ -67,6 +67,9 @@ export interface ClientConfiguration {
    */
   fetch_keepalive?: boolean;
 
+  /**
+   * A log handler instance.
+   */
   logger?: LogHandler;
 
   /**
@@ -200,6 +203,11 @@ export type StreamClientConfiguration = {
   secret: string;
 
   /**
+   * A log handler instance.
+   */
+  logger: LogHandler;
+
+  /**
    * Indicates if stream should include "status" events, periodic events that
    * update the client with the latest valid timestamp (in the event of a
    * dropped connection) as well as metrics about the cost of maintaining
@@ -226,10 +234,12 @@ export type FeedClientConfiguration = Required<
     | "client_timeout_buffer_ms"
     | "query_timeout_ms"
     | "secret"
+    | "logger"
+    | "endpoint"
   >
 > & {
   /**
-   * The underlying {@link HTTPClient} that will execute the actual HTTP calls
+   * The underlying {@link HTTPClient} that will execute the actual HTTP calls.
    */
   httpClient: HTTPClient;
 

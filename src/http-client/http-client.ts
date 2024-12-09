@@ -20,7 +20,7 @@ export type HTTPRequest<T = QueryRequest> = {
   headers: Record<string, string | undefined>;
 
   /** HTTP method to use */
-  method: "POST";
+  method: string;
 
   /** The path of the endpoint to call if not using the default */
   path?: SupportedFaunaAPIPaths;

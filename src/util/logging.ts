@@ -20,12 +20,13 @@ export type LogLevel = (typeof LOG_LEVELS)[keyof typeof LOG_LEVELS];
  */
 export function parseDebugLevel(debug_level: string | undefined): LogLevel {
   switch (debug_level) {
-    case LOG_LEVELS.TRACE:
-    case LOG_LEVELS.DEBUG:
-    case LOG_LEVELS.INFO:
-    case LOG_LEVELS.WARN:
-    case LOG_LEVELS.ERROR:
-    case LOG_LEVELS.FATAL:
+    case "0":
+    case "1":
+    case "2":
+    case "3":
+    case "4":
+    case "5":
+    case "6":
       return debug_level;
     default:
       return LOG_LEVELS.OFF;
@@ -33,12 +34,12 @@ export function parseDebugLevel(debug_level: string | undefined): LogLevel {
 }
 
 export interface LogHandler {
-  trace(msg?: string, args?: string[]): void;
-  debug(msg?: string, args?: string[]): void;
-  info(msg?: string, args?: string[]): void;
-  warn(msg?: string, args?: string[]): void;
-  error(msg?: string, args?: string[]): void;
-  fatal(msg?: string, args?: string[]): void;
+  trace(msg: string, ...args: any[]): void;
+  debug(msg: string, ...args: any[]): void;
+  info(msg: string, ...args: any[]): void;
+  warn(msg: string, ...args: any[]): void;
+  error(msg: string, ...args: any[]): void;
+  fatal(msg: string, ...args: any[]): void;
 }
 
 export class ConsoleLogHandler implements LogHandler {
@@ -47,37 +48,37 @@ export class ConsoleLogHandler implements LogHandler {
     this.#level = level;
   }
 
-  trace(msg?: string, args?: string[]): void {
+  trace(msg: string, ...args: any[]): void {
     if (this.#level >= LOG_LEVELS.TRACE) {
       console.trace(msg, args);
     }
   }
 
-  debug(msg?: string, args?: string[]): void {
+  debug(msg: string, ...args: any[]): void {
     if (this.#level >= LOG_LEVELS.DEBUG) {
       console.debug(msg, args);
     }
   }
 
-  info(msg?: string, args?: string[]): void {
+  info(msg: string, ...args: any[]): void {
     if (this.#level >= LOG_LEVELS.INFO) {
       console.info(msg, args);
     }
   }
 
-  warn(msg?: string, args?: string[]): void {
+  warn(msg: string, ...args: any[]): void {
     if (this.#level >= LOG_LEVELS.WARN) {
       console.warn(msg, args);
     }
   }
 
-  error(msg?: string, args?: string[]): void {
+  error(msg: string, ...args: any[]): void {
     if (this.#level >= LOG_LEVELS.ERROR) {
       console.error(msg, args);
     }
   }
 
-  fatal(msg?: string, args?: string[]): void {
+  fatal(msg: string, args?: any[]): void {
     if (this.#level >= LOG_LEVELS.FATAL) {
       console.error(msg, args);
     }

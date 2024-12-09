@@ -20,7 +20,7 @@ export type HTTPRequest<T = QueryRequest> = {
   headers: Record<string, string | undefined>;
 
   /** HTTP method to use */
-  method: "POST";
+  method: string;
 
   /** The path of the endpoint to call if not using the default */
   path?: SupportedFaunaAPIPaths;
@@ -68,6 +68,11 @@ export interface HTTPClient {
    * is a no-op as there is no shared resource to close.
    */
   close(): void;
+
+  /**
+   * Return the full URL (path and endpoint) for the query endpoint for this client.
+   */
+  getURL(): string;
 }
 
 /**

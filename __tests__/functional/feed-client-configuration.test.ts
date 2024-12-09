@@ -5,6 +5,7 @@ import {
   FeedClient,
 } from "../../src";
 import { getDefaultHTTPClientOptions } from "../client";
+import { defaultLogHandler } from "../../src/util/logging";
 
 const defaultHttpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
 const defaultConfig: FeedClientConfiguration = {
@@ -14,6 +15,7 @@ const defaultConfig: FeedClientConfiguration = {
   max_backoff: 20,
   query_timeout_ms: 5000,
   client_timeout_buffer_ms: 5000,
+  logger: defaultLogHandler(),
   httpClient: defaultHttpClient,
 };
 const dummyStreamToken = new StreamToken("dummy");

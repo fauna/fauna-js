@@ -15,13 +15,16 @@ describe("last_txn_ts tracking in client", () => {
       },
 
       close() {},
+      getURL(): string {
+        return "http://foo.com/bar";
+      },
     };
 
     const myClient = getClient(
       {
         query_timeout_ms: 60_000,
       },
-      httpClient
+      httpClient,
     );
 
     const resultOne = await myClient.query(fql`
@@ -35,7 +38,7 @@ describe("last_txn_ts tracking in client", () => {
       fql`
         if (Collection.byName('Orders') == null) {
           Collection.create({ name: 'Orders' })
-        }`
+        }`,
     );
     expect(resultTwo.txn_ts).not.toBeUndefined();
     expect(resultTwo.txn_ts).not.toEqual(resultOne.txn_ts);
@@ -63,13 +66,16 @@ describe("last_txn_ts tracking in client", () => {
       },
 
       close() {},
+      getURL(): string {
+        return "http://foo.com/bar";
+      },
     };
 
     const myClient = getClient(
       {
         query_timeout_ms: 60_000,
       },
-      httpClient
+      httpClient,
     );
 
     const resultOne = await myClient.query(fql`
@@ -85,7 +91,7 @@ describe("last_txn_ts tracking in client", () => {
       if (Collection.byName('Orders') == null) {\
         Collection.create({ name: 'Orders' })\
       }
-    `
+    `,
     );
     expect(resultTwo.txn_ts).not.toBeUndefined();
     expect(resultTwo.txn_ts).not.toEqual(resultOne.txn_ts);

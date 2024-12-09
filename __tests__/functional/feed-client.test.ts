@@ -5,7 +5,11 @@ import {
   EventSource,
   StreamToken,
   ThrottlingError,
+  HTTPClient,
+  HTTPRequest,
+  HTTPResponse,
 } from "../../src";
+import { defaultLogHandler } from "../../src/util/logging";
 
 const mockHttpResponse = {
   status: 200,
@@ -27,7 +31,9 @@ const mockHttpClient = {
     .fn()
     .mockImplementation(() => Promise.resolve({ ...mockHttpResponse })),
   close: jest.fn(),
+  getURL: jest.fn(() => "bar"),
 };
+
 const defaultConfig: FeedClientConfiguration = {
   secret: "secret",
   long_type: "number",
@@ -35,6 +41,7 @@ const defaultConfig: FeedClientConfiguration = {
   max_backoff: 20,
   query_timeout_ms: 5000,
   client_timeout_buffer_ms: 5000,
+  logger: defaultLogHandler(),
   httpClient: mockHttpClient,
 };
 const testEventSource: EventSource = new StreamToken("dummy");

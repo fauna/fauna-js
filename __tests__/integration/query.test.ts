@@ -140,6 +140,9 @@ describe("query", () => {
           return dummyResponse;
         },
         close() {},
+        getURL(): string {
+          return "http://foo.com/bar";
+        },
       };
       const clientConfiguration: Partial<ClientConfiguration> = {
         linearized: true,
@@ -163,6 +166,9 @@ describe("query", () => {
         return dummyResponse;
       },
       close() {},
+      getURL() {
+        return "http://foo.com/bar";
+      },
     };
 
     let clientConfiguration: Partial<ClientConfiguration> = {
@@ -271,6 +277,9 @@ describe("query", () => {
           );
         },
         close() {},
+        getURL() {
+          return "http://foo.com/bar";
+        },
       };
       badClient = getClient({}, httpClient);
       await badClient.query(fql`"dummy"`);
@@ -379,6 +388,9 @@ describe("query", () => {
         return httpClient.request(badRequest);
       },
       close() {},
+      getURL() {
+        return "http://foo.com/bar";
+      },
     };
 
     const badClient = getClient({}, badHTTPClient);
@@ -400,6 +412,9 @@ describe("query", () => {
         throw new Error("boom!");
       },
       close() {},
+      getURL(): string {
+        return "http://foo.com/bar";
+      },
     };
     const badClient = getClient(
       {

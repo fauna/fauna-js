@@ -3,8 +3,10 @@ import {
   StreamToken,
   getDefaultHTTPClient,
   StreamClientConfiguration,
+  ConsoleLogHandler,
 } from "../../src";
 import { getDefaultHTTPClientOptions } from "../client";
+import { defaultLogHandler } from "../../src/util/logging";
 
 const defaultHttpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
 const defaultConfig: StreamClientConfiguration = {
@@ -12,6 +14,7 @@ const defaultConfig: StreamClientConfiguration = {
   long_type: "number",
   max_attempts: 3,
   max_backoff: 20,
+  logger: defaultLogHandler(),
   httpStreamClient: defaultHttpClient,
 };
 const dummyStreamToken = new StreamToken("dummy");

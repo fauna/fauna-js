@@ -138,11 +138,7 @@ export class Client {
       logger: this.#getLogger(clientConfiguration),
     };
 
-    if (clientConfiguration && clientConfiguration.logger) {
-      this.#logger = clientConfiguration.logger;
-    } else {
-      this.#logger = new ConsoleLogHandler(LOG_LEVELS.ERROR);
-    }
+    this.#logger = this.#clientConfiguration.logger!;
 
     this.#validateConfiguration();
 

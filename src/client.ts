@@ -68,6 +68,7 @@ type RequiredClientConfig = ClientConfiguration &
       | "fetch_keepalive"
       | "http2_max_streams"
       | "http2_session_idle_ms"
+      | "logger"
       | "secret"
       // required default query options
       | "format"
@@ -80,7 +81,7 @@ type RequiredClientConfig = ClientConfiguration &
 
 const DEFAULT_CLIENT_CONFIG: Omit<
   ClientConfiguration & RequiredClientConfig,
-  "secret" | "endpoint"
+  "secret" | "endpoint" | "logger"
 > = {
   client_timeout_buffer_ms: 5000,
   format: "tagged",
@@ -104,8 +105,6 @@ export class Client {
   readonly #clientConfiguration: RequiredClientConfig;
   /** The underlying {@link HTTPClient} client. */
   readonly #httpClient: HTTPClient & Partial<HTTPStreamClient>;
-  /** A LogHandler instance. */
-  readonly #logger: LogHandler;
   /** The last transaction timestamp this client has seen */
   #lastTxnTs?: number;
   /** true if this client is closed false otherwise */
@@ -137,8 +136,6 @@ export class Client {
       endpoint: this.#getEndpoint(clientConfiguration),
       logger: this.#getLogger(clientConfiguration),
     };
-
-    this.#logger = this.#clientConfiguration.logger!;
 
     this.#validateConfiguration();
 
@@ -367,7 +364,7 @@ export class Client {
       const streamClientConfig: StreamClientConfiguration = {
         ...this.#clientConfiguration,
         httpStreamClient: streamClient,
-        logger: this.#logger,
+        logger: this.#clientConfiguration.logger,
         ...options,
       };
 
@@ -444,7 +441,7 @@ export class Client {
     const clientConfiguration: FeedClientConfiguration = {
       ...this.#clientConfiguration,
       httpClient: this.#httpClient,
-      logger: this.#logger,
+      logger: this.#clientConfiguration.logger,
       ...options,
     };
 
@@ -619,7 +616,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         requestConfig.query_timeout_ms +
         this.#clientConfiguration.client_timeout_buffer_ms;
       const method = "POST";
-      this.#logger.debug(
+      this.#clientConfiguration.logger.debug(
         "Fauna HTTP %s Request to %s (timeout: %s), headers: %s",
         method,
         this.#httpClient.getURL(),
@@ -635,7 +632,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         method,
       });
 
-      this.#logger.debug(
+      this.#clientConfiguration.logger.debug(
         "Fauna HTTP Response %s from %s, headers: %s",
         response.status,
         this.#httpClient.getURL(),

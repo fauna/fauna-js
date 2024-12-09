@@ -36,12 +36,13 @@ describe("logging", () => {
 
 describe("levels", () => {
   describe("TRACE log level", () => {
-    const logger: LogHandler = new ConsoleLogHandler(LOG_LEVELS.DEBUG);
+    const logger: LogHandler = new ConsoleLogHandler(LOG_LEVELS.TRACE);
     it("always log", () => {
       logger.trace("Should log trace");
       logger.debug("Should log debug");
       logger.warn("Should log warnings");
       logger.error("Should log errors");
+      logger.fatal("Should log fatal");
     });
   });
   describe("DEBUG log level", () => {
@@ -66,6 +67,32 @@ describe("levels", () => {
     it("logged", () => {
       logger.error("Should log (%s substitution!)", "with");
     });
+  });
+});
+describe("FATAL log level", () => {
+  const logger: LogHandler = new ConsoleLogHandler(LOG_LEVELS.FATAL);
+  it("skipped", () => {
+    logger.trace("Should not log", "trace");
+    logger.debug("Should not log", "debug");
+    logger.info("Should not log", "info");
+    logger.warn("Should not log", "warn");
+    logger.error("Should not log", "error");
+  });
+  it("logged", () => {
+    logger.fatal("Should log (%s substitution!)", "with");
+    logger.fatal("Should log without substitution!");
+  });
+});
+
+describe("OFF log level", () => {
+  const logger: LogHandler = new ConsoleLogHandler(LOG_LEVELS.OFF);
+  it("skipped", () => {
+    logger.trace("Should not log", "trace");
+    logger.debug("Should not log", "debug");
+    logger.info("Should not log", "info");
+    logger.warn("Should not log", "warn");
+    logger.error("Should not log", "error");
+    logger.fatal("Shoiuld not log", "fatal");
   });
 });
 

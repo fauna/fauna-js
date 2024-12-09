@@ -49,38 +49,38 @@ export class ConsoleLogHandler implements LogHandler {
   }
 
   trace(msg: string, ...args: any[]): void {
-    if (this.#level >= LOG_LEVELS.TRACE) {
-      console.trace(msg, args);
+    if (this.#level <= LOG_LEVELS.TRACE) {
+      console.trace(msg, ...args);
     }
   }
 
   debug(msg: string, ...args: any[]): void {
-    if (this.#level >= LOG_LEVELS.DEBUG) {
-      console.debug(msg, args);
+    if (this.#level <= LOG_LEVELS.DEBUG) {
+      console.debug(msg, ...args);
     }
   }
 
   info(msg: string, ...args: any[]): void {
-    if (this.#level >= LOG_LEVELS.INFO) {
-      console.info(msg, args);
+    if (this.#level <= LOG_LEVELS.INFO) {
+      console.info(msg, ...args);
     }
   }
 
   warn(msg: string, ...args: any[]): void {
-    if (this.#level >= LOG_LEVELS.WARN) {
-      console.warn(msg, args);
+    if (this.#level <= LOG_LEVELS.WARN) {
+      console.warn(msg, ...args);
     }
   }
 
   error(msg: string, ...args: any[]): void {
-    if (this.#level >= LOG_LEVELS.ERROR) {
-      console.error(msg, args);
+    if (this.#level <= LOG_LEVELS.ERROR) {
+      console.error(msg, ...args);
     }
   }
 
-  fatal(msg: string, args?: any[]): void {
-    if (this.#level >= LOG_LEVELS.FATAL) {
-      console.error(msg, args);
+  fatal(msg: string, ...args: any[]): void {
+    if (this.#level <= LOG_LEVELS.FATAL) {
+      console.error(msg, ...args);
     }
   }
 }

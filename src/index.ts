@@ -111,5 +111,6 @@ export {
   LogLevel,
   LOG_LEVELS,
   ConsoleLogHandler,
+  LogHandler,
   parseDebugLevel,
 } from "./util/logging";

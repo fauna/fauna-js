@@ -14,7 +14,7 @@ export type LogLevel = (typeof LOG_LEVELS)[keyof typeof LOG_LEVELS];
  *   The intended use is to set FAUNA_DEBUG=0|1|2|3|4.
  *
  *   This function will convert null, undefined, empty, or or any non matching
- *   string to a LogLevel of ERROR.
+ *   string to a LogLevel of OFF.
  *
  * @param debug_level - The String value of FAUNA_DEBUG.
  */

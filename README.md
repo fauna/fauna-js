@@ -754,7 +754,7 @@ in the API reference.
 ## Debug logging
 
 To enable or disable debug logging, set the `FAUNA_DEBUG` environment variable
-to string-encoded
+to a string-encoded
 [`LOG_LEVELS`](https://fauna.github.io/fauna-js/latest/variables/LOG_LEVELS.html)
 integer:
 

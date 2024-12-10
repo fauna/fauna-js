@@ -107,3 +107,9 @@ export {
   type HTTPStreamClient,
   type StreamAdapter,
 } from "./http-client";
+export {
+  LogLevel,
+  LOG_LEVELS,
+  ConsoleLogHandler,
+  parseDebugLevel,
+} from "./util/logging";

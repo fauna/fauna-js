@@ -16,6 +16,7 @@ import {
   getDefaultHTTPClientOptions,
   getDefaultSecretAndEndpoint,
 } from "../client";
+import { defaultLogHandler } from "../../src/util/logging";
 
 const defaultHttpClient = getDefaultHTTPClient(getDefaultHTTPClientOptions());
 const { secret } = getDefaultSecretAndEndpoint();
@@ -29,6 +30,7 @@ const defaultFeedConfig: FeedClientConfiguration = {
   max_attempts: 3,
   max_backoff: 20,
   httpClient: defaultHttpClient,
+  logger: defaultLogHandler(),
   client_timeout_buffer_ms: 5000,
   query_timeout_ms: 5000,
 };

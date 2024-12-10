@@ -1,5 +1,6 @@
 import { HTTPClient, HTTPStreamClient } from "./http-client";
 import type { ValueFormat } from "./wire-protocol";
+import { LogHandler } from "./util/logging";
 
 /**
  * Configuration for a client. The options provided are used as the
@@ -65,6 +66,11 @@ export interface ClientConfiguration {
    * or any custom HTTP Clients you implement using the Fetch standard.
    */
   fetch_keepalive?: boolean;
+
+  /**
+   * A log handler instance.
+   */
+  logger?: LogHandler;
 
   /**
    * A secret for your Fauna DB, used to authorize your queries.
@@ -197,6 +203,11 @@ export type StreamClientConfiguration = {
   secret: string;
 
   /**
+   * A log handler instance.
+   */
+  logger: LogHandler;
+
+  /**
    * Indicates if stream should include "status" events, periodic events that
    * update the client with the latest valid timestamp (in the event of a
    * dropped connection) as well as metrics about the cost of maintaining
@@ -223,10 +234,11 @@ export type FeedClientConfiguration = Required<
     | "client_timeout_buffer_ms"
     | "query_timeout_ms"
     | "secret"
+    | "logger"
   >
 > & {
   /**
-   * The underlying {@link HTTPClient} that will execute the actual HTTP calls
+   * The underlying {@link HTTPClient} that will execute the actual HTTP calls.
    */
   httpClient: HTTPClient;
 

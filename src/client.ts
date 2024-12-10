@@ -23,6 +23,7 @@ import {
   isHTTPResponse,
   isStreamClient,
   type HTTPClient,
+  HTTPResponse,
 } from "./http-client";
 import { Query } from "./query-builder";
 import { TaggedTypeFormat } from "./tagged-type";
@@ -51,6 +52,12 @@ import {
   type QuerySuccess,
   type QueryValue,
 } from "./wire-protocol";
+import {
+  ConsoleLogHandler,
+  parseDebugLevel,
+  LogHandler,
+  LOG_LEVELS,
+} from "./util/logging";
 
 type RequiredClientConfig = ClientConfiguration &
   Required<
@@ -61,6 +68,7 @@ type RequiredClientConfig = ClientConfiguration &
       | "fetch_keepalive"
       | "http2_max_streams"
       | "http2_session_idle_ms"
+      | "logger"
       | "secret"
       // required default query options
       | "format"
@@ -73,7 +81,7 @@ type RequiredClientConfig = ClientConfiguration &
 
 const DEFAULT_CLIENT_CONFIG: Omit<
   ClientConfiguration & RequiredClientConfig,
-  "secret" | "endpoint"
+  "secret" | "endpoint" | "logger"
 > = {
   client_timeout_buffer_ms: 5000,
   format: "tagged",
@@ -126,6 +134,7 @@ export class Client {
       ...clientConfiguration,
       secret: this.#getSecret(clientConfiguration),
       endpoint: this.#getEndpoint(clientConfiguration),
+      logger: this.#getLogger(clientConfiguration),
     };
 
     this.#validateConfiguration();
@@ -355,6 +364,7 @@ export class Client {
       const streamClientConfig: StreamClientConfiguration = {
         ...this.#clientConfiguration,
         httpStreamClient: streamClient,
+        logger: this.#clientConfiguration.logger,
         ...options,
       };
 
@@ -431,6 +441,7 @@ export class Client {
     const clientConfiguration: FeedClientConfiguration = {
       ...this.#clientConfiguration,
       httpClient: this.#httpClient,
+      logger: this.#clientConfiguration.logger,
       ...options,
     };
 
@@ -556,6 +567,33 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
     return partialClientConfig?.endpoint ?? env_endpoint ?? endpoints.default;
   }
 
+  #getLogger(partialClientConfig?: ClientConfiguration): LogHandler {
+    if (
+      partialClientConfig &&
+      "logger" in partialClientConfig &&
+      partialClientConfig.logger === undefined
+    ) {
+      throw new TypeError(`ClientConfiguration option logger must be defined.`);
+    }
+
+    if (partialClientConfig?.logger) {
+      return partialClientConfig.logger;
+    }
+
+    if (
+      typeof process !== "undefined" &&
+      process &&
+      typeof process === "object" &&
+      process.env &&
+      typeof process.env === "object"
+    ) {
+      const env_debug = parseDebugLevel(process.env["FAUNA_DEBUG"]);
+      return new ConsoleLogHandler(env_debug);
+    }
+
+    return new ConsoleLogHandler(LOG_LEVELS.OFF);
+  }
+
   async #query<T extends QueryValue>(
     queryRequest: QueryRequest,
     queryOptions?: QueryOptions,
@@ -572,18 +610,34 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       };
       this.#setHeaders(requestConfig, headers);
 
-      const isTaggedFormat = requestConfig.format === "tagged";
+      const isTaggedFormat: boolean = requestConfig.format === "tagged";
 
-      const client_timeout_ms =
+      const client_timeout_ms: number =
         requestConfig.query_timeout_ms +
         this.#clientConfiguration.client_timeout_buffer_ms;
+      const method = "POST";
+      this.#clientConfiguration.logger.debug(
+        "Fauna HTTP %s Request to %s (timeout: %s), headers: %s",
+        method,
+        this.#httpClient.getURL(),
+        this.#clientConfiguration.endpoint.toString(),
+        client_timeout_ms.toString(),
+        JSON.stringify(headers),
+      );
 
-      const response = await this.#httpClient.request({
+      const response: HTTPResponse = await this.#httpClient.request({
         client_timeout_ms,
         data: queryRequest,
         headers,
-        method: "POST",
+        method,
       });
+
+      this.#clientConfiguration.logger.debug(
+        "Fauna HTTP Response %s from %s, headers: %s",
+        response.status,
+        this.#httpClient.getURL(),
+        JSON.stringify(response.headers),
+      );
 
       let parsedResponse;
       try {
@@ -730,6 +784,8 @@ export class StreamClient<T extends QueryValue = any> {
   #streamAdapter?: StreamAdapter;
   /** A saved copy of the EventSource once received */
   #eventSource?: EventSource;
+  /** A LogHandler instance. */
+  #logger: LogHandler;
 
   /**
    *
@@ -751,6 +807,7 @@ export class StreamClient<T extends QueryValue = any> {
     }
 
     this.#clientConfiguration = clientConfiguration;
+    this.#logger = clientConfiguration.logger;
 
     this.#validateConfiguration();
   }
@@ -939,6 +996,8 @@ export class FeedClient<T extends QueryValue = any> {
   #query: () => Promise<EventSource>;
   /** The event feed's client options */
   #clientConfiguration: FeedClientConfiguration;
+  /** A LogHandler instance */
+  #logger: LogHandler;
   /** The last `cursor` value received for the current page */
   #lastCursor?: string;
   /** A saved copy of the EventSource once received */
@@ -967,6 +1026,7 @@ export class FeedClient<T extends QueryValue = any> {
 
     this.#clientConfiguration = clientConfiguration;
     this.#lastCursor = clientConfiguration.cursor;
+    this.#logger = clientConfiguration.logger;
 
     this.#validateConfiguration();
   }
@@ -990,15 +1050,16 @@ export class FeedClient<T extends QueryValue = any> {
 
     const headers = this.#getHeaders();
 
+    const client_timeout_ms: number =
+      this.#clientConfiguration.client_timeout_buffer_ms +
+      this.#clientConfiguration.query_timeout_ms;
+    const method: string = "POST";
+
     const req: HTTPRequest<FeedRequest> = {
       headers,
-      client_timeout_ms:
-        this.#clientConfiguration.client_timeout_buffer_ms +
-        this.#clientConfiguration.query_timeout_ms,
-      data: {
-        token: this.#eventSource.token,
-      },
-      method: "POST",
+      client_timeout_ms,
+      method,
+      data: { token: this.#eventSource.token },
       path: FaunaAPIPaths.EVENT_FEED,
     };
 
@@ -1035,12 +1096,26 @@ export class FeedClient<T extends QueryValue = any> {
 
     const { httpClient } = this.#clientConfiguration;
 
-    const request = await this.#nextPageHttpRequest();
+    const request: HTTPRequest<FeedRequest> = await this.#nextPageHttpRequest();
+
+    this.#logger.debug(
+      "Fauna HTTP %s Request to %s (timeout: %s), headers: %s",
+      request.method,
+      httpClient.getURL(),
+      request.client_timeout_ms,
+      JSON.stringify(request.headers),
+    );
     const response = await withRetries(() => httpClient.request(request), {
       maxAttempts: this.#clientConfiguration.max_attempts,
       maxBackoff: this.#clientConfiguration.max_backoff,
       shouldRetry: (error) => error instanceof ThrottlingError,
     });
+    this.#logger.debug(
+      "Fauna HTTP Response %s from %s, headers: %s",
+      response.status,
+      httpClient.getURL(),
+      JSON.stringify(response.headers),
+    );
 
     let body: FeedSuccess<T> | FeedError;
 

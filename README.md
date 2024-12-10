@@ -40,6 +40,7 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
     - [Iterate on a stream](#iterate-on-a-stream)
     - [Close a stream](#close-a-stream)
     - [Stream options](#stream-options)
+  - [Debug logging](#debug-logging)
   - [Contributing](#contributing)
     - [Set up the repo](#set-up-the-repo)
     - [Run tests](#run-tests)
@@ -78,8 +79,7 @@ Stable versions of:
 ## API reference
 
 API reference documentation for the driver is available at
-https://fauna.github.io/fauna-js/. The docs are generated using
-[TypeDoc](https://typedoc.org/).
+https://fauna.github.io/fauna-js/.
 
 ## Install
 
@@ -750,6 +750,37 @@ client.stream(fql`Product.all().eventSource()`, options);
 For supported properties, see
 [StreamClientConfiguration](https://fauna.github.io/fauna-js/latest/types/StreamClientConfiguration.html)
 in the API reference.
+
+## Debug logging
+
+To enable or disable debug logging, set the `FAUNA_DEBUG` environment variable
+to string-encoded
+[`LOG_LEVELS`](https://fauna.github.io/fauna-js/latest/variables/LOG_LEVELS.html)
+integer:
+
+```shell
+# Enable logging for warnings (3) and above:
+export FAUNA_DEBUG="3"
+
+# Disable logging:
+export FAUNA_DEBUG="6"
+```
+
+Logs are output to `console` methods. If `FAUNA_DEBUG` is not set or
+is invalid, logging is disabled.
+
+For advanced logging, you can pass a custom log handler using the [client
+configuration](#client-configuration)'s `logger` property:
+
+```js
+import { Client, LOG_LEVELS } from "fauna";
+import { CustomLogHandler } from "./your-logging-module";
+
+// Create a client with a custom logger.
+const client = new Client({
+  logger: new CustomLogHandler(LOG_LEVELS.DEBUG),
+});
+```
 
 ## Contributing
 

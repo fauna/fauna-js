@@ -11,7 +11,6 @@ import {
   NetworkError,
   ProtocolError,
   ServiceError,
-  ServiceInternalError,
   ThrottlingError,
   getServiceError,
 } from "./errors";
@@ -646,16 +645,11 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         response.body.length === 0 &&
         response.headers["content-length"] === "0"
       ) {
-        throw new ServiceInternalError(
-          {
-            error: {
-              code: "internal_error",
-              message:
-                "There was an issue communicating with Fauna. Please try again.",
-            },
-          },
-          500,
-        );
+        throw new ProtocolError({
+          message:
+            "There was an issue communicating with Fauna. Response is empty. Please try again.",
+          httpStatus: 500,
+        });
       }
 
       let parsedResponse;

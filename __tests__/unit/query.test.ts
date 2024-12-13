@@ -5,6 +5,7 @@ import {
   AuthorizationError,
   FetchClient,
   fql,
+  ProtocolError,
   QueryTimeoutError,
   ServiceError,
   ServiceInternalError,
@@ -123,7 +124,7 @@ describe("query", () => {
     expect(actual.summary).toEqual("the summary");
   });
 
-  it("Throws ServiceError on an empty 200 response", async () => {
+  it("Throws ProtocolError on an empty 200 response", async () => {
     expect.assertions(2);
     fetchMock.mockResponse("", {
       status: 200,
@@ -133,9 +134,9 @@ describe("query", () => {
       const result = await client.query(fql`'foo'.length`);
       console.log("result", result);
     } catch (e) {
-      if (e instanceof ServiceError) {
+      if (e instanceof ProtocolError) {
         expect(e.message).toEqual(
-          "There was an issue communicating with Fauna. Please try again.",
+          "There was an issue communicating with Fauna. Response is empty. Please try again.",
         );
         expect(e.httpStatus).toEqual(500);
       }

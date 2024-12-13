@@ -11,6 +11,7 @@ import {
   NetworkError,
   ProtocolError,
   ServiceError,
+  ServiceInternalError,
   ThrottlingError,
   getServiceError,
 } from "./errors";
@@ -638,6 +639,24 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         this.#httpClient.getURL(),
         JSON.stringify(response.headers),
       );
+
+      // Receiving a 200 with no body/content indicates an issue with core router
+      if (
+        response.status === 200 &&
+        response.body.length === 0 &&
+        response.headers["content-length"] === "0"
+      ) {
+        throw new ServiceInternalError(
+          {
+            error: {
+              code: "internal_error",
+              message:
+                "There was an issue communicating with Fauna. Please try again.",
+            },
+          },
+          500,
+        );
+      }
 
       let parsedResponse;
       try {

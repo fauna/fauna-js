@@ -123,6 +123,25 @@ describe("query", () => {
     expect(actual.summary).toEqual("the summary");
   });
 
+  it("Throws ServiceError on an empty 200 response", async () => {
+    expect.assertions(2);
+    fetchMock.mockResponse("", {
+      status: 200,
+      headers: [["content-length", "0"]],
+    });
+    try {
+      const result = await client.query(fql`'foo'.length`);
+      console.log("result", result);
+    } catch (e) {
+      if (e instanceof ServiceError) {
+        expect(e.message).toEqual(
+          "There was an issue communicating with Fauna. Please try again.",
+        );
+        expect(e.httpStatus).toEqual(500);
+      }
+    }
+  });
+
   // it("throws an NetworkError on a timeout", async () => {
   //   expect.assertions(2);
   //   // axios mock adapater currently has a bug that cannot match

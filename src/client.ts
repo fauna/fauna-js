@@ -639,6 +639,19 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         JSON.stringify(response.headers),
       );
 
+      // Receiving a 200 with no body/content indicates an issue with core router
+      if (
+        response.status === 200 &&
+        (response.body.length === 0 ||
+          response.headers["content-length"] === "0")
+      ) {
+        throw new ProtocolError({
+          message:
+            "There was an issue communicating with Fauna. Response is empty. Please try again.",
+          httpStatus: 500,
+        });
+      }
+
       let parsedResponse;
       try {
         parsedResponse = {

@@ -5,6 +5,7 @@ import {
   AuthorizationError,
   FetchClient,
   fql,
+  ProtocolError,
   QueryTimeoutError,
   ServiceError,
   ServiceInternalError,
@@ -121,6 +122,25 @@ describe("query", () => {
     const actual = await client.query(fql`'foo'.length`);
     expect(actual.data).toEqual(3);
     expect(actual.summary).toEqual("the summary");
+  });
+
+  it("Throws ProtocolError on an empty 200 response", async () => {
+    expect.assertions(2);
+    fetchMock.mockResponse("", {
+      status: 200,
+      headers: [["content-length", "0"]],
+    });
+    try {
+      const result = await client.query(fql`'foo'.length`);
+      console.log("result", result);
+    } catch (e) {
+      if (e instanceof ProtocolError) {
+        expect(e.message).toEqual(
+          "There was an issue communicating with Fauna. Response is empty. Please try again.",
+        );
+        expect(e.httpStatus).toEqual(500);
+      }
+    }
   });
 
   // it("throws an NetworkError on a timeout", async () => {

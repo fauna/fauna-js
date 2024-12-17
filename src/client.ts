@@ -642,8 +642,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       // Receiving a 200 with no body/content indicates an issue with core router
       if (
         response.status === 200 &&
-        response.body.length === 0 &&
-        response.headers["content-length"] === "0"
+        (response.body.length === 0 ||
+          response.headers["content-length"] === "0")
       ) {
         throw new ProtocolError({
           message:

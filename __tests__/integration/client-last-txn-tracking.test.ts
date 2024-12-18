@@ -15,9 +15,6 @@ describe("last_txn_ts tracking in client", () => {
       },
 
       close() {},
-      getURL(): string {
-        return "http://foo.com/bar";
-      },
     };
 
     const myClient = getClient(
@@ -66,9 +63,6 @@ describe("last_txn_ts tracking in client", () => {
       },
 
       close() {},
-      getURL(): string {
-        return "http://foo.com/bar";
-      },
     };
 
     const myClient = getClient(

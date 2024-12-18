@@ -110,9 +110,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
       },
 
       close() {},
-      getURL(): string {
-        return "http://foo.com/bar";
-      },
     };
 
     const client = getClient(
@@ -150,9 +147,6 @@ an environmental variable named FAUNA_SECRET or pass it to the Client constructo
         },
 
         close() {},
-        getURL(): string {
-          return "https://foo.com/bar";
-        },
       };
 
       const client = getClient(

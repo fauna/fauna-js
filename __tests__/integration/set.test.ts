@@ -213,9 +213,6 @@ describe("SetIterator", () => {
       close() {
         return;
       },
-      getURL(): string {
-        return "http://foo.com/bar";
-      },
     };
     const testClient = getClient({}, httpClient);
 
@@ -250,9 +247,6 @@ describe("SetIterator", () => {
       },
       close() {
         return;
-      },
-      getURL(): string {
-        return "http://foo.com/bar";
       },
     };
     const testClient = getClient({}, httpClient);

@@ -753,17 +753,14 @@ in the API reference.
 
 ## Debug logging
 
-To enable or disable debug logging, set the `FAUNA_DEBUG` environment variable
-to a string-encoded
+To enable debug logging, set the `FAUNA_DEBUG` environment variable to a
+string-encoded
 [`LOG_LEVELS`](https://fauna.github.io/fauna-js/latest/variables/LOG_LEVELS.html)
-integer:
+integer. Debug logging is disabled by default.
 
 ```shell
 # Enable logging for warnings (3) and above:
 export FAUNA_DEBUG="3"
-
-# Disable logging:
-export FAUNA_DEBUG="6"
 ```
 
 Logs are output to `console` methods. If `FAUNA_DEBUG` is not set or

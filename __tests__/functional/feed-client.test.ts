@@ -31,7 +31,6 @@ const mockHttpClient = {
     .fn()
     .mockImplementation(() => Promise.resolve({ ...mockHttpResponse })),
   close: jest.fn(),
-  getURL: jest.fn(() => "bar"),
 };
 
 const defaultConfig: FeedClientConfiguration = {

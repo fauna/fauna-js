@@ -1,62 +1,63 @@
 import {
-  ClientConfiguration,
-  FeedClientConfiguration,
-  StreamClientConfiguration,
   endpoints,
+  type ClientConfiguration,
+  type FeedClientConfiguration,
+  type StreamClientConfiguration,
 } from "./client-configuration";
 import {
   ClientClosedError,
   ClientError,
   FaunaError,
+  getServiceError,
   NetworkError,
   ProtocolError,
   ServiceError,
   ThrottlingError,
-  getServiceError,
 } from "./errors";
 import {
   FaunaAPIPaths,
-  HTTPRequest,
-  HTTPStreamClient,
   StreamAdapter,
   getDefaultHTTPClient,
   isHTTPResponse,
   isStreamClient,
   type HTTPClient,
-  HTTPResponse,
+  type HTTPRequest,
+  type HTTPResponse,
+  type HTTPStreamRequest,
+  type HTTPStreamClient,
 } from "./http-client";
 import { Query } from "./query-builder";
 import { TaggedTypeFormat } from "./tagged-type";
 import { getDriverEnv } from "./util/environment";
 import { withRetries } from "./util/retryable";
 import {
-  EmbeddedSet,
-  EventSource,
   FeedPage,
+  isEventSource,
   Page,
   SetIterator,
-  isEventSource,
+  type EmbeddedSet,
+  type EventSource,
 } from "./values";
 import {
-  EncodedObject,
-  FeedError,
-  FeedRequest,
-  FeedSuccess,
-  QueryOptions,
-  QueryRequest,
-  StreamEvent,
-  StreamEventData,
-  StreamEventStatus,
   isQueryFailure,
   isQuerySuccess,
+  type EncodedObject,
+  type FeedError,
+  type FeedRequest,
+  type FeedSuccess,
+  type QueryOptions,
+  type QueryRequest,
   type QuerySuccess,
   type QueryValue,
+  type StreamEvent,
+  type StreamEventData,
+  type StreamEventStatus,
 } from "./wire-protocol";
 import {
   ConsoleLogHandler,
   parseDebugLevel,
-  LogHandler,
   LOG_LEVELS,
+  type LogHandler,
 } from "./util/logging";
 
 type RequiredClientConfig = ClientConfiguration &
@@ -617,9 +618,8 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
         this.#clientConfiguration.client_timeout_buffer_ms;
       const method = "POST";
       this.#clientConfiguration.logger.debug(
-        "Fauna HTTP %s Request to %s (timeout: %s), headers: %s",
+        "Fauna HTTP %s request to %s (timeout: %s), headers: %s",
         method,
-        this.#httpClient.getURL(),
         this.#clientConfiguration.endpoint.toString(),
         client_timeout_ms.toString(),
         JSON.stringify(headers),
@@ -633,9 +633,9 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       });
 
       this.#clientConfiguration.logger.debug(
-        "Fauna HTTP Response %s from %s, headers: %s",
+        "Fauna HTTP response %s from %s, headers: %s",
         response.status,
-        this.#httpClient.getURL(),
+        this.#clientConfiguration.endpoint.toString(),
         JSON.stringify(response.headers),
       );
 
@@ -928,17 +928,24 @@ export class StreamClient<T extends QueryValue = any> {
     const headers = {
       Authorization: `Bearer ${this.#clientConfiguration.secret}`,
     };
-
-    const streamAdapter = this.#clientConfiguration.httpStreamClient.stream({
+    const request: HTTPStreamRequest = {
       data: {
         token: eventSource.token,
         cursor: this.#last_cursor || this.#clientConfiguration.cursor,
       },
       headers,
       method: "POST",
-    });
-
+    };
+    const streamAdapter =
+      this.#clientConfiguration.httpStreamClient.stream(request);
     this.#streamAdapter = streamAdapter;
+
+    this.#clientConfiguration.logger.debug(
+      "Fauna HTTP %s request to '%s', headers: %s",
+      request.method,
+      FaunaAPIPaths.STREAM,
+      JSON.stringify(request.headers),
+    );
 
     for await (const event of streamAdapter.read) {
       // stream events are always tagged
@@ -1009,8 +1016,6 @@ export class FeedClient<T extends QueryValue = any> {
   #query: () => Promise<EventSource>;
   /** The event feed's client options */
   #clientConfiguration: FeedClientConfiguration;
-  /** A LogHandler instance */
-  #logger: LogHandler;
   /** The last `cursor` value received for the current page */
   #lastCursor?: string;
   /** A saved copy of the EventSource once received */
@@ -1039,7 +1044,6 @@ export class FeedClient<T extends QueryValue = any> {
 
     this.#clientConfiguration = clientConfiguration;
     this.#lastCursor = clientConfiguration.cursor;
-    this.#logger = clientConfiguration.logger;
 
     this.#validateConfiguration();
   }
@@ -1111,10 +1115,10 @@ export class FeedClient<T extends QueryValue = any> {
 
     const request: HTTPRequest<FeedRequest> = await this.#nextPageHttpRequest();
 
-    this.#logger.debug(
-      "Fauna HTTP %s Request to %s (timeout: %s), headers: %s",
+    this.#clientConfiguration.logger.debug(
+      "Fauna HTTP %s request to '%s' (timeout: %s), headers: %s",
       request.method,
-      httpClient.getURL(),
+      FaunaAPIPaths.EVENT_FEED,
       request.client_timeout_ms,
       JSON.stringify(request.headers),
     );
@@ -1123,10 +1127,10 @@ export class FeedClient<T extends QueryValue = any> {
       maxBackoff: this.#clientConfiguration.max_backoff,
       shouldRetry: (error) => error instanceof ThrottlingError,
     });
-    this.#logger.debug(
-      "Fauna HTTP Response %s from %s, headers: %s",
+    this.#clientConfiguration.logger.debug(
+      "Fauna HTTP response '%s' from %s, headers: %s",
       response.status,
-      httpClient.getURL(),
+      FaunaAPIPaths.EVENT_FEED,
       JSON.stringify(response.headers),
     );
 

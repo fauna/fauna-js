@@ -620,7 +620,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       this.#clientConfiguration.logger.debug(
         "Fauna HTTP %s request to %s (timeout: %s), headers: %s",
         method,
-        this.#clientConfiguration.endpoint.toString(),
+        FaunaAPIPaths.QUERY,
         client_timeout_ms.toString(),
         JSON.stringify(headers),
       );
@@ -635,7 +635,7 @@ in an environmental variable named FAUNA_SECRET or pass it to the Client\
       this.#clientConfiguration.logger.debug(
         "Fauna HTTP response %s from %s, headers: %s",
         response.status,
-        this.#clientConfiguration.endpoint.toString(),
+        FaunaAPIPaths.QUERY,
         JSON.stringify(response.headers),
       );
 

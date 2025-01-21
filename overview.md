@@ -14,4 +14,4 @@ docs](https://docs.fauna.com/fauna/current/build/drivers/js-client/).
 
 ## All modules
 
-For all available modules, see [Modules](Modules.html).
+For all available modules, see [Modules](modules.html).

@@ -30,12 +30,12 @@ See the [Fauna Documentation](https://docs.fauna.com/fauna/current/) for additio
       - [Query timeout](#query-timeout)
       - [Client timeout](#client-timeout)
       - [HTTP/2 session idle timeout](#http2-session-idle-timeout)
-  - [Event Feeds](#event-feeds)
-    - [Request an Event Feed](#request-an-event-feed)
-    - [Iterate on an Event Feed](#iterate-on-an-event-feed)
+  - [Event feeds](#event-feeds)
+    - [Request an event feed](#request-an-event-feed)
+    - [Iterate on an event feed](#iterate-on-an-event-feed)
     - [Error handling](#error-handling)
-    - [Event Feed options](#event-feed-options)
-  - [Event Streaming](#event-streaming)
+    - [Event feed options](#event-feed-options)
+  - [Event streams](#event-streams)
     - [Start a stream](#start-a-stream)
     - [Iterate on a stream](#iterate-on-a-stream)
     - [Close a stream](#close-a-stream)
@@ -490,13 +490,13 @@ const client = new Client({ http2_session_idle_ms: 6000 });
 > **Warning**
 > Setting `http2_session_idle_ms` to small values can lead to a race condition where requests cannot be transmitted before the session is closed, yielding `ERR_HTTP2_GOAWAY_SESSION` errors.
 
-## Event Feeds
+## Event feeds
 
-The driver supports [Event Feeds](https://docs.fauna.com/fauna/current/learn/cdc/#event-feeds).
+The driver supports [event feeds](https://docs.fauna.com/fauna/current/learn/cdc/#event-feeds).
 
-### Request an Event Feed
+### Request an event feed
 
-An Event Feed asynchronously polls an [event source](https://docs.fauna.com/fauna/current/learn/cdc/#create-an-event-source) for events.
+An event feed asynchronously polls an [event source](https://docs.fauna.com/fauna/current/learn/cdc/#create-an-event-source) for events.
 
 To get an event source, append `eventSource()` or `eventsOn()` to a
 [supported Set](https://docs.fauna.com/fauna/current/reference/streaming_reference/#sets).
@@ -531,7 +531,7 @@ const feed = client.feed(query);
 If you pass an event source query to `feed()`, the driver creates the event
 source and requests the event feed at the same time.
 
-### Iterate on an Event Feed
+### Iterate on an event feed
 
 `feed()` returns a `FeedClient` instance that can act as an `AsyncIterator`. You can use `for await...of` to iterate through all the pages:
 
@@ -599,7 +599,7 @@ try {
 }
 ```
 
-### Event Feed options
+### Event feed options
 
 The client configuration sets the default options for `feed()`. You can pass a `FeedClientConfiguration` object to override these defaults:
 
@@ -622,9 +622,9 @@ You can reuse
 [cursors](https://docs.fauna.com/fauna/current/reference/cdc/#get-events-after-a-specific-cursor)
 across event sources with identical queries in the same database.
 
-## Event Streaming
+## Event streams
 
-The driver supports [Event Streaming](https://docs.fauna.com/fauna/current/learn/streaming).
+The driver supports [event streams](https://docs.fauna.com/fauna/current/learn/cdc/#event-streaming).
 
 ### Start a stream
 

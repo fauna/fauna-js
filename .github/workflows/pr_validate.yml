@@ -3,6 +3,11 @@ name: Validate Driver
 on:
   pull_request:
 
+permissions:
+  id-token: write
+  contents: read
+  checks: write
+
 jobs:
   validate:
     runs-on: ubuntu-latest

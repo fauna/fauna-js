@@ -13,9 +13,13 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint", "eslint-plugin-tsdoc"],
+  plugins: ["@typescript-eslint", "eslint-plugin-tsdoc", "eslint-comments"],
   rules: {
     "@typescript-eslint/no-explicit-any": ["off"],
     "tsdoc/syntax": "error",
+    "@typescript-eslint/triple-slash-reference": [
+      "error",
+      { lib: "never", path: "never", types: "never" },
+    ],
   },
 };

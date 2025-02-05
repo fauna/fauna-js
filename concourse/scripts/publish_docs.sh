@@ -27,10 +27,10 @@ fi
 
 cp -R "../fauna-js-repository/docs" "$PACKAGE_VERSION"
 
-HEAD_GTM=$(cat ./fauna-js-repository/concourse/scripts/head_gtm.dat)
+HEAD_GTM=$(cat ../fauna-js-repository/concourse/scripts/head_gtm.dat)
 sed -i.bak "0,/<\/title>/{s/<\/title>/<\/title>${HEAD_GTM}/}" ./$PACKAGE_VERSION/index.html
 
-BODY_GTM=$(cat ./fauna-js-repository/concourse/scripts/body_gtm.dat)
+BODY_GTM=$(cat ../fauna-js-repository/concourse/scripts/body_gtm.dat)
 sed -i.bak "0,/<body>/{s/<body>/<body>${BODY_GTM}/}" ./$PACKAGE_VERSION/index.html
 
 rm ./$PACKAGE_VERSION/index.html.bak

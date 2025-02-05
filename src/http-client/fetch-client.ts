@@ -1,6 +1,3 @@
-/** following reference needed to include types for experimental fetch API in Node */
-/// <reference lib="dom" />
-
 import { getServiceError, NetworkError } from "../errors";
 import { QueryFailure, QueryRequest } from "../wire-protocol";
 import { FaunaAPIPaths } from "./paths";
